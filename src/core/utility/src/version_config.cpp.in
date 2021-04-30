@@ -1,0 +1,9 @@
+#include <version_config.hpp>
+#include <string>
+
+namespace cassian {
+const int major_version = @PROJECT_VERSION_MAJOR@;
+const int minor_version = @PROJECT_VERSION_MINOR@;
+const int patch_version = @PROJECT_VERSION_PATCH@;
+const std::string git_revision = "@CASSIAN_GIT_REVISION@";
+} // namespace cassian
