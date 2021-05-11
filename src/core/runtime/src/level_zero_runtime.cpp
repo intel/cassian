@@ -367,10 +367,10 @@ void LevelZeroRuntime::release_sampler(const Sampler &sampler) {
   }
 }
 
-Kernel LevelZeroRuntime::create_kernel(const std::string &kernel_name,
-                                       const std::string &source,
-                                       const std::string &build_options,
-                                       const std::string &program_type) {
+Kernel LevelZeroRuntime::create_kernel(
+    const std::string &kernel_name, const std::string &source,
+    const std::string &build_options, const std::string &program_type,
+    const std::optional<std::string> &spirv_options) {
   ze_result_t result = ZE_RESULT_SUCCESS;
   ze_module_handle_t module = nullptr;
   ze_module_build_log_handle_t build_log_handle = nullptr;
@@ -392,7 +392,9 @@ Kernel LevelZeroRuntime::create_kernel(const std::string &kernel_name,
     module_description.inputSize = static_cast<uint32_t>(spv.size());
     module_description.pInputModule = spv.data();
 
-    if (build_options.find_first_of("-cmc") == 0) {
+    if (spirv_options.has_value()) {
+      module_description.pBuildFlags = spirv_options->c_str();
+    } else if (build_options.find_first_of("-cmc") == 0) {
       module_description.pBuildFlags = "-vc-codegen";
     } else {
       module_description.pBuildFlags = build_options.c_str();

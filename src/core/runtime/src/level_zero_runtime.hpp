@@ -42,10 +42,11 @@ public:
   void release_image(const Image &image) override;
   void release_sampler(const Sampler &sampler) override;
 
-  Kernel create_kernel(const std::string &kernel_name,
-                       const std::string &source,
-                       const std::string &build_options,
-                       const std::string &program_type) override;
+  Kernel
+  create_kernel(const std::string &kernel_name, const std::string &source,
+                const std::string &build_options,
+                const std::string &program_type,
+                const std::optional<std::string> &spirv_options) override;
   Kernel create_kernel_from_multiple_programs(
       const std::string &kernel_name,
       const std::vector<ProgramDescriptor> &program_descriptors,

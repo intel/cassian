@@ -46,10 +46,10 @@ void DummyRuntime::release_image(const Image & /*image*/) {}
 
 void DummyRuntime::release_sampler(const Sampler & /*sampler*/) {}
 
-Kernel DummyRuntime::create_kernel(const std::string & /*kernel_name*/,
-                                   const std::string & /*source*/,
-                                   const std::string & /*build_options*/,
-                                   const std::string & /*program_type*/) {
+Kernel DummyRuntime::create_kernel(
+    const std::string & /*kernel_name*/, const std::string & /*source*/,
+    const std::string & /*build_options*/, const std::string & /*program_type*/,
+    const std::optional<std::string> & /*spirv_options*/) {
   return Kernel();
 }
 

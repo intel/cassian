@@ -18,6 +18,7 @@
 #include <cassian/runtime/program_descriptor.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -478,10 +479,10 @@ public:
    * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
    * error.
    */
-  virtual Kernel create_kernel(const std::string &kernel_name,
-                               const std::string &source,
-                               const std::string &build_options,
-                               const std::string &program_type) = 0;
+  virtual Kernel create_kernel(
+      const std::string &kernel_name, const std::string &source,
+      const std::string &build_options, const std::string &program_type,
+      const std::optional<std::string> &spirv_options = std::nullopt) = 0;
 
   /**
    * Create kernel from multiple programs.

@@ -209,19 +209,21 @@ void OpenCLRuntime::release_sampler(const Sampler &sampler) {
   }
 }
 
-Kernel OpenCLRuntime::create_kernel(const std::string &kernel_name,
-                                    const std::string &source,
-                                    const std::string &build_options,
-                                    const std::string &program_type) {
+Kernel OpenCLRuntime::create_kernel(
+    const std::string &kernel_name, const std::string &source,
+    const std::string &build_options, const std::string &program_type,
+    const std::optional<std::string> &spirv_options) {
   cl_int result = CL_SUCCESS;
 
   cl_program program = cl_create_program(source, build_options, program_type);
 
-  const char *options = nullptr;
-  if (program_type == "spirv" && build_options.find_first_of("-cmc") == 0) {
-    options = "-vc-codegen";
-  } else {
-    options = build_options.c_str();
+  const char *options = build_options.c_str();
+  if (program_type == "spirv") {
+    if (spirv_options.has_value()) {
+      options = spirv_options->c_str();
+    } else if (build_options.find_first_of("-cmc") == 0) {
+      options = "-vc-codegen";
+    }
   }
 
   result =
