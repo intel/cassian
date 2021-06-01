@@ -33,8 +33,16 @@ template <> void Requirements::arithmetic_type<clc_half_t>() {
   features_.push_back(Feature::fp16);
 }
 
+template <> void Requirements::arithmetic_type<Half>() {
+  arithmetic_type<clc_half_t>();
+}
+
 template <> void Requirements::arithmetic_type<clc_double_t>() {
   features_.push_back(Feature::fp64);
+}
+
+template <> void Requirements::arithmetic_type<double>() {
+  arithmetic_type<clc_double_t>();
 }
 
 template <> void Requirements::atomic_type<clc_long_t>() {

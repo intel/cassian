@@ -68,9 +68,19 @@ private:
 template <> void Requirements::arithmetic_type<clc_half_t>();
 
 /**
+ * Specialization for half.
+ */
+template <> void Requirements::arithmetic_type<Half>();
+
+/**
  * Specialization for double.
  */
 template <> void Requirements::arithmetic_type<clc_double_t>();
+
+/**
+ * Specialization for double.
+ */
+template <> void Requirements::arithmetic_type<double>();
 
 /**
  * Specialization for long.
