@@ -17,7 +17,8 @@ test_kernel(global DATA_TYPE *value, const global OPERAND_TYPE *operand,
   const size_t local_id = get_local_id(0);
 
   local ATOMIC_TYPE local_atomic[WORK_GROUP_SIZE];
-  atomic_store(&local_atomic[local_id], value[global_id]);
+  atomic_store_explicit(&local_atomic[local_id], value[global_id],
+                        memory_order_relaxed, memory_scope_work_group);
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
   fetched[global_id] = FUNCTION(&local_atomic[local_id], operand[global_id],
@@ -29,5 +30,6 @@ test_kernel(global DATA_TYPE *value, const global OPERAND_TYPE *operand,
   fetched[global_id] = FUNCTION(&local_atomic[local_id], operand[global_id]);
 #endif
 
-  value[global_id] = atomic_load(&local_atomic[local_id]);
+  value[global_id] = atomic_load_explicit(
+      &local_atomic[local_id], memory_order_relaxed, memory_scope_work_group);
 }

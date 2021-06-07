@@ -27,5 +27,6 @@ test_kernel(const global DATA_TYPE *input, global DATA_TYPE *output) {
   atomic_store(&local_atomic[local_id], input[global_id]);
 #endif
 
-  output[global_id] = atomic_load(&local_atomic[local_id]);
+  output[global_id] = atomic_load_explicit(
+      &local_atomic[local_id], memory_order_relaxed, memory_scope_work_group);
 }

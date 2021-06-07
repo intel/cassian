@@ -17,5 +17,6 @@ test_kernel(const global DATA_TYPE *input, global DATA_TYPE *output) {
 
   local ATOMIC_TYPE local_atomic[WORK_GROUP_SIZE];
   atomic_init(&local_atomic[local_id], input[global_id]);
-  output[global_id] = atomic_load(&local_atomic[local_id]);
+  output[global_id] = atomic_load_explicit(
+      &local_atomic[local_id], memory_order_relaxed, memory_scope_work_group);
 }

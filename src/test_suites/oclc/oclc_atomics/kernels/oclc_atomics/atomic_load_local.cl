@@ -16,7 +16,8 @@ test_kernel(const global DATA_TYPE *input, global DATA_TYPE *output) {
   const size_t local_id = get_local_id(0);
 
   local ATOMIC_TYPE local_atomic[WORK_GROUP_SIZE];
-  atomic_store(&local_atomic[local_id], input[global_id]);
+  atomic_store_explicit(&local_atomic[local_id], input[global_id],
+                        memory_order_relaxed, memory_scope_work_group);
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
   output[global_id] =

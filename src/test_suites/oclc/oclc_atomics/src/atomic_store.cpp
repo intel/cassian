@@ -6,6 +6,7 @@
  */
 
 #include <algorithm>
+#include <cassian/logging/logging.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/runtime/runtime.hpp>
@@ -180,20 +181,51 @@ void test_signatures(TEST_CASE_TYPE test_case,
       for (const auto function_type : function_types) {
         test_case.function_type = function_type;
         SECTION(to_string(function_type)) {
+          if (!is_function_type_supported(
+                  test_case.runtime, test_case.program_type, function_type)) {
+            cassian::logging::info()
+                << to_string(function_type) << " section skipped\n";
+            continue;
+          }
           if (function_type == FunctionType::implicit) {
             run_test(test_case);
           } else if (function_type == FunctionType::explicit_memory_order) {
             for (const auto memory_order : memory_orders) {
               test_case.memory_order = memory_order;
-              SECTION(to_string(memory_order)) { run_test(test_case); }
+              SECTION(to_string(memory_order)) {
+                if (!is_memory_order_supported(test_case.runtime,
+                                               test_case.program_type,
+                                               memory_order)) {
+                  cassian::logging::info()
+                      << to_string(memory_order) << " section skipped\n";
+                  continue;
+                }
+                run_test(test_case);
+              }
             }
           } else if (function_type == FunctionType::explicit_memory_scope) {
             for (const auto memory_scope : memory_scopes) {
               test_case.memory_scope = memory_scope;
               SECTION(to_string(memory_scope)) {
+                if (!is_memory_scope_supported(test_case.runtime,
+                                               test_case.program_type,
+                                               memory_scope)) {
+                  cassian::logging::info()
+                      << to_string(memory_scope) << " section skipped\n";
+                  continue;
+                }
                 for (const auto memory_order : memory_orders) {
                   test_case.memory_order = memory_order;
-                  SECTION(to_string(memory_order)) { run_test(test_case); }
+                  SECTION(to_string(memory_order)) {
+                    if (!is_memory_order_supported(test_case.runtime,
+                                                   test_case.program_type,
+                                                   memory_order)) {
+                      cassian::logging::info()
+                          << to_string(memory_order) << " section skipped\n";
+                      continue;
+                    }
+                    run_test(test_case);
+                  }
                 }
               }
             }

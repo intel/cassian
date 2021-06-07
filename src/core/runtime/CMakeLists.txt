@@ -17,6 +17,7 @@ list(
   "include/cassian/runtime/image_properties.hpp"
   "include/cassian/runtime/level_zero_utils.hpp"
   "include/cassian/runtime/opencl_utils.hpp"
+  "include/cassian/runtime/openclc_utils.hpp"
   "include/cassian/runtime/openclc_type_tuples.hpp"
   "include/cassian/runtime/openclc_types.hpp"
   "include/cassian/runtime/program_descriptor.hpp")
@@ -30,7 +31,8 @@ list(
   "src/feature.cpp"
   "src/mocks/dummy_runtime.cpp"
   "src/mocks/stub_runtime.cpp"
-  "src/image_properties.cpp")
+  "src/image_properties.cpp"
+  "src/openclc_utils.cpp")
 
 add_library(runtime ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 add_library(cassian::runtime ALIAS runtime)

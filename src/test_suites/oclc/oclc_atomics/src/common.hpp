@@ -24,17 +24,26 @@ std::string to_string(FunctionType function_type);
 const std::vector<FunctionType> function_types_all = {
     FunctionType::implicit, FunctionType::explicit_memory_order,
     FunctionType::explicit_memory_scope};
+bool is_function_type_supported(cassian::Runtime *runtime,
+                                const std::string &program_type,
+                                FunctionType function_types);
 
 enum class MemoryOrder { relaxed, acquire, release, acq_rel, seq_cst };
 std::string to_string(MemoryOrder memory_order);
 const std::vector<MemoryOrder> memory_orders_all = {
     MemoryOrder::relaxed, MemoryOrder::acquire, MemoryOrder::release,
     MemoryOrder::acq_rel, MemoryOrder::seq_cst};
+bool is_memory_order_supported(cassian::Runtime *runtime,
+                               const std::string &program_type,
+                               MemoryOrder memory_order);
 
 enum class MemoryScope { work_item, work_group, device, all_svm_devices };
 std::string to_string(MemoryScope memory_scope);
 const std::vector<MemoryScope> memory_scopes_all = {
     MemoryScope::work_group, MemoryScope::device, MemoryScope::all_svm_devices};
+bool is_memory_scope_supported(cassian::Runtime *runtime,
+                               const std::string &program_type,
+                               MemoryScope memory_scope);
 
 enum class Operation {
   addition,
