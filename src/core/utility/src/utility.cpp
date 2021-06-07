@@ -76,7 +76,7 @@ fs::path get_application_directory() {
 #endif
   if (count > 0) {
     fs::path app_dir = std::string(result, count);
-    return app_dir.remove_filename();
+    return app_dir.parent_path();
   }
   throw PathNotFoundException("Failed to find application directory");
 }
