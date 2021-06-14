@@ -221,7 +221,7 @@ Kernel OpenCLRuntime::create_kernel(
   if (program_type == "spirv") {
     if (spirv_options.has_value()) {
       options = spirv_options->c_str();
-    } else if (build_options.find_first_of("-cmc") == 0) {
+    } else if (build_options.find("-cmc") == 0) {
       options = "-vc-codegen";
     }
   }

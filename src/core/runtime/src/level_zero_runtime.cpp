@@ -394,7 +394,7 @@ Kernel LevelZeroRuntime::create_kernel(
 
     if (spirv_options.has_value()) {
       module_description.pBuildFlags = spirv_options->c_str();
-    } else if (build_options.find_first_of("-cmc") == 0) {
+    } else if (build_options.find("-cmc") == 0) {
       module_description.pBuildFlags = "-vc-codegen";
     } else {
       module_description.pBuildFlags = build_options.c_str();
