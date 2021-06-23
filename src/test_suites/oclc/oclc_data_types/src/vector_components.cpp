@@ -152,7 +152,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("vector components - numeric indices", "",
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
@@ -184,7 +184,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("vector components - xyzw", "",
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
@@ -217,7 +217,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("vector components - lo, hi, even, odd", "",
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }

@@ -49,12 +49,6 @@ TEST_CASE("Requirements::check") {
       REQUIRE(reason.empty());
     }
 
-    SECTION("core vector") {
-      requirements.arithmetic_type<ca::clc_int8_t>();
-      const std::string reason = requirements.check(runtime);
-      REQUIRE(reason.empty());
-    }
-
     SECTION("fp16 - supported") {
       runtime.is_fp16_supported_ = true;
       requirements.arithmetic_type<ca::clc_half_t>();

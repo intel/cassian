@@ -42,7 +42,9 @@ public:
    *
    * @tparam T OpenCL C scalar type to be required.
    */
-  template <typename T> void arithmetic_type() {}
+  template <typename T> void arithmetic_type() {
+    arithmetic_type_internal<T>(nullptr);
+  }
 
   /**
    * Require an atomic type.
@@ -60,6 +62,25 @@ public:
 
 private:
   std::vector<Feature> features_;
+
+  /**
+   * Specialization for OpenCL C type wrappers.
+   *
+   * If scalar_type doesn't exist in T, this overload is discarded.
+   */
+  template <typename T>
+  void arithmetic_type_internal(typename T::scalar_type *) {
+    static_assert(std::is_same_v<T, typename T::scalar_type>,
+                  "Must be scalar type");
+  }
+
+  /**
+   * Specialization for generic case.
+   *
+   * ... argument makes this overload to have lowest rank, so it gets
+   * picked last.
+   */
+  template <typename> void arithmetic_type_internal(...) {}
 };
 
 /**

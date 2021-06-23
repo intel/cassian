@@ -110,7 +110,7 @@ TEMPLATE_TEST_CASE("isnotequal", "", ca::clc_float_t, ca::clc_float2_t,
   const std::string program_type = config.program_type();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *runtime)) {
     return;
   }

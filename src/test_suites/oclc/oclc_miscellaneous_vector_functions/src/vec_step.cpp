@@ -115,7 +115,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("vec_step_data_type", "", GentypeTypes,
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
@@ -146,7 +146,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("vec_step_pure_type", "", GentypeTypes,
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }

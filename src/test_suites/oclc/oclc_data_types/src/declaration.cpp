@@ -42,7 +42,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("types declaration", "", ca::ScalarTypes,
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
