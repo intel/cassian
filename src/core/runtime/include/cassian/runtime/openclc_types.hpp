@@ -34,7 +34,7 @@ template <> struct OpenCLCUchar<1> {
   using host_type = uint8_t;
   using underlying_type = uint8_t;
   using scalar_type = OpenCLCUchar<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCChar<1>;
   using unsigned_type = OpenCLCUchar<1>;
   static constexpr char device_type[] = "uchar";
   static constexpr char type_name[] = "uchar";
@@ -100,7 +100,7 @@ template <> struct OpenCLCChar<1> {
   using host_type = int8_t;
   using underlying_type = int8_t;
   using scalar_type = OpenCLCChar<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCChar<1>;
   using unsigned_type = OpenCLCUchar<1>;
   static constexpr char device_type[] = "char";
   static constexpr char type_name[] = "char";
@@ -166,7 +166,7 @@ template <> struct OpenCLCUshort<1> {
   using host_type = uint16_t;
   using underlying_type = uint16_t;
   using scalar_type = OpenCLCUshort<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCShort<1>;
   using unsigned_type = OpenCLCUshort<1>;
   using regressed_type = OpenCLCChar<1>;
   static constexpr char device_type[] = "ushort";
@@ -238,7 +238,7 @@ template <> struct OpenCLCShort<1> {
   using host_type = int16_t;
   using underlying_type = int16_t;
   using scalar_type = OpenCLCShort<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCShort<1>;
   using unsigned_type = OpenCLCUshort<1>;
   using regressed_type = OpenCLCChar<1>;
   static constexpr char device_type[] = "short";
@@ -456,7 +456,7 @@ template <> struct OpenCLCUlong<1> {
   using host_type = uint64_t;
   using underlying_type = uint64_t;
   using scalar_type = OpenCLCUlong<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCLong<1>;
   using unsigned_type = OpenCLCUlong<1>;
   using regressed_type = OpenCLCInt<1>;
   static constexpr char device_type[] = "ulong";
@@ -529,7 +529,7 @@ template <> struct OpenCLCLong<1> {
   using host_type = int64_t;
   using underlying_type = int64_t;
   using scalar_type = OpenCLCLong<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCLong<1>;
   using unsigned_type = OpenCLCUlong<1>;
   using regressed_type = OpenCLCInt<1>;
   static constexpr char device_type[] = "long";
@@ -663,7 +663,7 @@ template <> struct OpenCLCDouble<1> {
   using host_type = double;
   using underlying_type = double;
   using scalar_type = OpenCLCDouble<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCLong<1>;
   static constexpr char device_type[] = "double";
   static constexpr char type_name[] = "double";
   static constexpr char type_abbr[] = "f64";
@@ -724,7 +724,7 @@ template <> struct OpenCLCHalf<1> {
   using host_type = Half;
   using underlying_type = uint16_t;
   using scalar_type = OpenCLCHalf<1>;
-  using logical_type = OpenCLCInt<1>;
+  using logical_type = OpenCLCShort<1>;
   static constexpr char device_type[] = "half";
   static constexpr char type_name[] = "half";
   static constexpr char type_abbr[] = "f16";
