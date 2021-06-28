@@ -118,17 +118,21 @@ Image LevelZeroRuntime::create_image(const ImageDimensions dim,
                                      const ImageFormat format,
                                      const ImageChannelOrder order,
                                      AccessQualifier /*access*/) {
-  ze_image_desc_t desc = {};
-  desc.arraylevels = 0;
-  desc.width = dim.width;
-  desc.height = dim.height;
-  desc.depth = dim.depth;
-  desc.miplevels = 0;
-  desc.type = ze_get_image_type(type);
-  desc.flags = 0;
-  desc.format = ze_create_image_format(format, order);
+  ze_image_desc_t image_description = {};
+  image_description.stype = ZE_STRUCTURE_TYPE_IMAGE_DESC;
+  image_description.pNext = nullptr;
+  image_description.arraylevels = 0;
+  image_description.width = dim.width;
+  image_description.height = dim.height;
+  image_description.depth = dim.depth;
+  image_description.miplevels = 0;
+  image_description.type = ze_get_image_type(type);
+  image_description.flags = 0;
+  image_description.format = ze_create_image_format(format, order);
+
   ze_image_handle_t image = nullptr;
-  ze_result_t result = wrapper_.zeImageCreate(context_, device_, &desc, &image);
+  ze_result_t result =
+      wrapper_.zeImageCreate(context_, device_, &image_description, &image);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to allocate Level Zero memory");
   }
@@ -138,13 +142,16 @@ Image LevelZeroRuntime::create_image(const ImageDimensions dim,
 }
 
 Sampler LevelZeroRuntime::create_sampler() {
-  ze_sampler_desc_t desc = {};
-  desc.addressMode = ZE_SAMPLER_ADDRESS_MODE_CLAMP;
-  desc.filterMode = ZE_SAMPLER_FILTER_MODE_NEAREST;
-  desc.isNormalized = 0U;
+  ze_sampler_desc_t sampler_description = {};
+  sampler_description.stype = ZE_STRUCTURE_TYPE_SAMPLER_DESC;
+  sampler_description.pNext = nullptr;
+  sampler_description.addressMode = ZE_SAMPLER_ADDRESS_MODE_CLAMP;
+  sampler_description.filterMode = ZE_SAMPLER_FILTER_MODE_NEAREST;
+  sampler_description.isNormalized = 0U;
+
   ze_sampler_handle_t sampler = nullptr;
-  ze_result_t result =
-      wrapper_.zeSamplerCreate(context_, device_, &desc, &sampler);
+  ze_result_t result = wrapper_.zeSamplerCreate(context_, device_,
+                                                &sampler_description, &sampler);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero sampler");
   }
