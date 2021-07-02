@@ -13,17 +13,111 @@ OpenCL C functionality.
 * Description: Get the device return value from OpenCL C function and compare it with the value returned on the host taking ULP into account.
 * Available modes: - TODO
   * `-cl-unsafe-math-optimizations` - passed to the compiler options
-* Tested functions:
-  * `gentype` - Single and double precision generic type function - TODO
-    * `acos`, `acosh`, `acospi`, `asin`, `asinh`, `asinpi`, `atan`, `atan2`, `atanh`, `atanpi`, `atan2pi`, `cbrt`, `ceil`, `copysign`
-  * `gentyped` - Double precision generic type function - TODO
-  * `gentypef`- Single precision generic type function - TODO
-  * `special` - Special functions that are not generic type - TODO
 * Input values: 
-  * `Basic` - Basic values for given function. TODO
-  * `Special N` - Special values for given function. Covers [edge case behavior](https://www.khronos.org/registry/OpenCL/specs/3.0-unified/html/OpenCL_C.html#edge-case-behavior) of any function. `N` is the identifier of a spacial case, starting from 1.
-  * `Denorms` - Denorm value for given function. TODO.
-  * `Basic - random` - Part of Basic. Random values from function domain. (TODO: Each work item has different value to compute)
+  * `Random` - Random value from the function domain. This value is used to fill the whole work size with std::nextafter of the previous work item value.
+  * `Edge Case` - Edge values for given function. Covers [edge case behavior](https://www.khronos.org/registry/OpenCL/specs/3.0-unified/html/OpenCL_C.html#edge-case-behavior) of every function.
+  * `Denorms` TODO - Denorm value for given function.
+* Tests:
+  * `math_functions_gentype` - Single and double precision generic type functions.
+    * `acos`
+    * `acosh`
+    * `acospi`
+    * `asin`
+    * `asinh`
+    * `asinpi`
+    * `atan`
+    * `atan2`
+    * `atanh`
+    * `atanpi`
+    * `atan2pi`
+    * `cbrt`
+    * `ceil`
+    * `copysign`
+    * `cos`
+    * `cosh`
+    * `cospi` - TODO
+    * `erfc`
+    * `erf`
+    * `exp`
+    * `exp2`
+    * `exp10` - TODO
+    * `expm1`
+    * `fabs`
+    * `fdim`
+    * `floor`
+    * `fma`
+    * `fmax`
+    * `fmin`
+    * `fmod`
+    * `hypot`
+    * `ilogb` 
+    * `ldexp`
+    * `lgamma` - TODO
+    * `log`
+    * `log2`
+    * `log10`
+    * `log1p`
+    * `logb`
+    * `mad`
+    * `maxmag` - TODO
+    * `minmag` - TODO
+    * `nan` - TODO
+    * `nextafter` - TODO
+    * `pow` - TODO
+    * `pown` - TODO
+    * `powr` - TODO
+    * `remainder` - TODO
+    * `rint` - TODO
+    * `rootn` - TODO
+    * `round` - TODO
+    * `rsqrt` - TODO
+    * `sinh` - TODO
+    * `sinpi` - TODO
+    * `sqrt`
+    * `tan` - TODO
+    * `tanh` - TODO
+    * `tanpi` - TODO
+    * `tgamma` - TODO
+    * `trunc` - TODO
+    * `half_cos` - TODO
+    * `half_divide` - TODO
+    * `half_exp` - TODO
+    * `half_exp2` - TODO
+    * `half_exp10` - TODO
+    * `half_log` - TODO
+    * `half_log2` - TODO
+    * `half_log10` - TODO
+    * `half_powr` - TODO
+    * `half_recip` - TODO
+    * `half_rsqrt` - TODO
+    * `half_sin` - TODO
+    * `half_sqrt` - TODO
+    * `half_tan` - TODO
+    * `native_cos` - TODO
+    * `native_divide` - TODO
+    * `native_exp` - TODO
+    * `native_exp2` - TODO
+    * `native_exp10` - TODO
+    * `native_log` - TODO
+    * `native_log2` - TODO
+    * `native_log10` - TODO
+    * `native_powr` - TODO
+    * `native_recip` - TODO
+    * `native_rsqrt` - TODO
+    * `native_sin` - TODO
+    * `native_sqrt` - TODO
+    * `native_tan` - TODO
+  * `math_functions_specializations` - Specialization of given functions.
+    * `fmax` - gentype fmax(gentype x, float/double y)
+    * `fmin` - gentype fmin(gentype x, float/double y)
+    * `ldexp` - gentype ldexp(gentype x, int k)
+  * `math_function_store_functions` - Store functions.
+    * `fract` - TODO
+    * `frexp` - TODO
+    * `lgamma_r` - TODO
+    * `modf` - TODO
+    * `remquo` - TODO
+    * `sincos` - TODO
 
 ### Math macros
 * Status: DONE

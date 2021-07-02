@@ -5,8 +5,14 @@
 #
 
 list(APPEND PUBLIC_HEADERS)
-list(APPEND PRIVATE_HEADERS "src/common.hpp" "src/test_config.hpp"
-     "src/enum_definitions.hpp" "src/math_functions.hpp")
+list(
+  APPEND
+  PRIVATE_HEADERS
+  "src/common.hpp"
+  "src/test_config.hpp"
+  "src/enum_definitions.hpp"
+  "src/math_functions.hpp"
+  "src/math_input_values.hpp")
 list(
   APPEND
   SOURCES

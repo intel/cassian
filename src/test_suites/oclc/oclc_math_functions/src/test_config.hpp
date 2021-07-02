@@ -8,11 +8,14 @@
 #ifndef CASSIAN_OCLC_MATH_FUNCTIONS_TEST_CONFIG_HPP
 #define CASSIAN_OCLC_MATH_FUNCTIONS_TEST_CONFIG_HPP
 
-#include <cassian/cli/cli.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cstddef>
 #include <memory>
 #include <string>
+
+namespace cassian {
+class CommandLineParser;
+}
 
 class TestConfig {
 public:

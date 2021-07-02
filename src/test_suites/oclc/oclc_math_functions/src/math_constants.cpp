@@ -9,20 +9,14 @@
 #define _USE_MATH_DEFINES
 
 #include <cassian/catch2_utils/catch2_utils.hpp>
-#include <cassian/runtime/openclc_types.hpp>
-#include <cassian/runtime/runtime.hpp>
-#include <cassian/utility/utility.hpp>
-#include <cassian/vector/type_helpers.hpp>
-#include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
-#include <cfloat>
 #include <cmath>
 #include <common.hpp>
 #include <enum_definitions.hpp>
 #include <limits>
 #include <test_config.hpp>
+#include <type_traits>
 #include <unordered_map>
-#include <vector>
 
 namespace {
 
