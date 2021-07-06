@@ -5,10 +5,20 @@
  *
  */
 
-#include <CL/cl.h>
-#include <CL/cl_platform.h>
 #include <algorithm>
 #include <array>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include <CL/cl.h>
+#include <CL/cl_ext.h>
+#include <CL/cl_ext_intel.h>
+#include <CL/cl_platform.h>
+
 #include <cassian/logging/logging.hpp>
 #include <cassian/offline_compiler/offline_compiler.hpp>
 #include <cassian/runtime/device_properties.hpp>
@@ -18,14 +28,9 @@
 #include <cassian/runtime/program_descriptor.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/utility/utility.hpp>
-#include <cstddef>
-#include <cstdint>
-#include <iterator>
+
 #include <opencl_runtime.hpp>
 #include <opencl_wrapper.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace cassian {
 OpenCLRuntime::~OpenCLRuntime() {
@@ -469,6 +474,14 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
   case DeviceProperty::device_id:
     // OpenCL has no standard way to request a device ID
     return 0;
+  case DeviceProperty::simd_width: {
+    // OpenCL has no way to detect SIMD width so we will use minimal subgroups
+    // size
+    auto sizes = cl_get_device_property<size_t>(
+        device_, CL_DEVICE_SUB_GROUP_SIZES_INTEL);
+    return static_cast<int>(
+        *std::min_element(std::begin(sizes), std::end(sizes)));
+  }
   default:
     throw RuntimeException("Failed to find device property");
   }

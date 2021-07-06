@@ -695,6 +695,8 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
     return static_cast<int>(device_compute_properties.maxSharedLocalMemory);
   case DeviceProperty::device_id:
     return static_cast<int>(device_properties.deviceId);
+  case DeviceProperty::simd_width:
+    return static_cast<int>(device_properties.physicalEUSimdWidth);
   default:
     throw RuntimeException("Failed to find device property");
   }
