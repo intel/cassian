@@ -1055,5 +1055,30 @@ OUTPUT_TYPE not_component_wise(const Vector<T, N, SIZE_IN_MEMORY> &v) {
   return output;
 }
 
+/**
+ * Get vector size. For scalar types return 1.
+ *
+ * @tparam TYPE type to extract vector size
+ * @tparam N disables function when TYPE::vector_size doesn't exist
+ * @returns vector size
+ *
+ */
+template <typename TYPE, int N = TYPE::vector_size> int get_vector_size() {
+  return N;
+}
+
+/**
+ * @overload for scalar types
+ *
+ * @tparam TYPE type to extract vector size
+ * @returns 1
+ *
+ */
+template <typename TYPE,
+          typename std::enable_if_t<std::is_integral_v<TYPE>, int> = 0>
+int get_vector_size() {
+  return 1;
+}
+
 } // namespace cassian
 #endif
