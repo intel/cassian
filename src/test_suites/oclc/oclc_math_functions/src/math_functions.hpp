@@ -18,6 +18,7 @@
 #include <math_input_values.hpp>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 CASSIAN_CATCH_REGISTER_MATH_FUNCTIONS;
@@ -242,8 +243,10 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
 }
 template <typename T, typename cassian::EnableIfIsScalar<T> = 0>
 bool match_results(const T &result, const T &reference, const T ulp_value) {
-  if (std::isnan(result) && std::isnan(reference)) {
-    return true;
+  if constexpr (!std::is_integral_v<T>) {
+    if (std::isnan(result) && std::isnan(reference)) {
+      return true;
+    }
   }
   const auto ulp_dist = ulp_distance(result, reference);
   return ulp_dist <= std::fabs(result + reference) * ulp_value ||
@@ -252,7 +255,7 @@ bool match_results(const T &result, const T &reference, const T ulp_value) {
 template <typename T, typename cassian::EnableIfIsVector<T> = 0>
 bool match_results(const T &result, const T &reference,
                    const cassian::scalar_type_v<T> ulp_value) {
-  for (auto i = 0UL; i < result.size(); i++) {
+  for (auto i = 0UL; i < static_cast<uint32_t>(result.size()); i++) {
     if (!match_results(result[i], reference[i], ulp_value)) {
       return false;
     }

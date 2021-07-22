@@ -29,6 +29,7 @@
 #include <string>
 #include <string_view>
 #include <test_config.hpp>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -62,11 +63,13 @@ template <typename T> T ulp_distance(const T &a, const T &b) {
   if (a == b) {
     return 0;
   }
-  if (std::isnan(a) || std::isnan(b)) {
-    return std::numeric_limits<T>::quiet_NaN();
-  }
-  if (std::isinf(a) || std::isinf(b)) {
-    return std::numeric_limits<T>::infinity();
+  if constexpr (!std::is_integral_v<T>) {
+    if (std::isnan(a) || std::isnan(b)) {
+      return std::numeric_limits<T>::quiet_NaN();
+    }
+    if (std::isinf(a) || std::isinf(b)) {
+      return std::numeric_limits<T>::infinity();
+    }
   }
   return std::fabs(a - b);
 }

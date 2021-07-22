@@ -8,7 +8,6 @@
 #ifndef CASSIAN_OCLC_MATH_FUNCTIONS_MATH_INPUT_VALUES_HPP
 #define CASSIAN_OCLC_MATH_FUNCTIONS_MATH_INPUT_VALUES_HPP
 
-#include <bits/stdint-uintn.h>
 #include <cassian/vector/vector.hpp>
 #include <map>
 #include <vector>
