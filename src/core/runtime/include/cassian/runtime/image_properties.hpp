@@ -37,14 +37,14 @@ struct ImageDimensions {
   /**
    * Default constructor
    */
-  ImageDimensions() = default;
+  constexpr ImageDimensions() = default;
 
   /**
    * Construct a new Image Dimensions object
    *
    * @param width
    */
-  ImageDimensions(const uint32_t width) : width(width) {}
+  constexpr ImageDimensions(const uint32_t width) : width(width) {}
 
   /**
    * Construct a new Image Dimensions object
@@ -52,7 +52,7 @@ struct ImageDimensions {
    * @param width
    * @param height
    */
-  ImageDimensions(const uint32_t width, const uint32_t height)
+  constexpr ImageDimensions(const uint32_t width, const uint32_t height)
       : width(width), height(height){};
 
   /**
@@ -62,8 +62,8 @@ struct ImageDimensions {
    * @param height
    * @param depth
    */
-  ImageDimensions(const uint32_t width, const uint32_t height,
-                  const uint32_t depth)
+  constexpr ImageDimensions(const uint32_t width, const uint32_t height,
+                            const uint32_t depth)
       : width(width), height(height), depth(depth) {}
 
   /**
