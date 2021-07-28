@@ -198,6 +198,23 @@ using Vector8ToVector8 = CartesianProduct<Vector8Types, Vector8Types>::type;
  */
 using Vector16ToVector16 = CartesianProduct<Vector16Types, Vector16Types>::type;
 
+/**
+ * Tuple containing OpenCL C unsigned integer scalar and vector types.
+ */
+using UnsignedTypes =
+    TupleConcat<TypesUchar, TypesUshort, TypesUint, TypesUlong>::type;
+
+/**
+ * Tuple containing OpenCL C signed integer scalar and vector types.
+ */
+using SignedTypes =
+    TupleConcat<TypesChar, TypesShort, TypesInt, TypesLong>::type;
+
+/**
+ * Tuple containing OpenCL C integer scalar and vector types.
+ */
+using IntegerTypes = TupleConcat<UnsignedTypes, SignedTypes>::type;
+
 } // namespace cassian
 
 #endif
