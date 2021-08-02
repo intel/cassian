@@ -7,7 +7,6 @@
 
 #include <cassian/fp_types/half.hpp>
 #include <cassian/random/random.hpp>
-#include <cassian/vector/type_helpers.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 #include <cmath>
@@ -18,6 +17,8 @@
 namespace ca = cassian;
 
 namespace {
+
+using int16_4_t = ca::Vector<int16_t, 4>;
 
 TEST_CASE("generate_value") {
   const int seed = 0;
@@ -181,7 +182,7 @@ TEST_CASE("generate_value") {
       const int16_t min(-2);
       const int16_t max(1);
       for (int i = 0; i < iterations; ++i) {
-        const auto output = ca::generate_value<ca::int16_4_t>(min, max, seed);
+        const auto output = ca::generate_value<int16_4_t>(min, max, seed);
         REQUIRE(output >= min);
         REQUIRE(output <= max);
       }
@@ -190,9 +191,7 @@ TEST_CASE("generate_value") {
 
   SECTION("implicit min/max") {
     SECTION("scalar") { REQUIRE_NOTHROW(ca::generate_value<int16_t>(seed)); }
-    SECTION("vector") {
-      REQUIRE_NOTHROW(ca::generate_value<ca::int16_4_t>(seed));
-    }
+    SECTION("vector") { REQUIRE_NOTHROW(ca::generate_value<int16_4_t>(seed)); }
   }
 }
 
@@ -215,8 +214,8 @@ TEST_CASE("generate_vector") {
     SECTION("vector") {
       const int16_t min = -10;
       const int16_t max = 20;
-      const std::vector<ca::int16_4_t> output =
-          ca::generate_vector<ca::int16_4_t>(size, min, max, seed);
+      const std::vector<int16_4_t> output =
+          ca::generate_vector<int16_4_t>(size, min, max, seed);
       REQUIRE(output.size() == size);
       for (const auto &e : output) {
         REQUIRE(e >= min);
@@ -232,8 +231,8 @@ TEST_CASE("generate_vector") {
       REQUIRE(output.size() == size);
     }
     SECTION("vector") {
-      const std::vector<ca::int16_4_t> output =
-          ca::generate_vector<ca::int16_4_t>(size, seed);
+      const std::vector<int16_4_t> output =
+          ca::generate_vector<int16_4_t>(size, seed);
       REQUIRE(output.size() == size);
     }
   }

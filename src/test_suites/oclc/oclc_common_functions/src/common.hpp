@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <cassian/runtime/openclc_types.hpp>
-#include <cassian/vector/type_helpers.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 #include <cfloat>

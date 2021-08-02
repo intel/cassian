@@ -11,7 +11,6 @@
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
-#include <cassian/vector/type_helpers.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 #include <cfloat>

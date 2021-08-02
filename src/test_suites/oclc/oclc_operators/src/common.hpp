@@ -9,7 +9,6 @@
 #define CASSIAN_OCLC_OPERATORS_COMMON_HPP
 
 #include <cassian/runtime/runtime.hpp>
-#include <cassian/vector/type_helpers.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 #include <cstddef>

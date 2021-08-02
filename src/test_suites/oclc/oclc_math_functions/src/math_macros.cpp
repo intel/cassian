@@ -6,7 +6,6 @@
  */
 
 #include <cassian/catch2_utils/catch2_utils.hpp>
-#include <cassian/vector/type_helpers.hpp>
 #include <catch2/catch.hpp>
 #include <cfloat>
 #include <common.hpp>

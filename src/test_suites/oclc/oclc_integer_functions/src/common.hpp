@@ -9,7 +9,6 @@
 #define CASSIAN_OCLC_INTEGER_FUNCTIONS_COMMON_HPP
 
 #include <cassian/runtime/openclc_types.hpp>
-#include <cassian/vector/type_helpers.hpp>
 #include <cassian/vector/vector.hpp>
 #include <stdexcept>
 #include <string>

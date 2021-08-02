@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-list(APPEND PUBLIC_HEADERS "include/cassian/vector/vector.hpp"
-     "include/cassian/vector/type_helpers.hpp")
+list(APPEND PUBLIC_HEADERS "include/cassian/vector/vector.hpp")
 list(APPEND PRIVATE_HEADERS)
 list(APPEND SOURCES "src/vector.cpp")
 
