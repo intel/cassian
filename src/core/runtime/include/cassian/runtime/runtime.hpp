@@ -828,38 +828,6 @@ class RuntimeException : public std::runtime_error {
 };
 
 /**
- * Get OpenCL C type name from scalar type.
- *
- * @tparam T the host type.
- * @returns OpenCL C type name.
- */
-template <typename T,
-          typename std::enable_if_t<std::is_scalar<T>::value, int> = 0>
-std::string to_clc_string();
-
-/**
- * Get OpenCL C type name from custom type.
- *
- * @tparam T the host type.
- * @returns OpenCL C type name.
- */
-template <typename T, typename T::is_custom_type = 0>
-std::string to_clc_string();
-
-/**
- * Get OpenCL C type name from vector type.
- *
- * @tparam T the host type.
- * @returns OpenCL C type name.
- */
-template <typename T, typename = typename T::is_vector>
-std::string to_clc_string() {
-  std::stringstream stream;
-  stream << to_clc_string<typename T::value_type>() << T::vector_size;
-  return stream.str();
-}
-
-/**
  * Get C for Metal type name.
  *
  * @tparam T the host type.

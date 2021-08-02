@@ -9,51 +9,6 @@
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 
-struct CustomType {
-  using is_custom_type = int;
-};
-
-template <> std::string cassian::to_clc_string<CustomType>() {
-  return "custom";
-};
-
-TEST_CASE("to_clc_string", "") {
-  SECTION("input scalar") {
-    SECTION("int") {
-      REQUIRE(cassian::to_clc_string<int>() == std::string("int"));
-    }
-    SECTION("float") {
-      REQUIRE(cassian::to_clc_string<float>() == std::string("float"));
-    }
-    SECTION("custom type") {
-      REQUIRE(cassian::to_clc_string<CustomType>() == std::string("custom"));
-    }
-  }
-
-  SECTION("input vector") {
-    SECTION("int2") {
-      REQUIRE(cassian::to_clc_string<cassian::Vector<int, 2>>() ==
-              std::string("int2"));
-    }
-    SECTION("int3") {
-      REQUIRE(cassian::to_clc_string<cassian::Vector<int, 3>>() ==
-              std::string("int3"));
-    }
-    SECTION("int4") {
-      REQUIRE(cassian::to_clc_string<cassian::Vector<int, 4>>() ==
-              std::string("int4"));
-    }
-    SECTION("float4") {
-      REQUIRE(cassian::to_clc_string<cassian::Vector<float, 4>>() ==
-              std::string("float4"));
-    }
-    SECTION("custom type 4") {
-      REQUIRE(cassian::to_clc_string<cassian::Vector<CustomType, 4>>() ==
-              std::string("custom4"));
-    }
-  }
-}
-
 TEST_CASE("get_max_local_work_size", "") {
   SECTION("max work size is smaller than global_work_size, but does fit in "
           "size limits") {

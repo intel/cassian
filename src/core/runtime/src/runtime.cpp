@@ -43,22 +43,6 @@ void Runtime::write_buffer_from_vector(const Buffer &buffer,
 
 Sampler::Sampler(std::uintptr_t id) : id(id) {}
 
-// If you add new type to to_clc_function make sure to do following:
-// * Add specialization to cpp file
-// * If you added custom type (is_scalar returns false) mark it with:
-//   using is_custom_type = int;
-template <> std::string to_clc_string<int8_t>() { return "char"; }
-template <> std::string to_clc_string<int16_t>() { return "short"; }
-template <> std::string to_clc_string<int32_t>() { return "int"; }
-template <> std::string to_clc_string<int64_t>() { return "long"; }
-template <> std::string to_clc_string<uint8_t>() { return "uchar"; }
-template <> std::string to_clc_string<uint16_t>() { return "ushort"; }
-template <> std::string to_clc_string<uint32_t>() { return "uint"; }
-template <> std::string to_clc_string<uint64_t>() { return "ulong"; }
-template <> std::string to_clc_string<float>() { return "float"; }
-template <> std::string to_clc_string<double>() { return "double"; }
-template <> std::string to_clc_string<half>() { return "half"; }
-
 template <> std::string to_cm_string<int8_t>() { return "char"; }
 template <> std::string to_cm_string<int16_t>() { return "short"; }
 template <> std::string to_cm_string<int32_t>() { return "int"; }
