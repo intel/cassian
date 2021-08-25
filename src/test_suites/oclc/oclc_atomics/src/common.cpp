@@ -8,7 +8,9 @@
 #include <cassian/runtime/device_properties.hpp>
 #include <cassian/runtime/openclc_utils.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/utility/utility.hpp>
 #include <common.hpp>
+#include <test_config.hpp>
 
 std::string to_string(FunctionType function_type) {
   switch (function_type) {
@@ -55,6 +57,19 @@ std::string to_string(MemoryScope memory_scope) {
   }
 }
 
+std::string to_string(MemoryFlag memory_flag) {
+  switch (memory_flag) {
+  case MemoryFlag::global:
+    return "CLK_GLOBAL_MEM_FENCE";
+  case MemoryFlag::local:
+    return "CLK_LOCAL_MEM_FENCE";
+  case MemoryFlag::image:
+    return "CLK_IMAGE_MEM_FENCE";
+  default:
+    return "unknown";
+  }
+}
+
 std::string to_string(Operation operation) {
   switch (operation) {
   case Operation::addition:
@@ -84,6 +99,37 @@ std::string to_string(MemoryType memory_type) {
     return "local";
   default:
     return "unknown";
+  }
+}
+
+std::string to_string(ComparisonType comparison_type) {
+  switch (comparison_type) {
+  case ComparisonType::weak:
+    return "weak";
+  case ComparisonType::strong:
+    return "strong";
+  default:
+    return "unknown";
+  }
+}
+
+std::string to_string(ComparisonResult comparison_result) {
+  switch (comparison_result) {
+  case ComparisonResult::success:
+    return "success";
+  case ComparisonResult::failure:
+    return "failure";
+  default:
+    return "unknown";
+  }
+}
+
+bool to_bool(ComparisonResult comparison_result) {
+  switch (comparison_result) {
+  case ComparisonResult::success:
+    return true;
+  case ComparisonResult::failure:
+    return false;
   }
 }
 
@@ -154,4 +200,26 @@ bool is_memory_scope_supported(cassian::Runtime *runtime,
   default:
     return true;
   }
+}
+
+std::string memory_scope_build_option(const MemoryScope memory_scope) {
+  return std::string(" -D MEMORY_SCOPE=") + to_string(memory_scope);
+}
+
+std::string work_group_size_build_option(const int size) {
+  return std::string(" -D WORK_GROUP_SIZE=") + std::to_string(size);
+}
+
+std::string memory_order_build_option(const MemoryOrder memory_order) {
+  return std::string(" -D MEMORY_ORDER=") + to_string(memory_order);
+}
+
+cassian::Kernel create_kernel(const std::string &path,
+                              const std::string &build_options,
+                              cassian::Runtime *runtime,
+                              const std::string &program_type) {
+  const std::string source = cassian::load_text_file(cassian::get_asset(path));
+  const std::string kernel_name = "test_kernel";
+  return runtime->create_kernel(kernel_name, source, build_options,
+                                program_type);
 }

@@ -15,7 +15,14 @@ list(
   "src/atomic_init.cpp"
   "src/atomic_load.cpp"
   "src/atomic_store.cpp"
-  "src/atomic_fetch.cpp")
+  "src/atomic_fetch.cpp"
+  "src/atomic_exchange.cpp"
+  "src/atomic_var_init.cpp"
+  "src/atomic_work_item_fence.cpp"
+  "src/atomic_compare_exchange.cpp"
+  "src/atomic_flag_init.cpp"
+  "src/atomic_flag_test_and_set.cpp"
+  "src/atomic_flag_clear.cpp")
 
 list(
   APPEND
@@ -27,7 +34,18 @@ list(
   "kernels/oclc_atomics/atomic_load_global.cl"
   "kernels/oclc_atomics/atomic_load_local.cl"
   "kernels/oclc_atomics/atomic_fetch_global.cl"
-  "kernels/oclc_atomics/atomic_fetch_local.cl")
+  "kernels/oclc_atomics/atomic_fetch_local.cl"
+  "kernels/oclc_atomics/atomic_exchange_global.cl"
+  "kernels/oclc_atomics/atomic_exchange_local.cl"
+  "kernels/oclc_atomics/atomic_var_init.cl"
+  "kernels/oclc_atomics/atomic_work_item_fence.cl"
+  "kernels/oclc_atomics/atomic_compare_exchange_global.cl"
+  "kernels/oclc_atomics/atomic_compare_exchange_local.cl"
+  "kernels/oclc_atomics/atomic_flag_init.cl"
+  "kernels/oclc_atomics/atomic_flag_test_and_set_global.cl"
+  "kernels/oclc_atomics/atomic_flag_test_and_set_local.cl"
+  "kernels/oclc_atomics/atomic_flag_clear_global.cl"
+  "kernels/oclc_atomics/atomic_flag_clear_local.cl")
 
 add_executable(oclc_atomics ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 

@@ -42,25 +42,6 @@ template <typename T> struct TestCase {
   std::vector<test_host_type> input;
 };
 
-template <typename TEST_CASE_TYPE>
-TEST_CASE_TYPE create_test_case(const TestConfig &config) {
-  TEST_CASE_TYPE test_case;
-  test_case.runtime = config.runtime();
-  test_case.global_work_size = config.work_size();
-  test_case.local_work_size =
-      get_local_work_size(test_case.global_work_size, *test_case.runtime);
-  test_case.program_type = config.program_type();
-  return test_case;
-}
-
-template <typename TEST_CASE_TYPE>
-bool should_skip(const TEST_CASE_TYPE &test_case) {
-  ca::Requirements requirements;
-  using test_host_type = typename TEST_CASE_TYPE::test_host_type;
-  requirements.atomic_type<test_host_type>();
-  return ca::should_skip_test(requirements, *test_case.runtime);
-}
-
 std::string get_kernel_path(const MemoryType memory_type) {
   switch (memory_type) {
   case MemoryType::global:
@@ -70,26 +51,6 @@ std::string get_kernel_path(const MemoryType memory_type) {
   default:
     return "unknown";
   }
-}
-
-template <typename T> std::string atomic_type_build_option() {
-  return std::string(" -D ATOMIC_TYPE=") + T::device_atomic_type;
-}
-
-template <typename T> std::string data_type_build_option() {
-  return std::string(" -D DATA_TYPE=") + T::device_type;
-}
-
-std::string memory_order_build_option(const MemoryOrder memory_order) {
-  return std::string(" -D MEMORY_ORDER=") + to_string(memory_order);
-}
-
-std::string memory_scope_build_option(const MemoryScope memory_scope) {
-  return std::string(" -D MEMORY_SCOPE=") + to_string(memory_scope);
-}
-
-std::string work_group_size_build_option(const int size) {
-  return std::string(" -D WORK_GROUP_SIZE=") + std::to_string(size);
 }
 
 template <typename TEST_TYPE>
@@ -111,15 +72,6 @@ std::string get_build_options(const int local_work_size,
   }
 
   return build_options;
-}
-
-ca::Kernel create_kernel(const std::string &path,
-                         const std::string &build_options, ca::Runtime *runtime,
-                         const std::string &program_type) {
-  const std::string source = ca::load_text_file(ca::get_asset(path));
-  const std::string kernel_name = "test_kernel";
-  return runtime->create_kernel(kernel_name, source, build_options,
-                                program_type);
 }
 
 template <typename T>

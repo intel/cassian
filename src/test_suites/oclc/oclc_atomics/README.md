@@ -8,7 +8,7 @@ OpenCL C functionality.
 ## Tests
 
 ### `ATOMIC_VAR_INIT`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that program-scope atomic variable can be initialized.
 * Description: 
   * Initialize program-scope atomic variable.
@@ -32,7 +32,7 @@ OpenCL C functionality.
   * Atomic type: `int`, `uint`, `long`, `ulong`, `float`, `double`, `intptr_t`, `uintptr_t`, `size_t`, `ptrdiff_t`.
 
 ### `atomic_work_item_fence` signatures
-* Status: TODO
+* Status: DONE
 * Goal: Verify that all possible signatures of `atomic_work_item_fence` are supported.
 * Description: Run kernel with a given fence function.
 * Expectations: Kernel can be built and executed successfully.
@@ -80,7 +80,7 @@ OpenCL C functionality.
   * Memory scope: `memory_scope_work_group`, `memory_scope_device`, `memory_scope_all_svm_devices`.
 
 ### `atomic_exchange` signatures
-* Status: TODO
+* Status: DONE
 * Goal: Verify that atomic variables can be replaced using all possible `atomic_exchange` signatures.
 * Description:
   * `global` memory type:
@@ -102,7 +102,7 @@ OpenCL C functionality.
   * Memory scope: `memory_scope_work_group`, `memory_scope_device`, `memory_scope_all_svm_devices`.
 
 ### `atomic_compare_exchange` signatures
-* Status: TODO
+* Status: DONE
 * Goal: Verify that atomic variables can be replaced using all possible `atomic_compare_exchange` signatures.
 * Description:
   * `global` memory type:
@@ -156,7 +156,7 @@ OpenCL C functionality.
 * Expectations: TODO
 
 ### `ATOMIC_FLAG_INIT`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that program-scope atomic flag variable can be initialized.
 * Description: 
   * Initialize program-scope atomic flag variable.
@@ -164,7 +164,7 @@ OpenCL C functionality.
 * Expectations: Variable is initialized to 0.
 
 ### `atomic_flag_test_and_set` signatures
-* Status: TODO
+* Status: DONE
 * Goal: Verify that atomic flag variables can be set using all possible `atomic_flag_test_and_set` signatures.
 * Description:
   * `global` memory type:
@@ -183,7 +183,7 @@ OpenCL C functionality.
   * Memory scope: `memory_scope_work_group`, `memory_scope_device`, `memory_scope_all_svm_devices`.
 
 ### `atomic_flag_clear` signatures
-* Status: TODO
+* Status: DONE
 * Goal: Verify that atomic flag variables can be cleared using all possible `atomic_flag_clear` signatures.
 * Description:
   * `global` memory type:

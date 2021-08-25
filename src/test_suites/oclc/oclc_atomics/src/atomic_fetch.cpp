@@ -74,14 +74,6 @@ TEST_CASE_TYPE create_test_case(const TestConfig &config,
   return test_case;
 }
 
-template <typename TEST_CASE_TYPE>
-bool should_skip(const TEST_CASE_TYPE &test_case) {
-  ca::Requirements requirements;
-  using test_host_type = typename TEST_CASE_TYPE::test_host_type;
-  requirements.atomic_add<test_host_type>();
-  return ca::should_skip_test(requirements, *test_case.runtime);
-}
-
 template <typename T, typename U> Input<T, U> generate_input(const int size) {
   Input<T, U> input;
   input.value = ca::generate_vector<T>(size, 0);
@@ -108,28 +100,8 @@ std::string explicit_function_build_option(const Operation operation) {
   return implicit_function_build_option(operation) + "_explicit";
 }
 
-template <typename T> std::string atomic_type_build_option() {
-  return std::string(" -D ATOMIC_TYPE=") + T::device_atomic_type;
-}
-
-template <typename T> std::string data_type_build_option() {
-  return std::string(" -D DATA_TYPE=") + T::device_type;
-}
-
 template <typename T> std::string operand_type_build_option() {
   return std::string(" -D OPERAND_TYPE=") + T::device_type;
-}
-
-std::string memory_order_build_option(const MemoryOrder memory_order) {
-  return std::string(" -D MEMORY_ORDER=") + to_string(memory_order);
-}
-
-std::string memory_scope_build_option(const MemoryScope memory_scope) {
-  return std::string(" -D MEMORY_SCOPE=") + to_string(memory_scope);
-}
-
-std::string work_group_size_build_option(const int size) {
-  return std::string(" -D WORK_GROUP_SIZE=") + std::to_string(size);
 }
 
 template <typename T> std::string extra_extension_build_option() { return ""; }
@@ -158,15 +130,6 @@ get_build_options(const int local_work_size, const FunctionType function_type,
   }
 
   return build_options;
-}
-
-ca::Kernel create_kernel(const std::string &path,
-                         const std::string &build_options, ca::Runtime *runtime,
-                         const std::string &program_type) {
-  const std::string source = ca::load_text_file(ca::get_asset(path));
-  const std::string kernel_name = "test_kernel";
-  return runtime->create_kernel(kernel_name, source, build_options,
-                                program_type);
 }
 
 template <typename T> struct Output {
