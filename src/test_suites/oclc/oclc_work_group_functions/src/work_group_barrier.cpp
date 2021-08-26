@@ -42,8 +42,10 @@ std::vector<int> run_kernel(const ca::Kernel &kernel,
   std::vector<ca::Buffer> buffers;
 
   ca::Buffer input_buffer = runtime->create_buffer(sizeof(int) * input.size());
+  ca::Buffer temp_buffer = runtime->create_buffer(sizeof(int) * input.size());
   runtime->write_buffer_from_vector(input_buffer, input);
   buffers.push_back(input_buffer);
+  buffers.push_back(temp_buffer);
 
   ca::Buffer output_buffer =
       runtime->create_buffer(sizeof(int) * global_work_size);
@@ -68,25 +70,42 @@ std::vector<int> get_reference(const std::vector<int> &input,
                                const int global_work_size,
                                const int local_work_size) {
   std::vector<int> output(input.size());
+  std::vector<int> temp(input.size());
   const int work_group_count = global_work_size / local_work_size;
   for (int work_group = 0; work_group < work_group_count; ++work_group) {
-    int value = 1;
     for (int work_item = 0; work_item < local_work_size; ++work_item) {
       const int id = work_group * local_work_size + work_item;
-      output[id] = input[id];
+      output[id] = 0;
+      temp[id] = input[id];
     }
   }
+
   for (int i = 0; i < 10; ++i) {
-    std::vector<int> tmp(output.begin(), output.end());
-    for (int work_item = 0; work_item < global_work_size; ++work_item) {
-      const int id = work_item;
-      if (id + 1 < global_work_size) {
-        tmp[id] += output[id + 1];
-      } else {
-        tmp[id] += output[0];
+    for (int work_group = 0; work_group < work_group_count; ++work_group) {
+      for (int work_item = 0; work_item < local_work_size; ++work_item) {
+        const int id = work_group * local_work_size + work_item;
+        if (work_item + 1 < local_work_size) {
+          output[id] += temp[id + 1];
+        } else {
+          output[id] += temp[work_group * local_work_size];
+        }
       }
     }
-    output.swap(tmp);
+    for (int work_group = 0; work_group < work_group_count; ++work_group) {
+      for (int work_item = 0; work_item < local_work_size; ++work_item) {
+        const int id = work_group * local_work_size + work_item;
+        if (work_item + 1 < local_work_size) {
+          temp[id] += output[id + 1];
+        } else {
+          temp[id] += output[work_group * local_work_size];
+        }
+      }
+    }
+  }
+
+  for (int work_item = 0; work_item < global_work_size; ++work_item) {
+    const int id = work_item;
+    output[id] = temp[id];
   }
   return output;
 }
