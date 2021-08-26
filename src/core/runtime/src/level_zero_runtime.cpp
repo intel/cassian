@@ -141,13 +141,48 @@ Image LevelZeroRuntime::create_image(const ImageDimensions dim,
   return {id, dim};
 }
 
-Sampler LevelZeroRuntime::create_sampler() {
+Sampler LevelZeroRuntime::create_sampler(SamplerCoordinates coordinates,
+                                         SamplerAddressingMode address_mode,
+                                         SamplerFilterMode filter_mode) {
   ze_sampler_desc_t sampler_description = {};
   sampler_description.stype = ZE_STRUCTURE_TYPE_SAMPLER_DESC;
   sampler_description.pNext = nullptr;
-  sampler_description.addressMode = ZE_SAMPLER_ADDRESS_MODE_CLAMP;
-  sampler_description.filterMode = ZE_SAMPLER_FILTER_MODE_NEAREST;
-  sampler_description.isNormalized = 0U;
+
+  switch (coordinates) {
+  case SamplerCoordinates::unnormalized:
+    sampler_description.isNormalized = 0U;
+    break;
+  case SamplerCoordinates::normalized:
+    sampler_description.isNormalized = 1U;
+    break;
+  }
+
+  switch (address_mode) {
+  case SamplerAddressingMode::none:
+    sampler_description.addressMode = ZE_SAMPLER_ADDRESS_MODE_NONE;
+    break;
+  case SamplerAddressingMode::clamp_to_edge:
+    sampler_description.addressMode = ZE_SAMPLER_ADDRESS_MODE_CLAMP;
+    break;
+  case SamplerAddressingMode::clamp:
+    sampler_description.addressMode = ZE_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    break;
+  case SamplerAddressingMode::repeat:
+    sampler_description.addressMode = ZE_SAMPLER_ADDRESS_MODE_REPEAT;
+    break;
+  case SamplerAddressingMode::mirror:
+    sampler_description.addressMode = ZE_SAMPLER_ADDRESS_MODE_MIRROR;
+    break;
+  }
+
+  switch (filter_mode) {
+  case SamplerFilterMode::nearest:
+    sampler_description.filterMode = ZE_SAMPLER_FILTER_MODE_NEAREST;
+    break;
+  case SamplerFilterMode::linear:
+    sampler_description.filterMode = ZE_SAMPLER_FILTER_MODE_LINEAR;
+    break;
+  }
 
   ze_sampler_handle_t sampler = nullptr;
   ze_result_t result = wrapper_.zeSamplerCreate(context_, device_,

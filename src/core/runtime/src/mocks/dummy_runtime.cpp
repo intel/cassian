@@ -28,7 +28,11 @@ Image DummyRuntime::create_image(const ImageDimensions /*dim*/,
   return Image();
 }
 
-Sampler DummyRuntime::create_sampler() { return Sampler(); }
+Sampler DummyRuntime::create_sampler(SamplerCoordinates /*coordinates*/,
+                                     SamplerAddressingMode /*address_mode*/,
+                                     SamplerFilterMode /*filter_mode*/) {
+  return Sampler();
+}
 
 void DummyRuntime::read_buffer(const Buffer & /*buffer*/, void * /*data*/) {}
 

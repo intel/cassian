@@ -10,12 +10,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cassian/fp_types/half.hpp>
-#include <cassian/runtime/access_qualifier.hpp>
-#include <cassian/runtime/device_properties.hpp>
-#include <cassian/runtime/feature.hpp>
-#include <cassian/runtime/image_properties.hpp>
-#include <cassian/runtime/program_descriptor.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -24,6 +18,14 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include <cassian/fp_types/half.hpp>
+#include <cassian/runtime/access_qualifier.hpp>
+#include <cassian/runtime/device_properties.hpp>
+#include <cassian/runtime/feature.hpp>
+#include <cassian/runtime/image_properties.hpp>
+#include <cassian/runtime/program_descriptor.hpp>
+#include <cassian/runtime/sampler_properties.hpp>
 
 /**
  * Cassian namespace.
@@ -352,11 +354,17 @@ public:
   /**
    * Create sampler.
    *
+   * @param[in] coordinates SamplerCoordinates enum value
+   * @param[in] address_mode SamplerAddressingMode enum value
+   * @param[in] filter_mode SamplerFilterMode enum value
    * @returns Sampler object.
    * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
    * error.
    */
-  virtual Sampler create_sampler() = 0;
+  virtual Sampler create_sampler(
+      SamplerCoordinates coordinates = SamplerCoordinates::unnormalized,
+      SamplerAddressingMode address_mode = SamplerAddressingMode::clamp_to_edge,
+      SamplerFilterMode filter_mode = SamplerFilterMode::nearest) = 0;
 
   /**
    * Read data from buffer.

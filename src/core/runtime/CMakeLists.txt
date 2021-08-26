@@ -20,7 +20,8 @@ list(
   "include/cassian/runtime/openclc_utils.hpp"
   "include/cassian/runtime/openclc_type_tuples.hpp"
   "include/cassian/runtime/openclc_types.hpp"
-  "include/cassian/runtime/program_descriptor.hpp")
+  "include/cassian/runtime/program_descriptor.hpp"
+  "include/cassian/runtime/sampler_properties.hpp")
 
 list(APPEND PRIVATE_HEADERS)
 list(

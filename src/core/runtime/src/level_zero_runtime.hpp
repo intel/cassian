@@ -33,7 +33,9 @@ public:
   Image create_image(const ImageDimensions dim, const ImageType type,
                      const ImageFormat format, const ImageChannelOrder order,
                      AccessQualifier access) override;
-  Sampler create_sampler() override;
+  Sampler create_sampler(SamplerCoordinates coordinates,
+                         SamplerAddressingMode address_mode,
+                         SamplerFilterMode filter_mode) override;
   void read_buffer(const Buffer &buffer, void *data) override;
   void read_image(const Image &image, void *data) override;
   void write_buffer(const Buffer &buffer, const void *data) override;

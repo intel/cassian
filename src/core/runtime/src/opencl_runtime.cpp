@@ -134,13 +134,58 @@ Image OpenCLRuntime::create_image(const ImageDimensions dim,
   return {id, dim};
 }
 
-Sampler OpenCLRuntime::create_sampler() {
+Sampler OpenCLRuntime::create_sampler(SamplerCoordinates coordinates,
+                                      SamplerAddressingMode address_mode,
+                                      SamplerFilterMode filter_mode) {
   cl_int result = CL_SUCCESS;
-  cl_sampler sampler = wrapper_.clCreateSampler(
-      context_, CL_FALSE, CL_ADDRESS_CLAMP_TO_EDGE, CL_FILTER_NEAREST, &result);
+
+  cl_bool coord;
+  cl_addressing_mode addr;
+  cl_filter_mode filter;
+
+  switch (coordinates) {
+  case SamplerCoordinates::unnormalized:
+    coord = CL_FALSE;
+    break;
+  case SamplerCoordinates::normalized:
+    coord = CL_TRUE;
+    break;
+  }
+
+  switch (address_mode) {
+  case SamplerAddressingMode::none:
+    addr = CL_ADDRESS_NONE;
+    break;
+  case SamplerAddressingMode::clamp_to_edge:
+    addr = CL_ADDRESS_CLAMP_TO_EDGE;
+    break;
+  case SamplerAddressingMode::clamp:
+    addr = CL_ADDRESS_CLAMP;
+    break;
+  case SamplerAddressingMode::repeat:
+    addr = CL_ADDRESS_REPEAT;
+    break;
+  case SamplerAddressingMode::mirror:
+    addr = CL_ADDRESS_MIRRORED_REPEAT;
+    break;
+  }
+
+  switch (filter_mode) {
+  case SamplerFilterMode::nearest:
+    filter = CL_FILTER_NEAREST;
+    break;
+  case SamplerFilterMode::linear:
+    filter = CL_FILTER_LINEAR;
+    break;
+  }
+
+  cl_sampler sampler =
+      wrapper_.clCreateSampler(context_, coord, addr, filter, &result);
+
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL sampler");
   }
+
   auto id = reinterpret_cast<std::uintptr_t>(sampler);
   samplers_[id] = sampler;
   return {id};
