@@ -15,5 +15,6 @@ add_subdirectory(utility)
 add_subdirectory(system)
 add_subdirectory(test_harness)
 add_subdirectory(catch2_utils)
+add_subdirectory(reference)
 
 add_subdirectory(main)
