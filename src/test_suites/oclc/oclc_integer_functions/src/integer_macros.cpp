@@ -50,10 +50,10 @@ const std::unordered_map<IntegerMacros, uint32_t> reference_unsigned_int_map = {
     {IntegerMacros::uint_max, UINT_MAX}};
 
 const std::unordered_map<IntegerMacros, int64_t> reference_long_map = {
-    {IntegerMacros::long_max, LONG_MAX}, {IntegerMacros::long_min, LONG_MIN}};
+    {IntegerMacros::long_max, LLONG_MAX}, {IntegerMacros::long_min, LLONG_MIN}};
 
 const std::unordered_map<IntegerMacros, uint64_t> reference_unsigned_long_map =
-    {{IntegerMacros::ulong_max, ULONG_MAX}};
+    {{IntegerMacros::ulong_max, ULLONG_MAX}};
 
 template <typename T> auto get_reference_map() {
   if constexpr (std::is_same<int8_t, T>::value) {
