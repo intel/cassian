@@ -139,9 +139,9 @@ Sampler OpenCLRuntime::create_sampler(SamplerCoordinates coordinates,
                                       SamplerFilterMode filter_mode) {
   cl_int result = CL_SUCCESS;
 
-  cl_bool coord;
-  cl_addressing_mode addr;
-  cl_filter_mode filter;
+  cl_bool coord = CL_TRUE;
+  cl_addressing_mode addr = CL_ADDRESS_CLAMP;
+  cl_filter_mode filter = CL_FILTER_NEAREST;
 
   switch (coordinates) {
   case SamplerCoordinates::unnormalized:
