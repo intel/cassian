@@ -24,25 +24,6 @@
 #include <cassian/utility/utility.hpp>
 
 namespace cassian {
-template <typename A> class FinalAction {
-public:
-  explicit FinalAction(A a) : act{a} {}
-
-  FinalAction(const FinalAction &) = delete;
-  FinalAction(FinalAction &&) = delete;
-  FinalAction &operator=(const FinalAction &) = delete;
-  FinalAction &operator=(FinalAction &&) = delete;
-
-  ~FinalAction() { act(); }
-
-private:
-  A act;
-};
-
-template <typename A> FinalAction<A> finally(A act) {
-  return FinalAction<A>{act};
-}
-
 #if defined(_WIN32)
 #define SIGNATURE __cdecl
 constexpr char ocloc[] = "ocloc64.dll";

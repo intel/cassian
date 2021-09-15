@@ -340,5 +340,40 @@ template <typename T> std::string to_string(const T &value) {
   }
 }
 
+/**
+ * FinalActions class calling user-defined action in dtor
+ *
+ * @tparam A the type for callable object
+ */
+template <typename A> class FinalAction {
+public:
+  /**
+   * Constructor from a callable object
+   *
+   * @param[in] a callable object
+   */
+  explicit FinalAction(A a) : act{a} {}
+
+  FinalAction(const FinalAction &) = delete;
+  FinalAction(FinalAction &&) = delete;
+  FinalAction &operator=(const FinalAction &) = delete;
+  FinalAction &operator=(FinalAction &&) = delete;
+
+  ~FinalAction() { act(); }
+
+private:
+  A act;
+};
+
+/**
+ * Creates FinalAction object instance
+ *
+ * @tparam A type for callable object
+ * @param[in] act callable object
+ */
+template <typename A> FinalAction<A> finally(A act) {
+  return FinalAction<A>{act};
+}
+
 } // namespace cassian
 #endif
