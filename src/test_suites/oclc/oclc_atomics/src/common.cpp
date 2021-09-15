@@ -131,6 +131,7 @@ bool to_bool(ComparisonResult comparison_result) {
   case ComparisonResult::failure:
     return false;
   }
+  return false;
 }
 
 int get_local_work_size(const int global_work_size,
