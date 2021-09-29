@@ -20,7 +20,7 @@ target_include_directories(
 target_link_libraries(
   main
   PUBLIC Catch2::Catch2 cassian::fp_types cassian::runtime
-  PRIVATE cassian::cli cassian::utility)
+  PRIVATE cassian::cli cassian::test_harness cassian::utility)
 
 set_target_properties(main PROPERTIES FOLDER core)
 set_target_properties(main PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")

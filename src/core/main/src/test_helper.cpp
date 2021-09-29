@@ -6,6 +6,7 @@
  */
 
 #include <cassian/main/test_helper.hpp>
+#include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
 
 namespace cassian::test {
@@ -137,6 +138,11 @@ void kernel(std::array<size_t, 3> global_work_size,
 
   h.kernel(name, source, flags, spirv_flags);
   h.execute(global_work_size, local_work_size);
+}
+
+bool should_skip_test(const Requirements &requirements) {
+  auto &h = detail::Helper::instance();
+  return cassian::should_skip_test(requirements, *h.config.runtime());
 }
 
 } // namespace cassian::test

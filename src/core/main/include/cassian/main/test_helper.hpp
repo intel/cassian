@@ -23,6 +23,9 @@
  * Cassian namespace.
  */
 namespace cassian {
+
+class Requirements;
+
 namespace test {
 namespace detail {
 class Helper {
@@ -153,6 +156,8 @@ void input_output(std::vector<T, Allocator> &data) {
   h.add_action_after_exec(
       [rt, &data, buffer]() { data = rt->read_buffer_to_vector<T>(buffer); });
 }
+
+bool should_skip_test(const Requirements &requirements);
 
 } // namespace test
 } // namespace cassian
