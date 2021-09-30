@@ -9,6 +9,7 @@
 #define CASSIAN_MAIN_TEST_HELPER_HPP
 
 #include <cassert>
+#include <functional>
 #include <optional>
 #include <string>
 #include <variant>
