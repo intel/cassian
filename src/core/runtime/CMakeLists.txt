@@ -4,6 +4,10 @@
 # SPDX-License-Identifier: MIT
 #
 
+if(NOT DEFINED CASSIAN_RUNTIME_FACTORY_EXTRA)
+  set(CASSIAN_RUNTIME_FACTORY_EXTRA "src/factory_extra.cpp")
+endif()
+
 list(
   APPEND
   PUBLIC_HEADERS
@@ -33,7 +37,8 @@ list(
   "src/mocks/dummy_runtime.cpp"
   "src/mocks/stub_runtime.cpp"
   "src/image_properties.cpp"
-  "src/openclc_utils.cpp")
+  "src/openclc_utils.cpp"
+  ${CASSIAN_RUNTIME_FACTORY_EXTRA})
 
 add_library(runtime ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 add_library(cassian::runtime ALIAS runtime)

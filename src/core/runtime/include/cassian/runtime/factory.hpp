@@ -30,6 +30,15 @@ namespace cassian {
 std::unique_ptr<Runtime> create_runtime(const std::string &name);
 
 /**
+ * Override runtime creation.
+ *
+ * @param[in] name runtime name.
+ * @returns pointer to an object implementing cassian::Runtime interface
+ * or nullptr if `name` should be handled by `create_runtime`.
+ */
+std::unique_ptr<Runtime> create_runtime_extra(const std::string &name);
+
+/**
  * Register runtime specific command line arguments.
  *
  * @param[in] parser parser to update.

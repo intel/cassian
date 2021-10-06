@@ -21,6 +21,11 @@
 
 namespace cassian {
 std::unique_ptr<Runtime> create_runtime(const std::string &name) {
+  auto runtime_extra = create_runtime_extra(name);
+  if (runtime_extra != nullptr) {
+    return runtime_extra;
+  }
+
 #ifdef BUILD_OCL
   if (name == "ocl") {
     return std::make_unique<OpenCLRuntime>();
