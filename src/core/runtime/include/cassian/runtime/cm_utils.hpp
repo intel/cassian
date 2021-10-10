@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef CASSIAN_RUNTIME_OPENCLC_UTILS_HPP
-#define CASSIAN_RUNTIME_OPENCLC_UTILS_HPP
+#ifndef CASSIAN_RUNTIME_CM_UTILS_HPP
+#define CASSIAN_RUNTIME_CM_UTILS_HPP
 
 #include <string>
 
@@ -17,7 +17,7 @@
  */
 namespace cassian {
 /**
- * Checks if OpenCL C 3.0 optional feature is supported
+ * Checks if CM optional feature is supported
  *
  * @param[in] runtime
  * @param[in] program_type
@@ -25,9 +25,9 @@ namespace cassian {
  * @throws cassian::RuntimeException Thrown if layout is unsupported for the
  * number of components
  */
-bool check_optional_openclc_feature_support(Runtime *runtime,
-                                            const std::string &program_type,
-                                            const std::string &feature_macro);
+bool check_optional_cm_feature_support(Runtime *runtime,
+                                       const std::string &program_type,
+                                       const std::string &feature_macro);
 } // namespace cassian
 
 #endif

@@ -24,6 +24,7 @@ list(
   "include/cassian/runtime/openclc_utils.hpp"
   "include/cassian/runtime/openclc_type_tuples.hpp"
   "include/cassian/runtime/openclc_types.hpp"
+  "include/cassian/runtime/cm_utils.hpp"
   "include/cassian/runtime/program_descriptor.hpp"
   "include/cassian/runtime/sampler_properties.hpp")
 
@@ -37,7 +38,7 @@ list(
   "src/mocks/dummy_runtime.cpp"
   "src/mocks/stub_runtime.cpp"
   "src/image_properties.cpp"
-  "src/openclc_utils.cpp"
+  "src/language_utils.cpp"
   ${CASSIAN_RUNTIME_FACTORY_EXTRA})
 
 add_library(runtime ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})

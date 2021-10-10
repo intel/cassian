@@ -38,5 +38,12 @@ std::vector<uint8_t>
 generate_spirv_from_source(uint32_t device_id, const std::string &source,
                            const std::string &build_options = std::string());
 
+/**
+ * Exception class used when an offline compiler encounters a fatal error.
+ */
+class OfflineCompilerException : public std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
 } // namespace cassian
 #endif

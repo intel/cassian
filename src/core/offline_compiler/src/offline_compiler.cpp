@@ -92,7 +92,7 @@ generate_spirv_from_source(uint32_t device_id, const std::string &source,
   std::string device;
 
   if (device_id == 0) {
-    // Unknown device ID, assume SKL
+    logging::info() << "Unknown device ID, assume SKL\n";
     device = "skl";
   } else {
     std::ostringstream out;
@@ -144,7 +144,7 @@ generate_spirv_from_source(uint32_t device_id, const std::string &source,
                          len_outputs[log_index]);
 
     logging::error() << "Build log:\n" << log << '\n';
-    throw std::runtime_error("Offline compiler failed");
+    throw OfflineCompilerException("Offline compiler failed");
   }
 
   auto *spvp =

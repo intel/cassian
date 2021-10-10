@@ -159,12 +159,12 @@ bool is_function_type_supported(cassian::Runtime *runtime,
                                 FunctionType function_type) {
   switch (function_type) {
   case FunctionType::implicit:
-    return cassian::check_optional_feature_support(
+    return cassian::check_optional_openclc_feature_support(
                runtime, program_type, "__opencl_c_atomic_order_seq_cst") &&
-           cassian::check_optional_feature_support(
+           cassian::check_optional_openclc_feature_support(
                runtime, program_type, "__opencl_c_atomic_scope_device");
   case FunctionType::explicit_memory_order:
-    return cassian::check_optional_feature_support(
+    return cassian::check_optional_openclc_feature_support(
         runtime, program_type, "__opencl_c_atomic_scope_device");
   default:
     return true;
@@ -178,10 +178,10 @@ bool is_memory_order_supported(cassian::Runtime *runtime,
   case MemoryOrder::acquire:
   case MemoryOrder::release:
   case MemoryOrder::acq_rel:
-    return cassian::check_optional_feature_support(
+    return cassian::check_optional_openclc_feature_support(
         runtime, program_type, "__opencl_c_atomic_order_acq_rel");
   case MemoryOrder::seq_cst:
-    return cassian::check_optional_feature_support(
+    return cassian::check_optional_openclc_feature_support(
         runtime, program_type, "__opencl_c_atomic_order_seq_cst");
   default:
     return true;
@@ -193,10 +193,10 @@ bool is_memory_scope_supported(cassian::Runtime *runtime,
                                MemoryScope memory_scope) {
   switch (memory_scope) {
   case MemoryScope::device:
-    return cassian::check_optional_feature_support(
+    return cassian::check_optional_openclc_feature_support(
         runtime, program_type, "__opencl_c_atomic_scope_device");
   case MemoryScope::all_svm_devices:
-    return cassian::check_optional_feature_support(
+    return cassian::check_optional_openclc_feature_support(
         runtime, program_type, "__opencl_c_atomic_scope_all_devices");
   default:
     return true;
