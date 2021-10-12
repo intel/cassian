@@ -16,6 +16,7 @@
 #include <vector>
 
 #include <cassian/fp_types/type_traits.hpp>
+#include <cassian/image/image.hpp>
 
 #include "config.hpp"
 
@@ -30,10 +31,11 @@ namespace test {
 namespace detail {
 class Helper {
 public:
-  using Argument = std::variant<bool, char, signed char, unsigned char, short,
-                                unsigned short, int, unsigned int, long,
-                                unsigned long, long long, unsigned long long,
-                                float, double, cassian::Buffer>;
+  using Argument =
+      std::variant<bool, char, signed char, unsigned char, short,
+                   unsigned short, int, unsigned int, long, unsigned long,
+                   long long, unsigned long long, float, double,
+                   cassian::Buffer, cassian::Image, cassian::Sampler>;
 
   using Action = std::function<void(void)>;
 
@@ -61,6 +63,12 @@ public:
   void add_action_after_exec(const Action &action);
 
   cassian::Buffer create_buffer(size_t size);
+  cassian::Image create_image(const ImageDimensions dim, const ImageType type,
+                              const ImageFormat format,
+                              const ImageChannelOrder order);
+  cassian::Sampler create_sampler(SamplerCoordinates coordinates,
+                                  SamplerAddressingMode address_mode,
+                                  SamplerFilterMode filter_mode);
 
   const Config &config;
 
@@ -71,6 +79,8 @@ private:
   std::vector<Argument> arguments_;
 
   std::vector<cassian::Buffer> buffers_;
+  std::vector<cassian::Image> images_;
+  std::vector<cassian::Sampler> samplers_;
 
   std::vector<Action> after_kernel_exec_;
 };
@@ -157,8 +167,23 @@ void input_output(std::vector<T, Allocator> &data) {
       [rt, &data, buffer]() { data = rt->read_buffer_to_vector<T>(buffer); });
 }
 
-bool should_skip_test(const Requirements &requirements);
+template <typename Pixel, ImageType Type>
+void input(const HostImage<Pixel, Type> &data) {
+  auto &h = detail::Helper::instance();
+  auto *rt = h.config.runtime();
 
+  auto image = h.create_image(data.dimensions(), Type, Pixel::image_format,
+                              Pixel::channel_order);
+  rt->write_image(image, data.data());
+  h.pass(image);
+}
+
+void sampler(
+    SamplerCoordinates coordinates = SamplerCoordinates::unnormalized,
+    SamplerAddressingMode address_mode = SamplerAddressingMode::clamp_to_edge,
+    SamplerFilterMode filter_mode = SamplerFilterMode::nearest);
+
+bool should_skip_test(const Requirements &requirements);
 } // namespace test
 } // namespace cassian
 

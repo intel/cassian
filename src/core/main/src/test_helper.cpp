@@ -62,11 +62,21 @@ void Helper::cleanup() {
     rt->release_buffer(buf);
   }
 
+  for (auto img : images_) {
+    rt->release_image(img);
+  }
+
+  for (auto sampler : samplers_) {
+    rt->release_sampler(sampler);
+  }
+
   rt->release_kernel(kernel_);
 
   after_kernel_exec_.clear();
   arguments_.clear();
   buffers_.clear();
+  images_.clear();
+  samplers_.clear();
 }
 
 cassian::Buffer Helper::create_buffer(size_t size) {
@@ -76,6 +86,29 @@ cassian::Buffer Helper::create_buffer(size_t size) {
   buffers_.push_back(buf);
 
   return buf;
+}
+
+cassian::Image Helper::create_image(const ImageDimensions dim,
+                                    const ImageType type,
+                                    const ImageFormat format,
+                                    const ImageChannelOrder order) {
+  auto *rt = config.runtime();
+
+  auto img = rt->create_image(dim, type, format, order);
+  images_.push_back(img);
+
+  return img;
+}
+
+cassian::Sampler Helper::create_sampler(SamplerCoordinates coordinates,
+                                        SamplerAddressingMode address_mode,
+                                        SamplerFilterMode filter_mode) {
+  auto *rt = config.runtime();
+
+  auto sampler = rt->create_sampler(coordinates, address_mode, filter_mode);
+  samplers_.push_back(sampler);
+
+  return sampler;
 }
 
 } // namespace detail
@@ -140,9 +173,14 @@ void kernel(std::array<size_t, 3> global_work_size,
   h.execute(global_work_size, local_work_size);
 }
 
+void sampler(SamplerCoordinates coordinates, SamplerAddressingMode address_mode,
+             SamplerFilterMode filter_mode) {
+  auto &h = detail::Helper::instance();
+  h.pass(h.create_sampler(coordinates, address_mode, filter_mode));
+}
+
 bool should_skip_test(const Requirements &requirements) {
   auto &h = detail::Helper::instance();
   return cassian::should_skip_test(requirements, *h.config.runtime());
 }
-
 } // namespace cassian::test
