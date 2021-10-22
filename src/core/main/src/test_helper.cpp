@@ -113,6 +113,11 @@ cassian::Sampler Helper::create_sampler(SamplerCoordinates coordinates,
 
 } // namespace detail
 
+Runtime *runtime() {
+  auto &h = detail::Helper::instance();
+  return h.config.runtime();
+}
+
 void kernel(const std::string &name, const std::string &source,
             const std::string &flags,
             const std::optional<std::string> &spirv_flags) {

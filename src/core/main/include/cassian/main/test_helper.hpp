@@ -86,6 +86,8 @@ private:
 };
 } // namespace detail
 
+Runtime *runtime();
+
 void kernel(const std::string &name, const std::string &source,
             const std::string &flags,
             const std::optional<std::string> &spirv_flags = std::nullopt);
