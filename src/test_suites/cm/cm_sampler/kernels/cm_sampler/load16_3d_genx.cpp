@@ -7,6 +7,8 @@
 
 #include <cm/cm.h>
 
+using data_t = READ_TYPE;
+
 extern "C" _GENX_MAIN_ void kernel(SurfaceIndex out [[type("buffer_t")]],
                                    SurfaceIndex image [[type("image3d_t")]],
                                    SurfaceIndex ubuf [[type("buffer_t")]],
@@ -15,7 +17,7 @@ extern "C" _GENX_MAIN_ void kernel(SurfaceIndex out [[type("buffer_t")]],
   constexpr int channels = CHANNELS;
   constexpr auto channel_mask = CHANNEL_MASK;
 
-  matrix<float, channels, 16> result = 0;
+  matrix<data_t, channels, 16> result = 0;
 
   vector<unsigned, 16> u = 0;
   vector<unsigned, 16> v = 0;
@@ -29,6 +31,6 @@ extern "C" _GENX_MAIN_ void kernel(SurfaceIndex out [[type("buffer_t")]],
 
 #pragma unroll
   for (int i = 0; i < channels; i++) {
-    write(out, i * 16 * sizeof(float), result.row(i));
+    write(out, i * 16 * sizeof(data_t), result.row(i));
   }
 }

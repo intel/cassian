@@ -6,16 +6,26 @@
 
 list(APPEND PUBLIC_HEADERS)
 list(APPEND PRIVATE_HEADERS src/common.hpp)
-list(APPEND SOURCES src/common.cpp src/load16.cpp src/sample16.cpp
-     src/sample32.cpp)
+list(
+  APPEND
+  SOURCES
+  src/common.cpp
+  src/cm_3d_load.cpp
+  src/cm_3d_sample.cpp
+  src/load16.cpp
+  src/sample16.cpp
+  src/sample32.cpp)
 list(
   APPEND
   KERNELS
+  "kernels/cm_sampler/cm_3d_load_genx.cpp"
+  "kernels/cm_sampler/cm_3d_sample_genx.cpp"
   "kernels/cm_sampler/load16_1d_genx.cpp"
   "kernels/cm_sampler/load16_2d_genx.cpp"
   "kernels/cm_sampler/load16_3d_genx.cpp"
   "kernels/cm_sampler/sample16_1d_genx.cpp"
   "kernels/cm_sampler/sample16_2d_genx.cpp"
+  "kernels/cm_sampler/sample16_2d_nullmask_genx.cpp"
   "kernels/cm_sampler/sample16_3d_genx.cpp"
   "kernels/cm_sampler/sample32_2d_genx.cpp")
 

@@ -21,7 +21,9 @@ using ca::test::FlagsBuilder;
 using ca::test::Language;
 
 TEMPLATE_TEST_CASE("cm_load16_1d", "[cm][image][sampler]", rgba_float,
-                   rgba_unorm16, rgba_snorm16, rgba_unorm8, rgba_snorm8) {
+                   rgba_unorm16, rgba_snorm16, rgba_unorm8, rgba_snorm8,
+                   rgba_sint8, rgba_sint16, rgba_sint32, rgba_uint8,
+                   rgba_uint16, rgba_uint32) {
   constexpr auto simd = 16;
   constexpr auto width = 16;
 
@@ -68,18 +70,23 @@ TEMPLATE_TEST_CASE("cm_load16_1d", "[cm][image][sampler]", rgba_float,
     ca::test::input(image);
     ca::test::input(u);
 
-    ca::test::kernel("kernel", source,
-                     FlagsBuilder(Language::cm)
-                         .define("CHANNELS", std::to_string(channels))
-                         .define("CHANNEL_MASK", to_cm_string(mask))
-                         .str());
+    ca::test::kernel(
+        "kernel", source,
+        FlagsBuilder(Language::cm)
+            .define("CHANNELS", std::to_string(channels))
+            .define("CHANNEL_MASK", to_cm_string(mask))
+            .define("READ_TYPE",
+                    ca::to_cm_string<typename TestType::read_type>())
+            .str());
 
     REQUIRE_THAT(ref, Catch::Equals(res));
   }
 }
 
 TEMPLATE_TEST_CASE("cm_load16_2d", "[cm][image][sampler]", rgba_float,
-                   rgba_unorm16, rgba_snorm16, rgba_unorm8, rgba_snorm8) {
+                   rgba_unorm16, rgba_snorm16, rgba_unorm8, rgba_snorm8,
+                   rgba_sint8, rgba_sint16, rgba_sint32, rgba_uint8,
+                   rgba_uint16, rgba_uint32) {
   constexpr auto simd = 16;
   constexpr auto width = 16;
   constexpr auto height = 16;
@@ -129,18 +136,23 @@ TEMPLATE_TEST_CASE("cm_load16_2d", "[cm][image][sampler]", rgba_float,
     ca::test::input(u);
     ca::test::input(v);
 
-    ca::test::kernel("kernel", source,
-                     FlagsBuilder(Language::cm)
-                         .define("CHANNELS", std::to_string(channels))
-                         .define("CHANNEL_MASK", to_cm_string(mask))
-                         .str());
+    ca::test::kernel(
+        "kernel", source,
+        FlagsBuilder(Language::cm)
+            .define("CHANNELS", std::to_string(channels))
+            .define("CHANNEL_MASK", to_cm_string(mask))
+            .define("READ_TYPE",
+                    ca::to_cm_string<typename TestType::read_type>())
+            .str());
 
     REQUIRE_THAT(ref, Catch::Equals(res));
   }
 }
 
 TEMPLATE_TEST_CASE("cm_load16_3d", "[cm][image][sampler]", rgba_float,
-                   rgba_unorm16, rgba_snorm16, rgba_unorm8, rgba_snorm8) {
+                   rgba_unorm16, rgba_snorm16, rgba_unorm8, rgba_snorm8,
+                   rgba_sint8, rgba_sint16, rgba_sint32, rgba_uint8,
+                   rgba_uint16, rgba_uint32) {
   constexpr auto simd = 16;
   constexpr auto width = 16;
   constexpr auto height = 16;
@@ -196,11 +208,14 @@ TEMPLATE_TEST_CASE("cm_load16_3d", "[cm][image][sampler]", rgba_float,
     ca::test::input(v);
     ca::test::input(z);
 
-    ca::test::kernel("kernel", source,
-                     FlagsBuilder(Language::cm)
-                         .define("CHANNELS", std::to_string(channels))
-                         .define("CHANNEL_MASK", to_cm_string(mask))
-                         .str());
+    ca::test::kernel(
+        "kernel", source,
+        FlagsBuilder(Language::cm)
+            .define("CHANNELS", std::to_string(channels))
+            .define("CHANNEL_MASK", to_cm_string(mask))
+            .define("READ_TYPE",
+                    ca::to_cm_string<typename TestType::read_type>())
+            .str());
 
     REQUIRE_THAT(ref, Catch::Equals(res));
   }
