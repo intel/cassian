@@ -149,7 +149,7 @@ struct TestCase {
     std::vector<std::string> build_opts = {
         "-cmc",
         "-DSIMD=" + to_cm_string(simd),
-        "-DOP=" + op,
+        "-DTEST_OP=" + op,
         "-DDST_TYPE=\"" + cassian::to_cm_string<Dst>() + "\"",
         "-DDST_" + to_compiler_flag(dst_operand),
     };

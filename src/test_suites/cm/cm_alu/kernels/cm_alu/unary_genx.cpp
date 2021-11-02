@@ -29,6 +29,6 @@ extern "C" _GENX_MAIN_ void test(
   constexpr src0_t src0 = SRC0_VALUE;
 #endif
 
-  vector<dst_t, simd> dst = OP src0;
+  vector<dst_t, simd> dst = TEST_OP src0;
   write(dst_buf, index * sizeof(dst_t), dst);
 }
