@@ -454,14 +454,6 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     }
   }
 
-  cl_uint read_write_image = 0;
-  result = wrapper_.clGetDeviceInfo(
-      device_, CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS, sizeof(read_write_image),
-      &read_write_image, nullptr);
-  if (result != CL_SUCCESS) {
-    throw RuntimeException("Failed to get OpenCL device info");
-  }
-
   std::istringstream iss(extension_string);
   const std::vector<std::string> extensions = {
       std::istream_iterator<std::string>(iss),
@@ -474,8 +466,16 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::fp64:
     return std::find(extensions.begin(), extensions.end(), "cl_khr_fp64") !=
            extensions.end();
-  case Feature::read_write_images:
+  case Feature::read_write_images: {
+    cl_uint read_write_image = 0;
+    result = wrapper_.clGetDeviceInfo(
+        device_, CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS, sizeof(read_write_image),
+        &read_write_image, nullptr);
+    if (result != CL_SUCCESS) {
+        throw RuntimeException("Failed to get OpenCL device info");
+    }
     return read_write_image != 0;
+  }
   case Feature::image:
   case Feature::image2d:
     return get_device_property(DeviceProperty::image) !=
