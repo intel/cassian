@@ -17,6 +17,7 @@
 
 #include <cassian/fp_types/type_traits.hpp>
 #include <cassian/image/image.hpp>
+#include <cassian/image/pixel/common.hpp>
 
 #include "config.hpp"
 
@@ -174,10 +175,44 @@ void input(const HostImage<Pixel, Type> &data) {
   auto &h = detail::Helper::instance();
   auto *rt = h.config.runtime();
 
-  auto image = h.create_image(data.dimensions(), Type, Pixel::image_format,
-                              Pixel::channel_order);
+  const auto fmt = pixel::PixelTraits<Pixel>::image_format;
+  const auto order = pixel::PixelTraits<Pixel>::channel_order;
+  auto image = h.create_image(data.dimensions(), Type, fmt, order);
   rt->write_image(image, data.data());
   h.pass(image);
+}
+
+template <typename Pixel, ImageType Type>
+void output(HostImage<Pixel, Type> &data) {
+  auto &h = detail::Helper::instance();
+  auto *rt = h.config.runtime();
+
+  const auto fmt = pixel::PixelTraits<Pixel>::image_format;
+  const auto order = pixel::PixelTraits<Pixel>::channel_order;
+  auto image = h.create_image(data.dimensions(), Type, fmt, order);
+  h.pass(image);
+
+  h.add_action_after_exec([rt, &data, image]() mutable {
+    Pixel *out = const_cast<Pixel *>(data.data());
+    rt->read_image(image, out);
+  });
+}
+
+template <typename Pixel, ImageType Type>
+void input_output(HostImage<Pixel, Type> &data) {
+  auto &h = detail::Helper::instance();
+  auto *rt = h.config.runtime();
+
+  const auto fmt = pixel::PixelTraits<Pixel>::image_format;
+  const auto order = pixel::PixelTraits<Pixel>::channel_order;
+  auto image = h.create_image(data.dimensions(), Type, fmt, order);
+  rt->write_image(image, data.data());
+  h.pass(image);
+
+  h.add_action_after_exec([rt, &data, image]() mutable {
+    Pixel *out = const_cast<Pixel *>(data.data());
+    rt->read_image(image, out);
+  });
 }
 
 void sampler(
