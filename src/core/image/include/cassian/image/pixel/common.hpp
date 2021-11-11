@@ -169,6 +169,14 @@ template <typename T> T generate_value(const int seed) {
 
   return value;
 }
+
+template <typename Pixel> struct PixelTraits {
+  using storage_type = typename Pixel::storage_type;
+  static constexpr auto image_format = Pixel::image_format;
+  static constexpr auto channel_order = Pixel::channel_order;
+  static constexpr int channel_number = Pixel::channel_number;
+};
+
 } // namespace pixel
 } // namespace cassian
 #endif
