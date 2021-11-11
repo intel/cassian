@@ -7,4 +7,5 @@
 add_subdirectory(cm_alu)
 add_subdirectory(cm_dp4a)
 add_subdirectory(cm_inline_assembly)
+add_subdirectory(cm_media_block_io)
 add_subdirectory(cm_sampler)
