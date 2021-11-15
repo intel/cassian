@@ -89,6 +89,28 @@ void OpenCLRuntime::initialize() {
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL command queue");
   }
+
+  std::string extension_string;
+
+  size_t size = 0;
+  result = wrapper_.clGetDeviceInfo(device_, CL_DEVICE_EXTENSIONS, 0, nullptr,
+                                    &size);
+  if (result != CL_SUCCESS) {
+    throw RuntimeException("Failed to get size of OpenCL device info");
+  }
+
+  if (size > 0) {
+    extension_string = std::string(size - 1, 0);
+    result = wrapper_.clGetDeviceInfo(device_, CL_DEVICE_EXTENSIONS, size,
+                                      &extension_string[0], nullptr);
+    if (result != CL_SUCCESS) {
+      throw RuntimeException("Failed to get OpenCL device info");
+    }
+  }
+
+  std::istringstream iss(extension_string);
+  extensions_.insert(std::istream_iterator<std::string>(iss),
+                     std::istream_iterator<std::string>());
 }
 
 Buffer OpenCLRuntime::create_buffer(const size_t size, AccessQualifier access) {
@@ -436,39 +458,14 @@ void OpenCLRuntime::release_kernel(const Kernel &kernel) {
 }
 
 bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
-  std::string extension_string;
-
-  size_t size = 0;
-  cl_int result = wrapper_.clGetDeviceInfo(device_, CL_DEVICE_EXTENSIONS, 0,
-                                           nullptr, &size);
-  if (result != CL_SUCCESS) {
-    throw RuntimeException("Failed to get size of OpenCL device info");
-  }
-
-  if (size > 0) {
-    extension_string = std::string(size - 1, 0);
-    result = wrapper_.clGetDeviceInfo(device_, CL_DEVICE_EXTENSIONS, size,
-                                      &extension_string[0], nullptr);
-    if (result != CL_SUCCESS) {
-      throw RuntimeException("Failed to get OpenCL device info");
-    }
-  }
-
-  std::istringstream iss(extension_string);
-  const std::vector<std::string> extensions = {
-      std::istream_iterator<std::string>(iss),
-      std::istream_iterator<std::string>()};
-
   switch (feature) {
   case Feature::fp16:
-    return std::find(extensions.begin(), extensions.end(), "cl_khr_fp16") !=
-           extensions.end();
+    return extensions_.count("cl_khr_fp16") != 0U;
   case Feature::fp64:
-    return std::find(extensions.begin(), extensions.end(), "cl_khr_fp64") !=
-           extensions.end();
+    return extensions_.count("cl_khr_fp64") != 0U;
   case Feature::read_write_images: {
     cl_uint read_write_image = 0;
-    result = wrapper_.clGetDeviceInfo(
+    auto result = wrapper_.clGetDeviceInfo(
         device_, CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS, sizeof(read_write_image),
         &read_write_image, nullptr);
     if (result != CL_SUCCESS) {
@@ -483,10 +480,8 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::sampling:
     return get_device_property(DeviceProperty::max_num_samplers) != 0;
   case Feature::int64_atomics:
-    return std::find(extensions.begin(), extensions.end(),
-                     "cl_khr_int64_base_atomics") != extensions.end() &&
-           std::find(extensions.begin(), extensions.end(),
-                     "cl_khr_int64_extended_atomics") != extensions.end();
+    return extensions_.count("cl_khr_int64_base_atomics") != 0U &&
+           extensions_.count("cl_khr_int64_extended_atomics") != 0U;
   default:
     return false;
   }
@@ -520,12 +515,14 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     // OpenCL has no standard way to request a device ID
     return 0;
   case DeviceProperty::simd_width: {
-    // OpenCL has no way to detect SIMD width so we will use minimal subgroups
-    // size
-    auto sizes = cl_get_device_property<size_t>(
-        device_, CL_DEVICE_SUB_GROUP_SIZES_INTEL);
-    return static_cast<int>(
-        *std::min_element(std::begin(sizes), std::end(sizes)));
+    // OpenCL has no way to detect SIMD width. Trying Intel extension
+    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+      auto sizes = cl_get_device_property<size_t>(
+          device_, CL_DEVICE_SUB_GROUP_SIZES_INTEL);
+      return static_cast<int>(
+          *std::min_element(std::begin(sizes), std::end(sizes)));
+    }
+    return 0;
   }
   default:
     throw RuntimeException("Failed to find device property");

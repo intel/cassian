@@ -8,21 +8,25 @@
 #ifndef CASSIAN_RUNTIME_OPENCL_RUNTIME_HPP
 #define CASSIAN_RUNTIME_OPENCL_RUNTIME_HPP
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
 #include <CL/cl.h>
 #include <CL/cl_platform.h>
-#include <array>
+
 #include <cassian/runtime/access_qualifier.hpp>
 #include <cassian/runtime/device_properties.hpp>
 #include <cassian/runtime/feature.hpp>
 #include <cassian/runtime/program_descriptor.hpp>
 #include <cassian/runtime/runtime.hpp>
-#include <cstddef>
-#include <cstdint>
-#include <opencl_wrapper.hpp>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <vector>
+
+#include "opencl_wrapper.hpp"
 
 namespace cassian {
 class OpenCLRuntime : public Runtime {
@@ -84,6 +88,8 @@ private:
   std::unordered_map<std::uintptr_t, cl_mem> images_;
   std::unordered_map<std::uintptr_t, cl_kernel> kernels_;
   std::unordered_map<std::uintptr_t, cl_sampler> samplers_;
+
+  std::unordered_set<std::string> extensions_;
 
   template <class T>
   std::vector<T> cl_get_device_property(cl_device_id device,
