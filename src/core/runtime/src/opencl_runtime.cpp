@@ -512,7 +512,13 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     return static_cast<int>(cl_get_device_property_at_index<cl_ulong>(
         device_, CL_DEVICE_LOCAL_MEM_SIZE, 0));
   case DeviceProperty::device_id:
-    // OpenCL has no standard way to request a device ID
+    // No standard way to detect device ID. Using Intel extension
+#if defined(cl_intel_device_attribute_query)
+    if (extensions_.count("cl_intel_device_attribute_query") != 0U) {
+      return static_cast<int>(cl_get_device_property_at_index<cl_uint>(
+          device_, CL_DEVICE_ID_INTEL, 0));
+    }
+#endif // defined(cl_intel_device_attribute_query)
     return 0;
   case DeviceProperty::simd_width: {
     // OpenCL has no way to detect SIMD width. Trying Intel extension
