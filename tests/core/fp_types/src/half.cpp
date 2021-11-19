@@ -5,15 +5,18 @@
  *
  */
 
-#include "common.hpp"
-#include <cassian/fp_types/half.hpp>
-#include <catch2/catch.hpp>
 #include <cstdint>
 #include <limits>
 #include <sstream>
 #include <tuple>
 #include <type_traits>
 #include <vector>
+
+#include <catch2/catch.hpp>
+
+#include <cassian/fp_types/half.hpp>
+
+#include "common.hpp"
 
 namespace ca = cassian;
 
@@ -23,12 +26,13 @@ namespace {
 // float -> uint16
 // float -> uint16 -> float
 const float float_certain_value = -0.1572265625F;
-const std::vector<float> float_values{{0.0F, -0.0F, 1.0F, 2.0F,
-                                       float_certain_value,
-                                       std::numeric_limits<float>::infinity()}};
+const float float_half_subnormal_value = 0.0000254511833191F;
+const std::vector<float> float_values{
+    {0.0F, -0.0F, 1.0F, 2.0F, float_certain_value, float_half_subnormal_value,
+     std::numeric_limits<float>::infinity()}};
 
 const std::vector<float> float_expected{
-    {0.0F, -0.0F, 1.0F, 2.0F, float_certain_value,
+    {0.0F, -0.0F, 1.0F, 2.0F, float_certain_value, float_half_subnormal_value,
      std::numeric_limits<float>::infinity()}};
 
 const uint32_t float_to_be_rounded_down = 0x42005000;
@@ -44,13 +48,14 @@ const uint16_t half_minus_zero = 0x8000;
 const uint16_t half_one = 0x3c00;
 const uint16_t half_two = 0x4000;
 const uint16_t half_certain_value = 0xb108;
+const uint16_t half_subnormal_value = 0x01ab;
 const uint16_t half_infinity = 0x7c00;
 const std::vector<uint16_t> half_values{{half_zero, half_minus_zero, half_one,
                                          half_two, half_certain_value,
-                                         half_infinity}};
-const std::vector<uint16_t> half_expected{{half_zero, half_minus_zero, half_one,
-                                           half_two, half_certain_value,
-                                           half_infinity}};
+                                         half_subnormal_value, half_infinity}};
+const std::vector<uint16_t> half_expected{
+    {half_zero, half_minus_zero, half_one, half_two, half_certain_value,
+     half_subnormal_value, half_infinity}};
 const uint16_t half_rounded_down = 0x5002;
 const uint16_t half_rounded_up = 0x5004;
 const uint16_t half_rounded_max = 0xffff;

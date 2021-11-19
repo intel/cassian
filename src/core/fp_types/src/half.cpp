@@ -14,52 +14,72 @@
 namespace cassian {
 
 Half::Half(float v) {
-  const int float_exponent_offset = 127;
-  const int half_exponent_offset = 15;
-  const int max_half_exponent_value = 15;
-  const uint32_t sign_mask = 0x80000000;
-  const uint32_t exponent_float_mask = 0x7f800000;
-  const uint32_t mantissa_float_mask = 0x007fe000;
-  const uint32_t remainder_float_mask = 0x00001fff;
-  const int sign_float_shift = 31;
-  const int exponent_float_shift = 23;
-  const int mantissa_float_shift = 13;
-  uint32_t tmp = 0;
-  std::memcpy(&tmp, &v, sizeof(uint32_t));
-  const uint16_t sign = (tmp & sign_mask) >> sign_float_shift;
-  uint16_t exponent = (tmp & exponent_float_mask) >> exponent_float_shift;
-  uint16_t mantissa = (tmp & mantissa_float_mask) >> mantissa_float_shift;
-  const uint16_t remainder = (tmp & remainder_float_mask);
-  const uint16_t highest_float_exponent = 0xff;
-  const uint16_t highest_half_exponent = 0x1f;
-  const int sign_half_shift = 15;
-  const int exponent_half_shift = 10;
-  const uint16_t exponent_half_mask = 0x7c00;
-  const uint16_t mantissa_half_mask = 0x3ff;
-  if (exponent != 0 && exponent != highest_float_exponent) {
-    if (exponent <= float_exponent_offset - half_exponent_offset) {
-      // underflow to zero
-      data = sign << sign_half_shift;
-      return;
+  uint32_t bits = 0;
+  std::memcpy(&bits, &v, sizeof(v));
+
+  constexpr uint32_t float_sign_mask = 0x80000000;
+  constexpr uint32_t float_exp_mask = 0x7f800000;
+  constexpr uint32_t float_mantissa_mask = 0x007fffff;
+  constexpr unsigned float_exp_shift = 23;
+  constexpr uint8_t float_bias = 127;
+  constexpr uint8_t float_inf_nan_exp = 0xff;
+
+  constexpr uint8_t half_bias = 15;
+  constexpr uint8_t half_exp_shift = 10;
+  constexpr uint8_t half_inf_nan_exp = 0x1f;
+  constexpr int8_t half_min_exp = -14;
+  constexpr int8_t half_min_exp_denorm = -24;
+  constexpr uint16_t half_implicit_one = 0x0400;
+  constexpr uint16_t half_nan_quiet = 1 << 9;
+
+  constexpr int float_mantissa_shift = 13;
+  constexpr uint32_t half_next_unsaved_mask = 1 << (float_mantissa_shift - 1);
+  constexpr uint32_t half_rest_unsaved_mask = half_next_unsaved_mask - 1;
+
+  const uint16_t sign = (bits & float_sign_mask) >> 16;
+  const uint32_t mantissa32 = bits & float_mantissa_mask;
+  const uint8_t biased_exp32 = (bits & float_exp_mask) >> float_exp_shift;
+
+  uint16_t biased_exp16 = 0;
+  uint16_t mantissa16 = 0;
+
+  if (biased_exp32 == float_inf_nan_exp) { // NaN or Inf
+    biased_exp16 = half_inf_nan_exp;
+
+    if (mantissa32 != 0) { // NaN, making it quiet
+      mantissa16 = mantissa32 >> float_mantissa_shift | half_nan_quiet;
     }
-    if (exponent > float_exponent_offset + max_half_exponent_value) {
-      // overflow to inf
-      data = (sign << sign_half_shift) | exponent_half_mask;
-      return;
+  } else if (biased_exp32 != 0) {
+    const int8_t exp = biased_exp32 - float_bias;
+
+    if (exp < half_min_exp_denorm) {
+      // too small, flush to zero
+      mantissa16 = 0;
+    } else if (exp < half_min_exp) {
+      // small float numbers map to half denormals
+      biased_exp16 = 0;
+      // TODO: Round to nearest or even
+      mantissa16 = half_implicit_one >> -(exp + float_mantissa_shift + 1) |
+                   mantissa32 >> -(exp + 1);
+    } else if (exp <= 15) {
+      biased_exp16 = exp + half_bias;
+      mantissa16 = mantissa32 >> float_mantissa_shift;
+
+      // Round to nearest or even
+      const bool next = (mantissa32 & half_next_unsaved_mask) != 0;
+      const bool rest = (mantissa32 & half_rest_unsaved_mask) != 0;
+      const bool is_odd = (mantissa16 & 1) != 0;
+
+      if (next && (is_odd || rest)) {
+        mantissa16 += 1;
+      }
+    } else {
+      // large float maps to inf
+      biased_exp16 = half_inf_nan_exp;
     }
-    exponent -= float_exponent_offset - half_exponent_offset;
-  } else if (exponent == highest_float_exponent) {
-    exponent = highest_half_exponent;
   }
-  const int highest_remainder_bit = 0x1000;
-  // round to nearest or even
-  if ((remainder > highest_remainder_bit && mantissa != mantissa_half_mask) ||
-      (remainder == highest_remainder_bit && mantissa != mantissa_half_mask &&
-       mantissa % 2 == 1)) {
-    ++mantissa;
-  }
-  data =
-      (sign << sign_half_shift) | (exponent << exponent_half_shift) | mantissa;
+
+  data = sign + (biased_exp16 << half_exp_shift) + mantissa16;
 }
 
 Half::operator float() const {
