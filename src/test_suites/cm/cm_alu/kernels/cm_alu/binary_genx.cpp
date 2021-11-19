@@ -13,7 +13,8 @@ using src1_t = SRC1_TYPE;
 
 constexpr unsigned simd = SIMD;
 
-extern "C" _GENX_MAIN_ void test(
+// We enable denormals handling to get correct double division results
+extern "C" _GENX_MAIN_ _GENX_FLOAT_CONTROL_(CM_DENORM_ALLOW) void test(
 #if defined(SRC0_VECTOR)
     SurfaceIndex src0_buf [[type("buffer_t")]],
 #elif defined(SRC0_SCALAR)
