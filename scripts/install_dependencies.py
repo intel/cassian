@@ -135,7 +135,7 @@ def install_opencl(install_directory, tmp_directory, architecture, clear=False):
     opencl_headers_install_directory = opencl_install_directory / "include"
 
     subprocess.run(
-        "git clone https://github.com/KhronosGroup/OpenCL-Headers.git --depth 1 --branch v2020.06.16",
+        "git clone https://github.com/KhronosGroup/OpenCL-Headers.git && cd OpenCL-Headers && git checkout e3cd57376dada061bc6d5f9edfce2ea631b81214",
         cwd=tmp_directory,
         shell=True,
         check=True,
