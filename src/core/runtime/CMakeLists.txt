@@ -66,7 +66,8 @@ if(BUILD_OCL)
   target_sources(runtime PRIVATE ${OCL_PRIVATE_HEADERS} ${OCL_PRIVATE_HEADERS}
                                  ${OCL_SOURCES})
   target_include_directories(runtime SYSTEM PRIVATE "${OpenCL_INCLUDE_DIRS}")
-  target_compile_definitions(runtime PRIVATE BUILD_OCL)
+  target_compile_definitions(runtime PRIVATE BUILD_OCL
+                                             CL_TARGET_OPENCL_VERSION=300)
 endif()
 
 if(BUILD_L0)
