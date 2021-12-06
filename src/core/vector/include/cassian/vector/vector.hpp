@@ -120,6 +120,14 @@ public:
    */
   explicit Vector(T scalar) { std::fill(data_.begin(), data_.end(), scalar); }
 
+  template <typename U> explicit operator Vector<U, N>() {
+    Vector<U, N> vector;
+    for (int i = 0; i < vector_size; ++i) {
+      vector[i] = U(data_[i]);
+    }
+    return vector;
+  }
+
   /**
    * Copy constructor.
    */
