@@ -83,7 +83,7 @@ private:
 
   std::unordered_map<std::uintptr_t, void *> buffers_;
   std::unordered_map<std::uintptr_t, ze_image_handle_t> images_;
-  std::unordered_map<std::uintptr_t, ze_module_handle_t> modules_;
+  std::unordered_multimap<std::uintptr_t, ze_module_handle_t> modules_;
   std::unordered_map<std::uintptr_t, ze_kernel_handle_t> kernels_;
   std::unordered_map<std::uintptr_t, ze_sampler_handle_t> samplers_;
 
@@ -91,6 +91,11 @@ private:
 
   std::string ze_get_module_build_log(
       const ze_module_build_log_handle_t &build_log_handle) const;
+
+  ze_module_handle_t
+  ze_create_module(const std::string &source, const std::string &build_options,
+                   const std::string &program_type,
+                   const std::optional<std::string> &spirv_options);
 };
 
 } // namespace cassian

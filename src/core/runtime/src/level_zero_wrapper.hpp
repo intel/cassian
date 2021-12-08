@@ -41,6 +41,7 @@ public:
   ze_pfnCommandListClose_t zeCommandListClose = nullptr;
   ze_pfnModuleCreate_t zeModuleCreate = nullptr;
   ze_pfnModuleDestroy_t zeModuleDestroy = nullptr;
+  ze_pfnModuleDynamicLink_t zeModuleDynamicLink = nullptr;
   ze_pfnKernelCreate_t zeKernelCreate = nullptr;
   ze_pfnKernelDestroy_t zeKernelDestroy = nullptr;
   ze_pfnKernelSetGroupSize_t zeKernelSetGroupSize = nullptr;

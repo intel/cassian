@@ -6,6 +6,15 @@
  */
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include <ze_api.h>
+
 #include <cassian/logging/logging.hpp>
 #include <cassian/offline_compiler/offline_compiler.hpp>
 #include <cassian/runtime/access_qualifier.hpp>
@@ -16,15 +25,9 @@
 #include <cassian/runtime/program_descriptor.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/utility/utility.hpp>
-#include <cstddef>
-#include <cstdint>
-#include <level_zero_runtime.hpp>
-#include <level_zero_wrapper.hpp>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
-#include <ze_api.h>
+
+#include "level_zero_runtime.hpp"
+#include "level_zero_wrapper.hpp"
 
 namespace cassian {
 LevelZeroRuntime::~LevelZeroRuntime() {
@@ -409,18 +412,24 @@ void LevelZeroRuntime::release_sampler(const Sampler &sampler) {
   }
 }
 
-Kernel LevelZeroRuntime::create_kernel(
-    const std::string &kernel_name, const std::string &source,
-    const std::string &build_options, const std::string &program_type,
+ze_module_handle_t LevelZeroRuntime::ze_create_module(
+    const std::string &source, const std::string &build_options,
+    const std::string &program_type,
     const std::optional<std::string> &spirv_options) {
   ze_result_t result = ZE_RESULT_SUCCESS;
   ze_module_handle_t module = nullptr;
   ze_module_build_log_handle_t build_log_handle = nullptr;
+  auto f = finally([&]() mutable {
+    if (build_log_handle != nullptr) {
+      wrapper_.zeModuleBuildLogDestroy(build_log_handle);
+    }
+  });
 
   if (program_type == "source") {
     throw RuntimeException(
         "Compilation from source is not supported by Level Zero");
   }
+
   if (program_type == "spirv") {
     auto device_id = get_device_property(DeviceProperty::device_id);
 
@@ -454,12 +463,18 @@ Kernel LevelZeroRuntime::create_kernel(
   } else {
     throw RuntimeException("Invalid program type: " + program_type);
   }
-  if (build_log_handle != nullptr) {
-    result = wrapper_.zeModuleBuildLogDestroy(build_log_handle);
-    if (result != ZE_RESULT_SUCCESS) {
-      throw RuntimeException("Failed to release Level Zero build log");
-    }
-  }
+
+  return module;
+}
+
+Kernel LevelZeroRuntime::create_kernel(
+    const std::string &kernel_name, const std::string &source,
+    const std::string &build_options, const std::string &program_type,
+    const std::optional<std::string> &spirv_options) {
+  ze_result_t result = ZE_RESULT_SUCCESS;
+  ze_module_handle_t module =
+      ze_create_module(source, build_options, program_type, spirv_options);
+
   ze_kernel_desc_t kernel_description = {};
   kernel_description.stype = ZE_STRUCTURE_TYPE_KERNEL_DESC;
   kernel_description.pNext = nullptr;
@@ -474,16 +489,83 @@ Kernel LevelZeroRuntime::create_kernel(
 
   auto id = reinterpret_cast<std::uintptr_t>(kernel);
   kernels_[id] = kernel;
-  modules_[id] = module;
+  modules_.emplace(id, module);
 
   return Kernel(id);
 }
 
 Kernel LevelZeroRuntime::create_kernel_from_multiple_programs(
-    const std::string & /*kernel_name*/,
-    const std::vector<ProgramDescriptor> & /*program_descriptors*/,
+    const std::string &kernel_name,
+    const std::vector<ProgramDescriptor> &program_descriptors,
     const std::string & /*linker_options*/) {
-  throw RuntimeException("Module linking is not yet supported in Level Zero");
+  ze_result_t result = ZE_RESULT_SUCCESS;
+  ze_module_build_log_handle_t link_log_handle = nullptr;
+  std::vector<ze_module_handle_t> modules;
+
+  auto f = finally([&]() mutable {
+    if (link_log_handle != nullptr) {
+      wrapper_.zeModuleBuildLogDestroy(link_log_handle);
+    }
+
+    for (auto *m : modules) {
+      wrapper_.zeModuleDestroy(m);
+    }
+  });
+
+  std::transform(std::begin(program_descriptors), std::end(program_descriptors),
+                 std::back_inserter(modules), [this](const auto &desc) {
+                   return ze_create_module(desc.source, desc.compiler_options,
+                                           desc.program_type,
+                                           desc.spirv_options);
+                 });
+
+  result = wrapper_.zeModuleDynamicLink(modules.size(), modules.data(),
+                                        &link_log_handle);
+
+  if (result != ZE_RESULT_SUCCESS) {
+    const auto link_log = ze_get_module_build_log(link_log_handle);
+    logging::error() << "Link log:\n" << link_log << '\n';
+    throw RuntimeException("Failed to link Level Zero modules");
+  }
+
+  ze_kernel_desc_t kernel_description = {};
+  kernel_description.stype = ZE_STRUCTURE_TYPE_KERNEL_DESC;
+  kernel_description.pNext = nullptr;
+  kernel_description.pKernelName = kernel_name.c_str();
+  kernel_description.flags = 0;
+
+  ze_kernel_handle_t kernel = nullptr;
+
+  auto it =
+      std::find_if(std::begin(modules), std::end(modules), [&](auto module) {
+        kernel = nullptr;
+
+        auto status =
+            wrapper_.zeKernelCreate(module, &kernel_description, &kernel);
+
+        if (status == ZE_RESULT_SUCCESS) {
+          return true;
+        }
+        if (status == ZE_RESULT_ERROR_INVALID_KERNEL_NAME) {
+          return false;
+        }
+        throw RuntimeException("Failed to create Level Zero modules");
+      });
+
+  if (it == std::end(modules)) {
+    throw RuntimeException("Failed to create Level Zero modules");
+  }
+
+  auto id = reinterpret_cast<std::uintptr_t>(kernel);
+  kernels_[id] = kernel;
+
+  for (auto *m : modules) {
+    modules_.emplace(id, m);
+  }
+
+  modules.clear();
+
+  return Kernel(id);
 }
 
 void LevelZeroRuntime::set_kernel_argument(const Kernel &kernel,
@@ -622,19 +704,23 @@ void LevelZeroRuntime::release_kernel(const Kernel &kernel) {
     throw RuntimeException("Failed to release Level Zero kernel");
   }
 
-  ze_module_handle_t m = modules_.at(kernel.id);
+  auto modules_for_kernel = modules_.equal_range(kernel.id);
+  std::vector<std::pair<std::uintptr_t, ze_module_handle_t>> modules_to_destroy;
+
+  auto is_module_in_use = [&](auto p) {
+    return std::find_if(std::begin(modules_), std::end(modules_),
+                        [id = p.first, m = p.second](auto p) {
+                          return p.first != id && p.second == m;
+                        }) != std::end(modules_);
+  };
+
+  std::copy_if(modules_for_kernel.first, modules_for_kernel.second,
+               std::back_inserter(modules_to_destroy), is_module_in_use);
+
   modules_.erase(kernel.id);
 
-  bool is_module_in_use = false;
-  for (const auto &kv : modules_) {
-    if (kv.second == m) {
-      is_module_in_use = true;
-      break;
-    }
-  }
-
-  if (is_module_in_use) {
-    result = wrapper_.zeModuleDestroy(m);
+  for (auto m : modules_to_destroy) {
+    result = wrapper_.zeModuleDestroy(m.second);
     if (result != ZE_RESULT_SUCCESS) {
       throw RuntimeException("Failed to release Level Zero module");
     }

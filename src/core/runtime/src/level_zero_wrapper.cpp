@@ -58,6 +58,8 @@ LevelZeroWrapper::LevelZeroWrapper() {
       library_->get_function("zeModuleCreate"));
   zeModuleDestroy = reinterpret_cast<ze_pfnModuleDestroy_t>(
       library_->get_function("zeModuleDestroy"));
+  zeModuleDynamicLink = reinterpret_cast<ze_pfnModuleDynamicLink_t>(
+      library_->get_function("zeModuleDynamicLink"));
   zeKernelCreate = reinterpret_cast<ze_pfnKernelCreate_t>(
       library_->get_function("zeKernelCreate"));
   zeKernelDestroy = reinterpret_cast<ze_pfnKernelDestroy_t>(
