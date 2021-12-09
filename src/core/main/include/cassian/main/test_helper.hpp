@@ -18,6 +18,7 @@
 #include <cassian/fp_types/type_traits.hpp>
 #include <cassian/image/image.hpp>
 #include <cassian/image/pixel/common.hpp>
+#include <cassian/runtime/program_descriptor.hpp>
 
 #include "config.hpp"
 
@@ -52,9 +53,16 @@ public:
 
   void pass(Argument arg);
 
+  std::string program_type();
+
   void kernel(const std::string &name, const std::string &source,
               const std::string &build_options,
               const std::optional<std::string> &spirv_options = std::nullopt);
+
+  void
+  kernel(const std::string &name,
+         const std::vector<cassian::ProgramDescriptor> &program_descriptors,
+         const std::string &linker_options);
 
   void execute(std::array<size_t, 3> global_work_size,
                std::array<size_t, 3> local_work_size);
@@ -88,6 +96,8 @@ private:
 } // namespace detail
 
 Runtime *runtime();
+
+std::string default_program_type();
 
 void kernel(const std::string &name, const std::string &source,
             const std::string &flags,
@@ -123,6 +133,41 @@ void kernel(std::array<size_t, 1> global_work_size,
             std::array<size_t, 1> local_work_size, const std::string &name,
             const std::string &source, const std::string &flags,
             const std::optional<std::string> &spirv_flags = std::nullopt);
+
+void kernel(const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
+
+void kernel(std::array<size_t, 3> global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
+
+void kernel(std::array<size_t, 2> global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
+
+void kernel(std::array<size_t, 1> global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
+
+void kernel(size_t global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
+
+void kernel(std::array<size_t, 3> global_work_size,
+            std::array<size_t, 3> local_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
+
+void kernel(std::array<size_t, 2> global_work_size,
+            std::array<size_t, 2> local_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
+
+void kernel(std::array<size_t, 1> global_work_size,
+            std::array<size_t, 1> local_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options = "");
 
 template <typename T> void pass(const T arg) {
   static_assert(std::is_arithmetic_v<T> || cassian::is_floating_point_v<T>,

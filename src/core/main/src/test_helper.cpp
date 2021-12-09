@@ -21,14 +21,22 @@ Helper &Helper::instance() {
 
 void Helper::pass(Helper::Argument arg) { arguments_.push_back(arg); }
 
+std::string Helper::program_type() { return config.program_type(); }
+
 void Helper::kernel(const std::string &name, const std::string &source,
                     const std::string &build_options,
                     const std::optional<std::string> &spirv_options) {
   auto *rt = config.runtime();
-  auto program_type = config.program_type();
-
-  kernel_ = rt->create_kernel(name, source, build_options, program_type,
+  kernel_ = rt->create_kernel(name, source, build_options, program_type(),
                               spirv_options);
+}
+
+void Helper::kernel(const std::string &name,
+                    const std::vector<ProgramDescriptor> &program_descriptors,
+                    const std::string &linker_options) {
+  auto *rt = config.runtime();
+  kernel_ = rt->create_kernel_from_multiple_programs(name, program_descriptors,
+                                                     linker_options);
 }
 
 void Helper::execute(std::array<size_t, 3> global_work_size,
@@ -118,6 +126,10 @@ Runtime *runtime() {
   return h.config.runtime();
 }
 
+std::string default_program_type() {
+  return detail::Helper::instance().program_type();
+}
+
 void kernel(const std::string &name, const std::string &source,
             const std::string &flags,
             const std::optional<std::string> &spirv_flags) {
@@ -175,6 +187,68 @@ void kernel(std::array<size_t, 3> global_work_size,
   auto f = finally([] { detail::Helper::instance().cleanup(); });
 
   h.kernel(name, source, flags, spirv_flags);
+  h.execute(global_work_size, local_work_size);
+}
+
+void kernel(const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  kernel({1, 1, 1}, {1, 1, 1}, name, program_descriptors, linker_options);
+}
+
+void kernel(size_t global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  kernel({global_work_size, 1, 1}, {1, 1, 1}, name, program_descriptors,
+         linker_options);
+}
+
+void kernel(std::array<size_t, 1> global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  kernel({global_work_size[0], 1, 1}, {1, 1, 1}, name, program_descriptors,
+         linker_options);
+}
+
+void kernel(std::array<size_t, 2> global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  kernel({global_work_size[0], global_work_size[1], 1}, {1, 1, 1}, name,
+         program_descriptors, linker_options);
+}
+
+void kernel(std::array<size_t, 3> global_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  kernel(global_work_size, {1, 1, 1}, name, program_descriptors,
+         linker_options);
+}
+
+void kernel(std::array<size_t, 1> global_work_size,
+            std::array<size_t, 1> local_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  kernel({global_work_size[0], 1, 1}, {local_work_size[0], 1, 1}, name,
+         program_descriptors, linker_options);
+}
+
+void kernel(std::array<size_t, 2> global_work_size,
+            std::array<size_t, 2> local_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  kernel({global_work_size[0], global_work_size[1], 1},
+         {local_work_size[0], local_work_size[1], 1}, name, program_descriptors,
+         linker_options);
+}
+
+void kernel(std::array<size_t, 3> global_work_size,
+            std::array<size_t, 3> local_work_size, const std::string &name,
+            const std::vector<ProgramDescriptor> &program_descriptors,
+            const std::string &linker_options) {
+  auto &h = detail::Helper::instance();
+  auto f = finally([] { detail::Helper::instance().cleanup(); });
+
+  h.kernel(name, program_descriptors, linker_options);
   h.execute(global_work_size, local_work_size);
 }
 
