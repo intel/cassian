@@ -282,7 +282,7 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
 
     if ((mask & r) != 0) {
       std::transform(std::begin(u), std::end(u), std::begin(v), out,
-                     [&image](auto x, auto y) {
+                     [&image, width, height](auto x, auto y) {
                        return x >= width || y >= height ? read_t(0)
                                                         : image(x, y).red();
                      });
@@ -290,7 +290,7 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
     }
     if ((mask & g) != 0) {
       std::transform(std::begin(u), std::end(u), std::begin(v), out,
-                     [&image](auto x, auto y) {
+                     [&image, width, height](auto x, auto y) {
                        return x >= width || y >= height ? read_t(0)
                                                         : image(x, y).green();
                      });
@@ -298,7 +298,7 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
     }
     if ((mask & b) != 0) {
       std::transform(std::begin(u), std::end(u), std::begin(v), out,
-                     [&image](auto x, auto y) {
+                     [&image, width, height](auto x, auto y) {
                        return x >= width || y >= height ? read_t(0)
                                                         : image(x, y).blue();
                      });
@@ -306,7 +306,7 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
     }
     if ((mask & a) != 0) {
       std::transform(std::begin(u), std::end(u), std::begin(v), out,
-                     [&image](auto x, auto y) {
+                     [&image, width, height](auto x, auto y) {
                        return x >= width || y >= height ? read_t(0)
                                                         : image(x, y).alpha();
                      });
