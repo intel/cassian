@@ -5,6 +5,7 @@
  *
  */
 
+#include <cassian/fp_types/bfloat.hpp>
 #include <cassian/fp_types/half.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/vector/vector.hpp>
@@ -167,6 +168,15 @@ TEST_CASE("generate_value") {
         const double output = ca::generate_value(left_endpoint, right_endpoint,
                                                  seed, {left_endpoint, middle});
         REQUIRE(output == right_endpoint);
+      }
+    }
+    SECTION("bfloat") {
+      const ca::bfloat min(2.25F);
+      const ca::bfloat max(4.0F);
+      for (int i = 0; i < iterations; ++i) {
+        const ca::bfloat output = ca::generate_value(min, max, seed);
+        REQUIRE(output >= min);
+        REQUIRE(output <= max);
       }
     }
     SECTION("half") {

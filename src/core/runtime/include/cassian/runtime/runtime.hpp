@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <cassian/fp_types/bfloat.hpp>
 #include <cassian/fp_types/half.hpp>
 #include <cassian/runtime/access_qualifier.hpp>
 #include <cassian/runtime/device_properties.hpp>
@@ -810,6 +811,13 @@ std::vector<T> Runtime::read_buffer_to_vector(const Buffer &buffer) {
 }
 
 /**
+ * Specialization for Bfloat.
+ */
+template <>
+std::vector<Bfloat>
+Runtime::read_buffer_to_vector<Bfloat>(const Buffer &buffer);
+
+/**
  * Specialization for Half.
  */
 template <>
@@ -820,6 +828,13 @@ void Runtime::write_buffer_from_vector(const Buffer &buffer,
                                        const std::vector<T> &data) {
   write_buffer(buffer, data.data());
 }
+
+/**
+ * Specialization for Bfloat.
+ */
+template <>
+void Runtime::write_buffer_from_vector<Bfloat>(const Buffer &buffer,
+                                               const std::vector<Bfloat> &data);
 
 /**
  * Specialization for Half.

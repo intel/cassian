@@ -65,6 +65,14 @@ double generate_value<double>(const double min, const double max,
 }
 
 template <>
+bfloat generate_value<bfloat>(const bfloat min, const bfloat max,
+                              const int seed) {
+  const auto f_min = static_cast<float>(min);
+  const auto f_max = static_cast<float>(max);
+  return static_cast<bfloat>(generate_value<float>(f_min, f_max, seed));
+}
+
+template <>
 half generate_value<half>(const half min, const half max, const int seed) {
   const auto f_min = static_cast<float>(min);
   const auto f_max = static_cast<float>(max);

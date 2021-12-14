@@ -9,12 +9,14 @@
 #define CASSIAN_RANDOM_RANDOM_HPP
 
 #include <algorithm>
-#include <cassian/fp_types/half.hpp>
-#include <cassian/vector/vector.hpp>
 #include <cstdint>
 #include <limits>
 #include <random>
 #include <vector>
+
+#include <cassian/fp_types/bfloat.hpp>
+#include <cassian/fp_types/half.hpp>
+#include <cassian/vector/vector.hpp>
 
 /**
  * Cassian namespace.
@@ -154,6 +156,15 @@ template <>
 double generate_value<double>(const double min, const double max,
                               const int seed,
                               const std::vector<double> &except);
+
+/**
+ * Specialization for bfloat.
+ *
+ * @overload
+ */
+template <>
+bfloat generate_value<bfloat>(const bfloat min, const bfloat max,
+                              const int seed);
 
 /**
  * Specialization for half.

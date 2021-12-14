@@ -8,6 +8,7 @@
 #ifndef CASSIAN_RUNTIME_OPENCLC_TYPES_HPP
 #define CASSIAN_RUNTIME_OPENCLC_TYPES_HPP
 
+#include <cassian/fp_types/bfloat.hpp>
 #include <cassian/fp_types/half.hpp>
 #include <cassian/vector/vector.hpp>
 
@@ -29,6 +30,7 @@ template <size_t N> struct OpenCLCUlong {};
 template <size_t N> struct OpenCLCHalf {};
 template <size_t N> struct OpenCLCFloat {};
 template <size_t N> struct OpenCLCDouble {};
+template <size_t N> struct OpenCLCBfloat16 {};
 
 template <> struct OpenCLCUchar<1> {
   using host_type = uint8_t;
@@ -828,6 +830,60 @@ template <> struct OpenCLCHalf<16> {
   static constexpr char type_abbr[] = "f16";
 };
 
+template <> struct OpenCLCBfloat16<1> {
+  using host_type = Bfloat;
+  using scalar_type = OpenCLCBfloat16<1>;
+  using underlying_type = float;
+  static constexpr char device_type[] = "short";
+  static constexpr char type_name[] = "bfloat";
+  static constexpr char type_abbr[] = "bf16";
+};
+
+template <> struct OpenCLCBfloat16<2> {
+  using host_type = Vector<Bfloat, 2>;
+  using scalar_type = OpenCLCBfloat16<1>;
+  using underlying_type = float;
+  static constexpr char device_type[] = "short2";
+  static constexpr char type_name[] = "bfloat2";
+  static constexpr char type_abbr[] = "bf16";
+};
+
+template <> struct OpenCLCBfloat16<3> {
+  using host_type = Vector<Bfloat, 3, 4>;
+  using scalar_type = OpenCLCBfloat16<1>;
+  using underlying_type = float;
+  static constexpr char device_type[] = "short3";
+  static constexpr char type_name[] = "bfloat3";
+  static constexpr char type_abbr[] = "bf16";
+};
+
+template <> struct OpenCLCBfloat16<4> {
+  using host_type = Vector<Bfloat, 4>;
+  using scalar_type = OpenCLCBfloat16<1>;
+  using underlying_type = float;
+  static constexpr char device_type[] = "short4";
+  static constexpr char type_name[] = "bfloat4";
+  static constexpr char type_abbr[] = "bf16";
+};
+
+template <> struct OpenCLCBfloat16<8> {
+  using host_type = Vector<Bfloat, 8>;
+  using scalar_type = OpenCLCBfloat16<1>;
+  using underlying_type = float;
+  static constexpr char device_type[] = "short8";
+  static constexpr char type_name[] = "bfloat8";
+  static constexpr char type_abbr[] = "bf16";
+};
+
+template <> struct OpenCLCBfloat16<16> {
+  using host_type = Vector<Bfloat, 16>;
+  using scalar_type = OpenCLCBfloat16<1>;
+  using underlying_type = float;
+  static constexpr char device_type[] = "short16";
+  static constexpr char type_name[] = "bfloat16";
+  static constexpr char type_abbr[] = "bf16";
+};
+
 struct OpenCLCBool {
   using host_type = bool;
   using underlying_type = bool;
@@ -1149,6 +1205,23 @@ using clc_half8_t = detail::OpenCLCHalf<8>;
  * Wrapper for OpenCL C half16 data type.
  */
 using clc_half16_t = detail::OpenCLCHalf<16>;
+
+/**
+ * Wrapper for OpenCL C bfloat16 data type.
+ */
+using clc_bfloat_t = detail::OpenCLCBfloat16<1>;
+/**
+ * Wrapper for OpenCL C bfloat16_2 data type.
+ */
+using clc_bfloat2_t = detail::OpenCLCBfloat16<2>;
+/**
+ * Wrapper for OpenCL C bfloat16_4 data type.
+ */
+using clc_bfloat4_t = detail::OpenCLCBfloat16<4>;
+/**
+ * Wrapper for OpenCL C bfloat16_8 data type.
+ */
+using clc_bfloat8_t = detail::OpenCLCBfloat16<8>;
 
 /**
  * Wrapper for OpenCL C bool data type.
