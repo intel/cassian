@@ -82,6 +82,72 @@ Half::Half(float v) {
   data = sign + (biased_exp16 << half_exp_shift) + mantissa16;
 }
 
+Half::Half(float v, const float random) {
+  const int float_exponent_offset = 127;
+  const int half_exponent_offset = 15;
+  const int max_half_exponent_value = 15;
+  const uint32_t sign_mask = 0x80000000;
+  const uint32_t exponent_float_mask = 0x7f800000;
+  const uint32_t mantissa_float_mask = 0x007fffff;
+  const uint32_t remainder_float_mask = 0x00001fff;
+  const int sign_float_shift = 31;
+  const int exponent_float_shift = 23;
+  const int mantissa_float_shift = 13;
+  uint32_t tmp = 0;
+  std::memcpy(&tmp, &v, sizeof(uint32_t));
+  const uint16_t sign = (tmp & sign_mask) >> sign_float_shift;
+  uint16_t exponent = (tmp & exponent_float_mask) >> exponent_float_shift;
+  uint32_t mantissa_float = tmp & mantissa_float_mask;
+  const uint16_t remainder = (tmp & remainder_float_mask);
+  const uint16_t highest_float_exponent = 0xff;
+  const uint16_t highest_half_exponent = 0x1f;
+  const int sign_half_shift = 15;
+  const int exponent_half_shift = 10;
+  const uint16_t exponent_half_mask = 0x7c00;
+  const uint16_t mantissa_half_mask = 0x3ff;
+  uint16_t mantissa =
+      (mantissa_float >> mantissa_float_shift) & mantissa_half_mask;
+  if (exponent != 0 && exponent != highest_float_exponent) {
+    if (exponent <= float_exponent_offset - half_exponent_offset) {
+      // underflow to zero
+      data = sign << sign_half_shift;
+      return;
+    }
+    if (exponent > float_exponent_offset + max_half_exponent_value) {
+      // overflow to inf
+      data = (sign << sign_half_shift) | exponent_half_mask;
+      return;
+    }
+    exponent -= float_exponent_offset - half_exponent_offset;
+  } else if (exponent == highest_float_exponent) {
+    exponent = highest_half_exponent;
+  }
+  if (exponent == 0) { // denorm or 0
+    const int highest_remainder_bit = 0x1000;
+    // round to nearest or even
+    if ((remainder > highest_remainder_bit && mantissa != mantissa_half_mask) ||
+        (remainder == highest_remainder_bit && mantissa != mantissa_half_mask &&
+         mantissa % 2 == 1)) {
+      ++mantissa;
+    }
+  } else {
+    // stochastic rounding
+    uint32_t mantissa_float_with_random =
+        mantissa_float + *reinterpret_cast<const uint32_t *>(&random);
+    const bool carry_over = (mantissa_float & ~mantissa_float_mask) !=
+                            (mantissa_float_with_random & ~mantissa_float_mask);
+    if (carry_over) {
+      mantissa_float_with_random =
+          (mantissa_float_with_random & mantissa_float_mask) >> 1;
+      ++exponent;
+    }
+    mantissa = (mantissa_float_with_random >> mantissa_float_shift) &
+               mantissa_half_mask; // round to zero
+  }
+  data =
+      (sign << sign_half_shift) | (exponent << exponent_half_shift) | mantissa;
+}
+
 Half::operator float() const {
   const uint32_t float16_exp_shift = (23 - 10);
   const uint32_t float16_exp_mask = 0x7c00;

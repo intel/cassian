@@ -27,6 +27,9 @@ namespace {
 // float -> uint16 -> float
 const float float_certain_value = -0.1572265625F;
 const float float_half_subnormal_value = 0.0000254511833191F;
+const uint32_t float_random = 0x0000000f;
+const uint32_t float_random_carry_over = 0x00001000;
+const uint32_t float_to_be_rounded_up_srnd = 0x427ff000; // 63.9844
 const std::vector<float> float_values{
     {0.0F, -0.0F, 1.0F, 2.0F, float_certain_value, float_half_subnormal_value,
      std::numeric_limits<float>::infinity()}};
@@ -42,6 +45,17 @@ const std::vector<float> float_rnde_rounding_values{
     {uint32_to_float(float_to_be_rounded_down),
      uint32_to_float(float_to_be_rounded_up),
      uint32_to_float(float_to_be_rounded_max)}};
+const std::vector<float> float_srnd_rounding_values{
+    {0.0F, -0.0F, 1.0F, 2.0F, std::numeric_limits<float>::infinity(),
+     uint32_to_float(float_to_be_rounded_up_srnd),
+     uint32_to_float(float_to_be_rounded_up_srnd)}};
+const std::vector<float> float_srnd_rounding_random_values{
+    {uint32_to_float(float_random_carry_over),
+     uint32_to_float(float_random_carry_over),
+     uint32_to_float(float_random_carry_over),
+     uint32_to_float(float_random_carry_over),
+     uint32_to_float(float_random_carry_over), uint32_to_float(float_random),
+     uint32_to_float(float_random_carry_over)}};
 
 const uint16_t half_zero = 0x0000;
 const uint16_t half_minus_zero = 0x8000;
@@ -50,6 +64,8 @@ const uint16_t half_two = 0x4000;
 const uint16_t half_certain_value = 0xb108;
 const uint16_t half_subnormal_value = 0x01ab;
 const uint16_t half_infinity = 0x7c00;
+const uint16_t half_srnd_no_carry_over = 0x53ff; // 63.96875
+const uint16_t half_srnd_carry_over = 0x5400;    // 64
 const std::vector<uint16_t> half_values{{half_zero, half_minus_zero, half_one,
                                          half_two, half_certain_value,
                                          half_subnormal_value, half_infinity}};
@@ -61,6 +77,14 @@ const uint16_t half_rounded_up = 0x5004;
 const uint16_t half_rounded_max = 0xffff;
 const std::vector<uint16_t> half_rnde_rounding_expected{
     {half_rounded_down, half_rounded_up, half_rounded_max}};
+const std::vector<uint16_t> half_srnd_rounding_expected{
+    {half_zero, half_minus_zero, half_one, half_two, half_infinity,
+     half_srnd_no_carry_over, half_srnd_carry_over}};
+
+void test_srnd(float value, float random, uint16_t expected) {
+  ca::Half result = ca::Half(value, random);
+  REQUIRE(result.decode() == expected);
+}
 
 template <typename In, typename Out> void test(In value, Out expected) {
   auto result = cast<In, ca::half, Out>(value);
@@ -98,6 +122,14 @@ TEST_CASE("half from float with rnde rounding", "") {
   auto test_params = GENERATE(
       from_range(zip(float_rnde_rounding_values, half_rnde_rounding_expected)));
   test(std::get<0>(test_params), std::get<1>(test_params));
+}
+
+TEST_CASE("half from float with stochastic rounding", "") {
+  auto test_params = GENERATE(from_range(zip(float_srnd_rounding_values,
+                                             float_srnd_rounding_random_values,
+                                             half_srnd_rounding_expected)));
+  test_srnd(std::get<0>(test_params), std::get<1>(test_params),
+            std::get<2>(test_params));
 }
 
 const uint16_t half_nan = 0x7f00;

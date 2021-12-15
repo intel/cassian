@@ -40,6 +40,15 @@ public:
   explicit Half(float v);
 
   /**
+   * Constructor from float with stochastic rounding
+   *
+   * @param[in] v value to be converted to half with stochastic rounding
+   * @param[in] random randomly generated value to be used as rounding input
+   * @sa random_value
+   */
+  Half(float v, const float random);
+
+  /**
    * Metafunction to enable a constructor declaration if T is integral, double
    * or long double.
    *
