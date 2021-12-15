@@ -46,6 +46,18 @@ std::vector<Half> Runtime::read_buffer_to_vector(const Buffer &buffer) {
 }
 
 template <>
+std::vector<Tfloat> Runtime::read_buffer_to_vector(const Buffer &buffer) {
+  const size_t elements = buffer.size / sizeof(uint32_t);
+  std::vector<uint32_t> output_raw(elements);
+  read_buffer(buffer, output_raw.data());
+  std::vector<Tfloat> output;
+  output.reserve(elements);
+  std::transform(std::begin(output_raw), std::end(output_raw),
+                 std::back_inserter(output), Tfloat::encode);
+  return output;
+}
+
+template <>
 void Runtime::write_buffer_from_vector(const Buffer &buffer,
                                        const std::vector<Bfloat> &data) {
   std::vector<uint16_t> raw_data;
@@ -59,6 +71,16 @@ template <>
 void Runtime::write_buffer_from_vector(const Buffer &buffer,
                                        const std::vector<Half> &data) {
   std::vector<uint16_t> raw_data;
+  raw_data.reserve(data.size());
+  std::transform(std::begin(data), std::end(data), std::back_inserter(raw_data),
+                 [](auto v) { return v.decode(); });
+  write_buffer(buffer, raw_data.data());
+}
+
+template <>
+void Runtime::write_buffer_from_vector(const Buffer &buffer,
+                                       const std::vector<Tfloat> &data) {
+  std::vector<uint32_t> raw_data;
   raw_data.reserve(data.size());
   std::transform(std::begin(data), std::end(data), std::back_inserter(raw_data),
                  [](auto v) { return v.decode(); });
@@ -81,5 +103,6 @@ template <> std::string to_cm_string<float>() { return "float"; }
 template <> std::string to_cm_string<double>() { return "double"; }
 template <> std::string to_cm_string<half>() { return "half"; }
 template <> std::string to_cm_string<Bfloat>() { return "short"; }
+template <> std::string to_cm_string<Tfloat>() { return "float"; }
 
 } // namespace cassian

@@ -5,7 +5,7 @@
 #
 
 add_executable(test_fp_types src/main.cpp src/bfloat.cpp src/half.cpp
-                             src/common.hpp)
+                             src/tfloat.cpp src/common.hpp)
 
 target_link_libraries(test_fp_types PRIVATE Catch2::Catch2 cassian::fp_types
                                             cassian::utility)

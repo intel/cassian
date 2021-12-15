@@ -5,12 +5,9 @@
  *
  */
 
-#include <cassian/fp_types/half.hpp>
-#include <cassian/random/random.hpp>
 #include <cmath>
-#include <cstdint>
-#include <limits>
-#include <random>
+
+#include <cassian/random/random.hpp>
 
 namespace cassian {
 
@@ -77,6 +74,14 @@ half generate_value<half>(const half min, const half max, const int seed) {
   const auto f_min = static_cast<float>(min);
   const auto f_max = static_cast<float>(max);
   return static_cast<half>(generate_value<float>(f_min, f_max, seed));
+}
+
+template <>
+tfloat generate_value<tfloat>(const tfloat min, const tfloat max,
+                              const int seed) {
+  const auto f_min = static_cast<float>(min);
+  const auto f_max = static_cast<float>(max);
+  return static_cast<tfloat>(generate_value<float>(f_min, f_max, seed));
 }
 
 } // namespace cassian

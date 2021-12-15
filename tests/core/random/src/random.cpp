@@ -7,6 +7,7 @@
 
 #include <cassian/fp_types/bfloat.hpp>
 #include <cassian/fp_types/half.hpp>
+#include <cassian/fp_types/tfloat.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
@@ -186,6 +187,17 @@ TEST_CASE("generate_value") {
         const ca::half output = ca::generate_value(min, max, seed);
         REQUIRE(output >= min);
         REQUIRE(output <= max);
+      }
+    }
+    SECTION("tfloat") {
+      const ca::tfloat min(10.1F);
+      const ca::tfloat max(11.5F);
+      for (int i = 0; i < iterations; ++i) {
+        const ca::tfloat output = ca::generate_value(min, max, seed);
+        REQUIRE(output >= min);
+        REQUIRE(output <= max);
+        const uint32_t unused_bits = output.decode() & 0x00003ff;
+        REQUIRE(unused_bits == 0);
       }
     }
     SECTION("int16_4_t") {

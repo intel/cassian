@@ -21,6 +21,7 @@
 
 #include <cassian/fp_types/bfloat.hpp>
 #include <cassian/fp_types/half.hpp>
+#include <cassian/fp_types/tfloat.hpp>
 #include <cassian/runtime/access_qualifier.hpp>
 #include <cassian/runtime/device_properties.hpp>
 #include <cassian/runtime/feature.hpp>
@@ -823,6 +824,13 @@ Runtime::read_buffer_to_vector<Bfloat>(const Buffer &buffer);
 template <>
 std::vector<Half> Runtime::read_buffer_to_vector<Half>(const Buffer &buffer);
 
+/**
+ * Specialization for Tfloat.
+ */
+template <>
+std::vector<Tfloat>
+Runtime::read_buffer_to_vector<Tfloat>(const Buffer &buffer);
+
 template <typename T>
 void Runtime::write_buffer_from_vector(const Buffer &buffer,
                                        const std::vector<T> &data) {
@@ -842,6 +850,13 @@ void Runtime::write_buffer_from_vector<Bfloat>(const Buffer &buffer,
 template <>
 void Runtime::write_buffer_from_vector<Half>(const Buffer &buffer,
                                              const std::vector<Half> &data);
+
+/**
+ * Specialization for Tfloat.
+ */
+template <>
+void Runtime::write_buffer_from_vector<Tfloat>(const Buffer &buffer,
+                                               const std::vector<Tfloat> &data);
 
 /**
  * Exception class used when a runtime encounters a fatal error.

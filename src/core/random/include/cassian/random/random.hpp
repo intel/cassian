@@ -16,6 +16,7 @@
 
 #include <cassian/fp_types/bfloat.hpp>
 #include <cassian/fp_types/half.hpp>
+#include <cassian/fp_types/tfloat.hpp>
 #include <cassian/vector/vector.hpp>
 
 /**
@@ -164,6 +165,15 @@ double generate_value<double>(const double min, const double max,
  */
 template <>
 bfloat generate_value<bfloat>(const bfloat min, const bfloat max,
+                              const int seed);
+
+/**
+ * Specialization for tfloat.
+ *
+ * @overload
+ */
+template <>
+tfloat generate_value<tfloat>(const tfloat min, const tfloat max,
                               const int seed);
 
 /**
