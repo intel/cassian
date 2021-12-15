@@ -6,7 +6,7 @@
 
 list(APPEND PUBLIC_HEADERS)
 list(APPEND PRIVATE_HEADERS)
-list(APPEND SOURCES "src/bfloat.cpp")
+list(APPEND SOURCES "src/bfloat.cpp" "src/tfloat.cpp")
 list(APPEND KERNELS "kernels/cm_convert/convert_genx.cpp")
 
 add_executable(cm_convert ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
