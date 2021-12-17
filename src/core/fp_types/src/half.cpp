@@ -105,6 +105,7 @@ Half::Half(float v, const float random) {
   const int exponent_half_shift = 10;
   const uint16_t exponent_half_mask = 0x7c00;
   const uint16_t mantissa_half_mask = 0x3ff;
+  const uint32_t random_mask = 0x00001fff;
   uint16_t mantissa =
       (mantissa_float >> mantissa_float_shift) & mantissa_half_mask;
   if (exponent != 0 && exponent != highest_float_exponent) {
@@ -132,8 +133,9 @@ Half::Half(float v, const float random) {
     }
   } else {
     // stochastic rounding
-    uint32_t mantissa_float_with_random =
-        mantissa_float + *reinterpret_cast<const uint32_t *>(&random);
+    uint32_t rnd = 0;
+    std::memcpy(&rnd, &random, sizeof(rnd));
+    uint32_t mantissa_float_with_random = mantissa_float + (rnd & random_mask);
     const bool carry_over = (mantissa_float & ~mantissa_float_mask) !=
                             (mantissa_float_with_random & ~mantissa_float_mask);
     if (carry_over) {
