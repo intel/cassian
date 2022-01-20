@@ -85,7 +85,11 @@ TEMPLATE_TEST_CASE("cm_sample16_1d", "[cm][image][sampler]", rgba_float,
                     ca::to_cm_string<typename TestType::read_type>())
             .str());
 
-    REQUIRE_THAT(ref, Catch::Equals(res));
+    if constexpr (ca::is_floating_point_v<typename TestType::read_type>) {
+      REQUIRE_THAT(ref, Catch::Approx(res));
+    } else {
+      REQUIRE_THAT(ref, Catch::Equals(res));
+    }
   }
 }
 
@@ -162,7 +166,11 @@ TEMPLATE_TEST_CASE("cm_sample16_2d", "[cm][image][sampler]", rgba_float,
                     ca::to_cm_string<typename TestType::read_type>())
             .str());
 
-    REQUIRE_THAT(ref, Catch::Equals(res));
+    if constexpr (ca::is_floating_point_v<typename TestType::read_type>) {
+      REQUIRE_THAT(ref, Catch::Approx(res));
+    } else {
+      REQUIRE_THAT(ref, Catch::Equals(res));
+    }
   }
 }
 
@@ -251,7 +259,11 @@ TEMPLATE_TEST_CASE("cm_sample16_3d", "[cm][image][sampler]", rgba_float,
                     ca::to_cm_string<typename TestType::read_type>())
             .str());
 
-    REQUIRE_THAT(ref, Catch::Equals(res));
+    if constexpr (ca::is_floating_point_v<typename TestType::read_type>) {
+      REQUIRE_THAT(ref, Catch::Approx(res));
+    } else {
+      REQUIRE_THAT(ref, Catch::Equals(res));
+    }
   }
 }
 
@@ -341,7 +353,11 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
                          .define("READ_TYPE", ca::to_cm_string<read_t>())
                          .str());
 
-    REQUIRE_THAT(ref, Catch::Equals(res));
+    if constexpr (ca::is_floating_point_v<typename TestType::read_type>) {
+      REQUIRE_THAT(ref, Catch::Approx(res));
+    } else {
+      REQUIRE_THAT(ref, Catch::Equals(res));
+    }
     REQUIRE(nullmask[0] == 0);
   }
 }

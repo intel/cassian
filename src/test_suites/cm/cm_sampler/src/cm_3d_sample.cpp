@@ -99,7 +99,11 @@ TEMPLATE_TEST_CASE("cm_3d_sample_2d", "[cm][image][sampler]", rgba_float,
                       ca::to_cm_string<typename TestType::read_type>())
               .str());
 
-      REQUIRE_THAT(ref, Catch::Equals(res));
+      if constexpr (ca::is_floating_point_v<typename TestType::read_type>) {
+        REQUIRE_THAT(ref, Catch::Approx(res));
+      } else {
+        REQUIRE_THAT(ref, Catch::Equals(res));
+      }
     }
   }
 }
