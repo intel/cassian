@@ -415,7 +415,7 @@ void LevelZeroRuntime::release_sampler(const Sampler &sampler) {
 ze_module_handle_t LevelZeroRuntime::ze_create_module(
     const std::string &source, const std::string &build_options,
     const std::string &program_type,
-    const std::optional<std::string> &spirv_options) {
+    const std::optional<std::string> &spirv_options, bool quiet) {
   ze_result_t result = ZE_RESULT_SUCCESS;
   ze_module_handle_t module = nullptr;
   ze_module_build_log_handle_t build_log_handle = nullptr;
@@ -434,7 +434,7 @@ ze_module_handle_t LevelZeroRuntime::ze_create_module(
     auto device_id = get_device_property(DeviceProperty::device_id);
 
     const std::vector<uint8_t> spv =
-        generate_spirv_from_source(device_id, source, build_options);
+        generate_spirv_from_source(device_id, source, build_options, quiet);
 
     ze_module_desc_t module_description = {};
     module_description.stype = ZE_STRUCTURE_TYPE_MODULE_DESC;
@@ -456,8 +456,11 @@ ze_module_handle_t LevelZeroRuntime::ze_create_module(
     result = wrapper_.zeModuleCreate(context_, device_, &module_description,
                                      &module, &build_log_handle);
     if (result != ZE_RESULT_SUCCESS) {
-      const auto build_log = ze_get_module_build_log(build_log_handle);
-      logging::error() << "Build log:\n" << build_log << '\n';
+      if (!quiet) {
+        const auto build_log = ze_get_module_build_log(build_log_handle);
+        logging::error() << "Build log:\n" << build_log << '\n';
+      }
+
       throw RuntimeException("Failed to create Level Zero module");
     }
   } else {
@@ -470,10 +473,10 @@ ze_module_handle_t LevelZeroRuntime::ze_create_module(
 Kernel LevelZeroRuntime::create_kernel(
     const std::string &kernel_name, const std::string &source,
     const std::string &build_options, const std::string &program_type,
-    const std::optional<std::string> &spirv_options) {
+    const std::optional<std::string> &spirv_options, bool quiet) {
   ze_result_t result = ZE_RESULT_SUCCESS;
-  ze_module_handle_t module =
-      ze_create_module(source, build_options, program_type, spirv_options);
+  ze_module_handle_t module = ze_create_module(
+      source, build_options, program_type, spirv_options, quiet);
 
   ze_kernel_desc_t kernel_description = {};
   kernel_description.stype = ZE_STRUCTURE_TYPE_KERNEL_DESC;
@@ -497,7 +500,7 @@ Kernel LevelZeroRuntime::create_kernel(
 Kernel LevelZeroRuntime::create_kernel_from_multiple_programs(
     const std::string &kernel_name,
     const std::vector<ProgramDescriptor> &program_descriptors,
-    const std::string & /*linker_options*/) {
+    const std::string & /*linker_options*/, bool quiet) {
   ze_result_t result = ZE_RESULT_SUCCESS;
   ze_module_build_log_handle_t link_log_handle = nullptr;
   std::vector<ze_module_handle_t> modules;
@@ -513,18 +516,21 @@ Kernel LevelZeroRuntime::create_kernel_from_multiple_programs(
   });
 
   std::transform(std::begin(program_descriptors), std::end(program_descriptors),
-                 std::back_inserter(modules), [this](const auto &desc) {
+                 std::back_inserter(modules), [this, quiet](const auto &desc) {
                    return ze_create_module(desc.source, desc.compiler_options,
                                            desc.program_type,
-                                           desc.spirv_options);
+                                           desc.spirv_options, quiet);
                  });
 
   result = wrapper_.zeModuleDynamicLink(modules.size(), modules.data(),
                                         &link_log_handle);
 
   if (result != ZE_RESULT_SUCCESS) {
-    const auto link_log = ze_get_module_build_log(link_log_handle);
-    logging::error() << "Link log:\n" << link_log << '\n';
+    if (!quiet) {
+      const auto link_log = ze_get_module_build_log(link_log_handle);
+      logging::error() << "Link log:\n" << link_log << '\n';
+    }
+
     throw RuntimeException("Failed to link Level Zero modules");
   }
 

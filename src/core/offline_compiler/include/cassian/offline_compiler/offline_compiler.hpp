@@ -25,7 +25,8 @@ namespace cassian {
  * @returns path to output binary file with generated SPIR-V module.
  */
 std::string generate_spirv(uint32_t device_id, const std::string &path,
-                           const std::string &build_options = std::string());
+                           const std::string &build_options = std::string(),
+                           bool quiet = false);
 
 /**
  * Generate SPIR-V module from source.
@@ -36,7 +37,8 @@ std::string generate_spirv(uint32_t device_id, const std::string &path,
  */
 std::vector<uint8_t>
 generate_spirv_from_source(uint32_t device_id, const std::string &source,
-                           const std::string &build_options = std::string());
+                           const std::string &build_options = std::string(),
+                           bool quiet = false);
 
 /**
  * Exception class used when an offline compiler encounters a fatal error.

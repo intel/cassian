@@ -53,14 +53,14 @@ void DummyRuntime::release_sampler(const Sampler & /*sampler*/) {}
 Kernel DummyRuntime::create_kernel(
     const std::string & /*kernel_name*/, const std::string & /*source*/,
     const std::string & /*build_options*/, const std::string & /*program_type*/,
-    const std::optional<std::string> & /*spirv_options*/) {
+    const std::optional<std::string> & /*spirv_options*/, bool /*quiet*/) {
   return Kernel();
 }
 
 Kernel DummyRuntime::create_kernel_from_multiple_programs(
     const std::string & /*kernel_name*/,
     const std::vector<ProgramDescriptor> & /*program_descriptors*/,
-    const std::string & /*linker_options*/) {
+    const std::string & /*linker_options*/, bool /*quiet*/) {
   return Kernel();
 }
 

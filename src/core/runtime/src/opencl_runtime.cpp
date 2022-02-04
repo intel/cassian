@@ -284,10 +284,11 @@ void OpenCLRuntime::release_sampler(const Sampler &sampler) {
 Kernel OpenCLRuntime::create_kernel(
     const std::string &kernel_name, const std::string &source,
     const std::string &build_options, const std::string &program_type,
-    const std::optional<std::string> &spirv_options) {
+    const std::optional<std::string> &spirv_options, bool quiet) {
   cl_int result = CL_SUCCESS;
 
-  cl_program program = cl_create_program(source, build_options, program_type);
+  cl_program program =
+      cl_create_program(source, build_options, program_type, quiet);
 
   const char *options = build_options.c_str();
   if (program_type == "spirv") {
@@ -301,8 +302,10 @@ Kernel OpenCLRuntime::create_kernel(
   result =
       wrapper_.clBuildProgram(program, 1, &device_, options, nullptr, nullptr);
   if (result != CL_SUCCESS) {
-    const auto build_log = cl_get_program_build_info(program);
-    logging::error() << "Build log:\n" << build_log << '\n';
+    if (!quiet) {
+      const auto build_log = cl_get_program_build_info(program);
+      logging::error() << "Build log:\n" << build_log << '\n';
+    }
     throw RuntimeException("Failed to build OpenCL program");
   }
 
@@ -326,7 +329,7 @@ Kernel OpenCLRuntime::create_kernel(
 Kernel OpenCLRuntime::create_kernel_from_multiple_programs(
     const std::string &kernel_name,
     const std::vector<ProgramDescriptor> &program_descriptors,
-    const std::string &linker_options) {
+    const std::string &linker_options, bool quiet) {
   cl_int result = CL_SUCCESS;
   std::vector<cl_program> compiled_programs;
   cl_program program = nullptr;
@@ -334,13 +337,15 @@ Kernel OpenCLRuntime::create_kernel_from_multiple_programs(
   for (const auto &program_desc : program_descriptors) {
     const auto &compiler_options = program_desc.compiler_options;
     program = cl_create_program(program_desc.source, compiler_options,
-                                program_desc.program_type);
+                                program_desc.program_type, quiet);
     result = wrapper_.clCompileProgram(program, 1, &device_,
                                        compiler_options.c_str(), 0, nullptr,
                                        nullptr, nullptr, nullptr);
     if (result != CL_SUCCESS) {
-      const auto build_log = cl_get_program_build_info(program);
-      logging::error() << "Build log:\n" << build_log << '\n';
+      if (!quiet) {
+        const auto build_log = cl_get_program_build_info(program);
+        logging::error() << "Build log:\n" << build_log << '\n';
+      }
       throw RuntimeException("Failed to compile OpenCL program");
     }
     compiled_programs.push_back(program);
@@ -349,8 +354,10 @@ Kernel OpenCLRuntime::create_kernel_from_multiple_programs(
       context_, 1, &device_, linker_options.c_str(), compiled_programs.size(),
       compiled_programs.data(), nullptr, nullptr, &result);
   if (result != CL_SUCCESS) {
-    const auto build_log = cl_get_program_build_info(program);
-    logging::error() << "Build log:\n" << build_log << '\n';
+    if (!quiet) {
+      const auto build_log = cl_get_program_build_info(program);
+      logging::error() << "Build log:\n" << build_log << '\n';
+    }
     throw RuntimeException("Failed to link OpenCL program");
   }
   cl_kernel kernel =
@@ -469,7 +476,7 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
         device_, CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS, sizeof(read_write_image),
         &read_write_image, nullptr);
     if (result != CL_SUCCESS) {
-        throw RuntimeException("Failed to get OpenCL device info");
+      throw RuntimeException("Failed to get OpenCL device info");
     }
     return read_write_image != 0;
   }
@@ -558,7 +565,8 @@ OpenCLRuntime::cl_get_program_build_info(const cl_program &program) const {
 
 cl_program OpenCLRuntime::cl_create_program(const std::string &source,
                                             const std::string &compile_options,
-                                            const std::string &program_type) {
+                                            const std::string &program_type,
+                                            bool quiet) {
   cl_program program = nullptr;
   cl_int result = CL_SUCCESS;
   if (program_type == "source") {
@@ -572,7 +580,7 @@ cl_program OpenCLRuntime::cl_create_program(const std::string &source,
     auto device_id = get_device_property(DeviceProperty::device_id);
 
     const std::vector<uint8_t> spv =
-        generate_spirv_from_source(device_id, source, compile_options);
+        generate_spirv_from_source(device_id, source, compile_options, quiet);
 
     program = wrapper_.clCreateProgramWithIL(
         context_, spv.data(), sizeof(uint8_t) * spv.size(), &result);

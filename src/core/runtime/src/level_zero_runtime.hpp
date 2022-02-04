@@ -44,15 +44,16 @@ public:
   void release_image(const Image &image) override;
   void release_sampler(const Sampler &sampler) override;
 
-  Kernel
-  create_kernel(const std::string &kernel_name, const std::string &source,
-                const std::string &build_options,
-                const std::string &program_type,
-                const std::optional<std::string> &spirv_options) override;
+  Kernel create_kernel(const std::string &kernel_name,
+                       const std::string &source,
+                       const std::string &build_options,
+                       const std::string &program_type,
+                       const std::optional<std::string> &spirv_options,
+                       bool quiet) override;
   Kernel create_kernel_from_multiple_programs(
       const std::string &kernel_name,
       const std::vector<ProgramDescriptor> &program_descriptors,
-      const std::string &linker_options) override;
+      const std::string &linker_options, bool quiet) override;
   void set_kernel_argument(const Kernel &kernel, int argument_index,
                            const Buffer &buffer) override;
   void set_kernel_argument(const Kernel &kernel, int argument_index,
@@ -95,7 +96,7 @@ private:
   ze_module_handle_t
   ze_create_module(const std::string &source, const std::string &build_options,
                    const std::string &program_type,
-                   const std::optional<std::string> &spirv_options);
+                   const std::optional<std::string> &spirv_options, bool quiet);
 };
 
 } // namespace cassian

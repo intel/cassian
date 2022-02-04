@@ -17,8 +17,9 @@ bool check_kernel_compilation(Runtime *runtime, const std::string &kernel_name,
                               const std::string &compiler_flags,
                               const std::string &program_type) {
   try {
+    bool quiet = true;
     auto k = runtime->create_kernel(kernel_name, source, compiler_flags,
-                                    program_type);
+                                    program_type, std::nullopt, quiet);
     runtime->release_kernel(k);
   } catch (const RuntimeException &e) {
     return false;

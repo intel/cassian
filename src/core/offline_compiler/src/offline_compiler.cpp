@@ -70,11 +70,12 @@ public:
 };
 
 std::string generate_spirv(uint32_t device_id, const std::string &path,
-                           const std::string &build_options) {
+                           const std::string &build_options, bool quiet) {
   static const std::string spv_file = "kernel.spv";
 
   auto source = load_text_file(path);
-  auto spirv = generate_spirv_from_source(device_id, source, build_options);
+  auto spirv = generate_spirv_from_source(device_id, source, build_options,
+                                          quiet);
   save_binary_file(spirv, spv_file);
 
   return spv_file;
@@ -82,7 +83,7 @@ std::string generate_spirv(uint32_t device_id, const std::string &path,
 
 std::vector<uint8_t>
 generate_spirv_from_source(uint32_t device_id, const std::string &source,
-                           const std::string &build_options) {
+                           const std::string &build_options, bool quiet) {
   static Ocloc ocloc;
 
   static const std::string src_file = "source.cl";
@@ -106,6 +107,10 @@ generate_spirv_from_source(uint32_t device_id, const std::string &source,
       "-file",   src_file.c_str(), "-options",  build_options.c_str(),
       "-output", spv_file.c_str(), "-spv_only", "-output_no_suffix",
   };
+
+  if (quiet) {
+    args.push_back("-q");
+  }
 
   const uint32_t num_sources = 1;
   const uint8_t *data_sources[] = {
@@ -134,16 +139,19 @@ generate_spirv_from_source(uint32_t device_id, const std::string &source,
       &num_outputs, &data_outputs, &len_outputs, &name_outputs); // outputs
 
   if (status != 0) {
-    auto *logp =
-        std::find_if(name_outputs, name_outputs + num_outputs,
-                     [&](const char *name) { return name == log_file; });
+    if (!quiet) {
+      auto *logp =
+          std::find_if(name_outputs, name_outputs + num_outputs,
+                       [&](const char *name) { return name == log_file; });
 
-    assert(logp != name_outputs + num_outputs);
-    const auto log_index = logp - name_outputs;
-    std::string_view log(reinterpret_cast<char *>(data_outputs[log_index]),
-                         len_outputs[log_index]);
+      assert(logp != name_outputs + num_outputs);
+      const auto log_index = logp - name_outputs;
+      std::string_view log(reinterpret_cast<char *>(data_outputs[log_index]),
+                           len_outputs[log_index]);
 
-    logging::error() << "Build log:\n" << log << '\n';
+      logging::error() << "Build log:\n" << log << '\n';
+    }
+
     throw OfflineCompilerException("Offline compiler failed");
   }
 
