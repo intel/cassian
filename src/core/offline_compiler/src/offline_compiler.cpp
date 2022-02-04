@@ -69,20 +69,22 @@ public:
             library_->get_function("oclocFreeOutput"))) {}
 };
 
-std::string generate_spirv(uint32_t device_id, const std::string &path,
+std::string generate_spirv(uint32_t device_id, int32_t device_revision,
+                           const std::string &path,
                            const std::string &build_options, bool quiet) {
   static const std::string spv_file = "kernel.spv";
 
   auto source = load_text_file(path);
-  auto spirv = generate_spirv_from_source(device_id, source, build_options,
-                                          quiet);
+  auto spirv = generate_spirv_from_source(device_id, device_revision, source,
+                                          build_options, quiet);
   save_binary_file(spirv, spv_file);
 
   return spv_file;
 }
 
 std::vector<uint8_t>
-generate_spirv_from_source(uint32_t device_id, const std::string &source,
+generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
+                           const std::string &source,
                            const std::string &build_options, bool quiet) {
   static Ocloc ocloc;
 
@@ -91,22 +93,32 @@ generate_spirv_from_source(uint32_t device_id, const std::string &source,
   static const std::string log_file = "stdout.log";
 
   std::string device;
+  std::string revision;
 
-  if (device_id == 0) {
-    logging::info() << "Unknown device ID, assume SKL\n";
-    device = "skl";
-  } else {
+  std::vector<const char *> args = {
+      "ocloc",     "compile",
+      "-file",     src_file.c_str(),
+      "-options",  build_options.c_str(),
+      "-output",   spv_file.c_str(),
+      "-spv_only", "-output_no_suffix",
+  };
+
+  if (device_id != 0) {
     std::ostringstream out;
     out << "0x" << std::hex << std::setw(4) << std::setfill('0')
         << std::noshowbase << device_id;
     device = out.str();
+
+    args.push_back("-device");
+    args.push_back(device.c_str());
   }
 
-  std::vector<const char *> args = {
-      "ocloc",   "compile",        "-device",   device.c_str(),
-      "-file",   src_file.c_str(), "-options",  build_options.c_str(),
-      "-output", spv_file.c_str(), "-spv_only", "-output_no_suffix",
-  };
+  if (device_revision >= 0) {
+    revision = std::to_string(device_revision);
+
+    args.push_back("-revision_id");
+    args.push_back(revision.c_str());
+  }
 
   if (quiet) {
     args.push_back("-q");

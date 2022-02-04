@@ -26,6 +26,7 @@ enum class DeviceProperty {
   image2d,
   max_local_memory_size,
   device_id,
+  device_revision,
   simd_width,
 };
 

@@ -527,6 +527,8 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     }
 #endif // defined(cl_intel_device_attribute_query)
     return 0;
+  case DeviceProperty::device_revision:
+    return -1;
   case DeviceProperty::simd_width: {
     // OpenCL has no way to detect SIMD width. Trying Intel extension
     if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
@@ -577,10 +579,13 @@ cl_program OpenCLRuntime::cl_create_program(const std::string &source,
       throw RuntimeException("Failed to create OpenCL program from source");
     }
   } else if (program_type == "spirv") {
-    auto device_id = get_device_property(DeviceProperty::device_id);
+    static const auto device_id =
+        get_device_property(DeviceProperty::device_id);
+    static const auto device_revision =
+        get_device_property(DeviceProperty::device_revision);
 
-    const std::vector<uint8_t> spv =
-        generate_spirv_from_source(device_id, source, compile_options, quiet);
+    const std::vector<uint8_t> spv = generate_spirv_from_source(
+        device_id, device_revision, source, compile_options, quiet);
 
     program = wrapper_.clCreateProgramWithIL(
         context_, spv.data(), sizeof(uint8_t) * spv.size(), &result);
