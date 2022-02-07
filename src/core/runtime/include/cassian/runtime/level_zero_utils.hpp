@@ -178,6 +178,9 @@ ze_image_format_t ze_create_image_format(const ImageFormat format,
     f.w = ZE_IMAGE_FORMAT_SWIZZLE_R;
     number_of_components = 4;
     break;
+  case ImageChannelOrder::nv12:
+    f.layout = ZE_IMAGE_FORMAT_LAYOUT_NV12;
+    return f;
   default:
     throw RuntimeException("Unsupported channel order for level zero");
   }

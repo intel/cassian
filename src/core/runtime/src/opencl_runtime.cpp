@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -134,7 +134,9 @@ Image OpenCLRuntime::create_image(const ImageDimensions dim,
                                   const ImageChannelOrder order,
                                   const AccessQualifier access) {
   cl_int result = CL_SUCCESS;
+
   const cl_image_format image_format = cl_create_image_format(format, order);
+
   cl_image_desc desc = {};
   desc.image_type = cl_get_image_type(type);
   desc.image_width = dim.width;
@@ -145,7 +147,14 @@ Image OpenCLRuntime::create_image(const ImageDimensions dim,
   desc.image_slice_pitch = 0;
   desc.num_mip_levels = 0;
   desc.num_samples = 0;
-  const cl_mem_flags flags = append_access_qualifier_flags(0, access);
+  desc.mem_object = nullptr; // NOLINT
+
+  cl_mem_flags flags =
+      order == ImageChannelOrder::nv12
+          ? CL_MEM_HOST_NO_ACCESS | CL_MEM_ACCESS_FLAGS_UNRESTRICTED_INTEL
+          : 0;
+  flags = append_access_qualifier_flags(flags, access);
+
   cl_mem image = wrapper_.clCreateImage(context_, flags, &image_format, &desc,
                                         nullptr, &result);
   if (result != CL_SUCCESS) {
@@ -153,6 +162,50 @@ Image OpenCLRuntime::create_image(const ImageDimensions dim,
   }
   auto id = reinterpret_cast<std::uintptr_t>(image);
   images_[id] = image;
+  return {id, dim};
+}
+
+Image OpenCLRuntime::get_image_plane(Image image, ImagePlane plane,
+                                     AccessQualifier access) {
+  cl_int result = CL_SUCCESS;
+
+  cl_image_format image_format = {};
+  image_format.image_channel_data_type = CL_UNORM_INT8;
+
+  cl_image_desc desc = {};
+  desc.image_type = cl_get_image_type(ImageType::t_2d);
+  desc.image_width = 0;
+  desc.image_height = 0;
+  desc.image_array_size = 0;
+  desc.image_row_pitch = 0;
+  desc.image_slice_pitch = 0;
+  desc.num_mip_levels = 0;
+  desc.num_samples = 0;
+  desc.mem_object = images_[image.id];  // NOLINT
+
+  auto dim = image.dim;
+
+  switch (plane) {
+  case ImagePlane::y:
+    image_format.image_channel_order = CL_R;
+    desc.image_depth = 0;
+    break;
+  case ImagePlane::uv:
+    image_format.image_channel_order = CL_RG;
+    desc.image_depth = 1;
+    dim.width /= 2;
+    dim.height /= 2;
+    break;
+  }
+
+  cl_mem_flags flags = append_access_qualifier_flags(0, access);
+  cl_mem image_view = wrapper_.clCreateImage(context_, flags, &image_format,
+                                             &desc, nullptr, &result);
+  if (result != CL_SUCCESS) {
+    throw RuntimeException("Failed to create OpenCL image");
+  }
+  auto id = reinterpret_cast<std::uintptr_t>(image_view);
+  images_[id] = image_view;
   return {id, dim};
 }
 

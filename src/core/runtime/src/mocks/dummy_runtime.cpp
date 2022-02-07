@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -25,6 +25,11 @@ Image DummyRuntime::create_image(const ImageDimensions /*dim*/,
                                  const ImageFormat /*format*/,
                                  const ImageChannelOrder /*order*/,
                                  AccessQualifier /*access*/) {
+  return Image();
+}
+
+Image DummyRuntime::get_image_plane(Image /*image*/, ImagePlane /*plane*/,
+                                    AccessQualifier /*access*/) {
   return Image();
 }
 

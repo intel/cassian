@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -30,6 +30,8 @@ public:
   Image create_image(const ImageDimensions dim, const ImageType type,
                      const ImageFormat format, const ImageChannelOrder order,
                      AccessQualifier access) override;
+  Image get_image_plane(Image image, ImagePlane plane,
+                        AccessQualifier access) override;
   Sampler create_sampler(SamplerCoordinates coordinates,
                          SamplerAddressingMode address_mode,
                          SamplerFilterMode filter_mode) override;

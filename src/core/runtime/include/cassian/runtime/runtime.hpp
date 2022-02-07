@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -352,6 +352,19 @@ public:
   create_image(const ImageDimensions dim, const ImageType type,
                const ImageFormat format, const ImageChannelOrder order,
                AccessQualifier access = AccessQualifier::read_write) = 0;
+
+  /**
+   * Create image plane view.
+   *
+   * @param[in] image NV12 image object to get plane view
+   * @param[in] access access qualifier
+   * @returns Image object.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  virtual Image
+  get_image_plane(Image image, ImagePlane plane,
+                  AccessQualifier access = AccessQualifier::read_only) = 0;
 
   /**
    * Create sampler.

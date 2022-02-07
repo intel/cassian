@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -103,6 +103,9 @@ cl_image_format cl_create_image_format(const ImageFormat format,
     break;
   case ImageChannelOrder::abgr:
     f.image_channel_order = CL_ABGR;
+    break;
+  case ImageChannelOrder::nv12:
+    f.image_channel_order = CL_NV12_INTEL;
     break;
   default:
     throw RuntimeException("Unsupported channel order for OpenCL");

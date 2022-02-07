@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -126,7 +126,23 @@ enum class ImageFormat {
 /**
  * Image Channel Order.
  */
-enum class ImageChannelOrder { r, a, rg, ra, rgb, rgba, bgra, argb, abgr };
+enum class ImageChannelOrder {
+  r,
+  a,
+  rg,
+  ra,
+  rgb,
+  rgba,
+  bgra,
+  argb,
+  abgr,
+  nv12
+};
+
+/**
+ * Image Plane.
+ */
+enum class ImagePlane { y, uv };
 
 /**
  * Calculates image pixel size

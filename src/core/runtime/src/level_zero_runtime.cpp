@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -120,7 +120,7 @@ Image LevelZeroRuntime::create_image(const ImageDimensions dim,
                                      const ImageType type,
                                      const ImageFormat format,
                                      const ImageChannelOrder order,
-                                     AccessQualifier /*access*/) {
+                                     AccessQualifier access) {
   ze_image_desc_t image_description = {};
   image_description.stype = ZE_STRUCTURE_TYPE_IMAGE_DESC;
   image_description.pNext = nullptr;
@@ -130,7 +130,8 @@ Image LevelZeroRuntime::create_image(const ImageDimensions dim,
   image_description.depth = dim.depth;
   image_description.miplevels = 0;
   image_description.type = ze_get_image_type(type);
-  image_description.flags = 0;
+  image_description.flags =
+      access == AccessQualifier::read_only ? 0 : ZE_IMAGE_FLAG_KERNEL_WRITE;
   image_description.format = ze_create_image_format(format, order);
 
   ze_image_handle_t image = nullptr;
@@ -141,6 +142,53 @@ Image LevelZeroRuntime::create_image(const ImageDimensions dim,
   }
   auto id = reinterpret_cast<std::uintptr_t>(image);
   images_[id] = image;
+  return {id, dim};
+}
+
+Image LevelZeroRuntime::get_image_plane(Image image, ImagePlane plane,
+                                        AccessQualifier access) {
+  ImageChannelOrder order;
+  auto dim = image.dim;
+
+  ze_image_view_planar_exp_desc_t plane_description = {};
+  plane_description.stype = ZE_STRUCTURE_TYPE_IMAGE_VIEW_PLANAR_EXP_DESC;
+  plane_description.pNext = nullptr;
+
+  switch (plane) {
+  case ImagePlane::y:
+    order = ImageChannelOrder::r;
+    plane_description.planeIndex = 0;
+    break;
+  case ImagePlane::uv:
+    order = ImageChannelOrder::rg;
+    plane_description.planeIndex = 1;
+    dim.width /= 2;
+    dim.height /= 2;
+    break;
+  }
+
+  ze_image_desc_t image_description = {};
+  image_description.stype = ZE_STRUCTURE_TYPE_IMAGE_DESC;
+  image_description.pNext = &plane_description;
+  image_description.arraylevels = 0;
+  image_description.width = dim.width;
+  image_description.height = dim.height;
+  image_description.depth = dim.depth;
+  image_description.miplevels = 0;
+  image_description.type = ze_get_image_type(ImageType::t_2d);
+  image_description.flags =
+      access == AccessQualifier::read_only ? 0 : ZE_IMAGE_FLAG_KERNEL_WRITE;
+  image_description.format =
+      ze_create_image_format(ImageFormat::unorm_int8, order);
+
+  ze_image_handle_t image_view = nullptr;
+  ze_result_t result = wrapper_.zeImageViewCreateExp(
+      context_, device_, &image_description, images_[image.id], &image_view);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to create Level Zero image view");
+  }
+  auto id = reinterpret_cast<std::uintptr_t>(image_view);
+  images_[id] = image_view;
   return {id, dim};
 }
 
