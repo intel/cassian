@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2021-2022 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -8,6 +8,7 @@ list(
   APPEND
   PUBLIC_HEADERS
   "include/cassian/image/image.hpp"
+  "include/cassian/image/nv12.hpp"
   "include/cassian/image/pixel/common.hpp"
   "include/cassian/image/pixel/normalized.hpp"
   "include/cassian/image/pixel/unnormalized.hpp")

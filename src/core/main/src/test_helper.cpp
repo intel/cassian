@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
+#include <cassian/image/nv12.hpp>
 #include <cassian/main/test_helper.hpp>
 #include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
@@ -108,6 +109,16 @@ cassian::Image Helper::create_image(const ImageDimensions dim,
   return img;
 }
 
+cassian::Image Helper::get_image_plane(cassian::Image image,
+                                       cassian::ImagePlane plane) {
+  auto *rt = config.runtime();
+
+  auto img = rt->get_image_plane(image, plane);
+  images_.push_back(img);
+
+  return img;
+}
+
 cassian::Sampler Helper::create_sampler(SamplerCoordinates coordinates,
                                         SamplerAddressingMode address_mode,
                                         SamplerFilterMode filter_mode) {
@@ -118,7 +129,6 @@ cassian::Sampler Helper::create_sampler(SamplerCoordinates coordinates,
 
   return sampler;
 }
-
 } // namespace detail
 
 Runtime *runtime() {
@@ -250,6 +260,65 @@ void kernel(std::array<size_t, 3> global_work_size,
 
   h.kernel(name, program_descriptors, linker_options);
   h.execute(global_work_size, local_work_size);
+}
+
+void input(const Nv12Image &data) {
+  auto &h = detail::Helper::instance();
+  auto *rt = h.config.runtime();
+
+  auto image = h.create_image(data.dimensions(), Nv12Image::type,
+                              Nv12Image::format, Nv12Image::order);
+
+  auto y_plane = h.get_image_plane(image, ImagePlane::y);
+  rt->write_image(y_plane, data.y_plane.data());
+
+  auto uv_plane = h.get_image_plane(image, ImagePlane::uv);
+  rt->write_image(uv_plane, data.uv_plane.data());
+
+  h.pass(image);
+}
+
+void output(Nv12Image &data) {
+  auto &h = detail::Helper::instance();
+  auto *rt = h.config.runtime();
+
+  auto image = h.create_image(data.dimensions(), Nv12Image::type,
+                              Nv12Image::format, Nv12Image::order);
+  h.pass(image);
+
+  h.add_action_after_exec([rt, &data, image]() mutable {
+    auto &h = detail::Helper::instance();
+    auto y_plane = h.get_image_plane(image, ImagePlane::y);
+    rt->write_image(y_plane, data.y_plane.data());
+
+    auto uv_plane = h.get_image_plane(image, ImagePlane::uv);
+    rt->write_image(uv_plane, data.uv_plane.data());
+  });
+}
+
+void input_output(Nv12Image &data) {
+  auto &h = detail::Helper::instance();
+  auto *rt = h.config.runtime();
+
+  auto image = h.create_image(data.dimensions(), Nv12Image::type,
+                              Nv12Image::format, Nv12Image::order);
+
+  auto y_plane = h.get_image_plane(image, ImagePlane::y);
+  rt->write_image(y_plane, data.y_plane.data());
+
+  auto uv_plane = h.get_image_plane(image, ImagePlane::uv);
+  rt->write_image(uv_plane, data.uv_plane.data());
+
+  h.pass(image);
+
+  h.add_action_after_exec([rt, &data, image]() mutable {
+    auto &h = detail::Helper::instance();
+    auto y_plane = h.get_image_plane(image, ImagePlane::y);
+    rt->write_image(y_plane, data.y_plane.data());
+
+    auto uv_plane = h.get_image_plane(image, ImagePlane::uv);
+    rt->write_image(uv_plane, data.uv_plane.data());
+  });
 }
 
 void sampler(SamplerCoordinates coordinates, SamplerAddressingMode address_mode,

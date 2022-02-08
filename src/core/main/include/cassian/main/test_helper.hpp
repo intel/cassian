@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -28,6 +28,7 @@
 namespace cassian {
 
 class Requirements;
+struct Nv12Image;
 
 namespace test {
 namespace detail {
@@ -75,6 +76,8 @@ public:
   cassian::Image create_image(const ImageDimensions dim, const ImageType type,
                               const ImageFormat format,
                               const ImageChannelOrder order);
+  cassian::Image get_image_plane(cassian::Image image,
+                                 cassian::ImagePlane plane);
   cassian::Sampler create_sampler(SamplerCoordinates coordinates,
                                   SamplerAddressingMode address_mode,
                                   SamplerFilterMode filter_mode);
@@ -259,6 +262,10 @@ void input_output(HostImage<Pixel, Type> &data) {
     rt->read_image(image, out);
   });
 }
+
+void input(const Nv12Image &data);
+void output(Nv12Image &data);
+void input_output(Nv12Image &data);
 
 void sampler(
     SamplerCoordinates coordinates = SamplerCoordinates::unnormalized,

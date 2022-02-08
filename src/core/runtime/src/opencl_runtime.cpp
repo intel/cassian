@@ -181,7 +181,7 @@ Image OpenCLRuntime::get_image_plane(Image image, ImagePlane plane,
   desc.image_slice_pitch = 0;
   desc.num_mip_levels = 0;
   desc.num_samples = 0;
-  desc.mem_object = images_[image.id];  // NOLINT
+  desc.mem_object = images_[image.id]; // NOLINT
 
   auto dim = image.dim;
 
