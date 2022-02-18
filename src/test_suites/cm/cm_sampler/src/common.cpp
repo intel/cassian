@@ -28,5 +28,5 @@ std::string to_cm_string(ChannelMask cmask) {
   return result;
 }
 
-const ChannelMask channel_masks[14] = {r,  g,  b,  a,   gr,  br,  ar,
-                                       bg, ag, ab, bgr, agr, abr, abgr};
+const ChannelMask channel_masks[15] = {r,  g,  b,   a,   gr,  br,  ar,  bg,
+                                       ag, ab, bgr, agr, abr, abg, abgr};

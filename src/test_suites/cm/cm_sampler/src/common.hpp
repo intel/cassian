@@ -47,9 +47,10 @@ enum ChannelMask {
   bgr = r | g | b,
   agr = r | g | a,
   abr = r | b | a,
+  abg = g | b | a,
   abgr = r | g | b | a,
 };
 
 std::string to_cm_string(ChannelMask cmask);
 
-extern const ChannelMask channel_masks[14];
+extern const ChannelMask channel_masks[15];
