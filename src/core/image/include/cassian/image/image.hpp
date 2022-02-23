@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -123,6 +123,8 @@ public:
 
     return data_[index];
   }
+
+  const std::vector<pixel_type> &storage() const noexcept { return data_; }
 
 private:
   const ImageDimensions dimensions_;
