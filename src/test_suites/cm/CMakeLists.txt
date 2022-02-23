@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2021-2022 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -13,5 +13,6 @@ add_subdirectory(cm_dp4a)
 add_subdirectory(cm_inline_assembly)
 add_subdirectory(cm_math)
 add_subdirectory(cm_media_block_io)
+add_subdirectory(cm_oword_rw)
 add_subdirectory(cm_sampler)
 add_subdirectory(cm_stochastic_rounding)
