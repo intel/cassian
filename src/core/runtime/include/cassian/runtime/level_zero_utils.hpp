@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -239,8 +239,8 @@ ze_image_format_t ze_create_image_format(const ImageFormat format,
     break;
   case ImageFormat::float16:
     f.layout = get_image_layout_16(number_of_components);
-    // there is no corresponding level zero type for half float
-    throw RuntimeException("Half float image type not supported");
+    f.type = ZE_IMAGE_FORMAT_TYPE_FLOAT;
+    break;
   case ImageFormat::float32:
     f.layout = get_image_layout_32(number_of_components);
     f.type = ZE_IMAGE_FORMAT_TYPE_FLOAT;
