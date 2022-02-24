@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -24,7 +24,7 @@ TEMPLATE_TEST_CASE("cm_log(vector)", "[cm][log]", float, half) {
     test_math<TestType>(
         16, 1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
         InputType::vector, log_margin);
@@ -33,7 +33,7 @@ TEMPLATE_TEST_CASE("cm_log(vector)", "[cm][log]", float, half) {
     test_math<TestType>(
         16, 1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::vector, log_margin);
@@ -42,7 +42,7 @@ TEMPLATE_TEST_CASE("cm_log(vector)", "[cm][log]", float, half) {
     test_math<TestType>(
         16, 1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
@@ -55,7 +55,7 @@ TEMPLATE_TEST_CASE("cm_log(matrix)", "[cm][log]", float, half) {
     test_math<TestType>(
         2, 8, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
         InputType::matrix, log_margin);
@@ -64,7 +64,7 @@ TEMPLATE_TEST_CASE("cm_log(matrix)", "[cm][log]", float, half) {
     test_math<TestType>(
         2, 8, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::matrix, log_margin);
@@ -73,7 +73,7 @@ TEMPLATE_TEST_CASE("cm_log(matrix)", "[cm][log]", float, half) {
     test_math<TestType>(
         2, 8, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
@@ -86,7 +86,7 @@ TEMPLATE_TEST_CASE("cm_log(scalar)", "[cm][log]", float, half) {
     test_math<TestType>(
         -1, -1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
         InputType::scalar, log_margin);
@@ -95,7 +95,7 @@ TEMPLATE_TEST_CASE("cm_log(scalar)", "[cm][log]", float, half) {
     test_math<TestType>(
         -1, -1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::scalar, log_margin);
@@ -104,7 +104,7 @@ TEMPLATE_TEST_CASE("cm_log(scalar)", "[cm][log]", float, half) {
     test_math<TestType>(
         -1, -1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
@@ -117,7 +117,7 @@ TEMPLATE_TEST_CASE("cm_log(const)", "[cm][log]", float, half) {
     test_math<TestType>(
         -1, -1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
         InputType::constant, log_margin);
@@ -126,7 +126,7 @@ TEMPLATE_TEST_CASE("cm_log(const)", "[cm][log]", float, half) {
     test_math<TestType>(
         -1, -1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::constant,
@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("cm_log(const)", "[cm][log]", float, half) {
     test_math<TestType>(
         -1, -1, "cm_log",
         [](auto x) -> TestType {
-          return static_cast<TestType>(std::log(static_cast<double>(x)));
+          return static_cast<TestType>(std::log2(static_cast<double>(x)));
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
