@@ -73,6 +73,9 @@ public:
   using base_t::green_raw;
   using base_t::red_raw;
 
+  using base_t::operator==;
+  using base_t::operator!=;
+
   std::enable_if_t<base_t::has_red, read_type> red() const {
     return static_cast<read_type>(red_raw());
   }

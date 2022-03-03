@@ -143,6 +143,12 @@ public:
     return data_[alpha_index];
   }
 
+  bool operator==(const Storage &rhs) const {
+    return std::equal(std::begin(data_), std::end(data_),
+                      std::begin(rhs.data_));
+  }
+  bool operator!=(const Storage &rhs) const { return !(*this == rhs); }
+
 private:
   storage_type data_[channel_number];
 };
