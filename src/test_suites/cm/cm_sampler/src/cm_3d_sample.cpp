@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -30,10 +30,11 @@ TEMPLATE_TEST_CASE("cm_3d_sample_2d", "[cm][image][sampler]", rgba_float,
   const std::string source = ca::load_text_file(
       ca::get_asset("kernels/cm_sampler/cm_3d_sample_genx.cpp"));
 
+  constexpr auto max_simd = 16;
   const auto hwsimd =
       ca::test::runtime()->get_device_property(ca::DeviceProperty::simd_width);
 
-  for (const auto simd : {hwsimd, hwsimd * 2}) {
+  for (auto simd = hwsimd; simd <= max_simd; simd *= 2) {
     for (const auto mask : channel_masks) {
       ca::HostImage<TestType, ca::ImageType::t_2d> image({width, height});
       std::generate(image.begin(), image.end(),
