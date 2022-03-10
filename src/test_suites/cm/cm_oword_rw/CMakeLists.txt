@@ -15,8 +15,9 @@ add_executable(cm_oword_rw ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 target_include_directories(
   cm_oword_rw PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
-target_link_libraries(cm_oword_rw PRIVATE Catch2::Catch2 cassian::main
-                                          cassian::random cassian::reference)
+target_link_libraries(
+  cm_oword_rw PRIVATE Catch2::Catch2 cassian::main cassian::random
+                      cassian::reference cassian::test_harness)
 
 set_target_properties(cm_oword_rw PROPERTIES FOLDER test_suites/cm)
 cassian_install_target(cm_oword_rw)

@@ -10,6 +10,7 @@
 #include <cassian/main/flags_builder.hpp>
 #include <cassian/main/test_helper.hpp>
 #include <cassian/random/random.hpp>
+#include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
 
 #include <iterator>
@@ -23,6 +24,12 @@ using ca::test::Language;
 
 template <typename TestType> void test_oword_write() {
   constexpr unsigned buffer_size = 1024;
+
+  ca::Requirements requirements;
+  requirements.arithmetic_type<TestType>();
+  if (ca::should_skip_test(requirements, *ca::test::runtime())) {
+    return;
+  }
 
   for (auto oword_number : {1, 2, 4, 8}) {
     const std::string source = cassian::load_text_file(
@@ -57,6 +64,12 @@ template <typename TestType> void test_oword_write() {
 
 template <typename TestType> void test_oword_read(Alignment align) {
   constexpr unsigned buffer_size = 1024;
+
+  ca::Requirements requirements;
+  requirements.arithmetic_type<TestType>();
+  if (ca::should_skip_test(requirements, *ca::test::runtime())) {
+    return;
+  }
 
   for (auto oword_number : {1, 2, 3, 4, 5, 6, 7, 8}) {
     const std::string source = cassian::load_text_file(
