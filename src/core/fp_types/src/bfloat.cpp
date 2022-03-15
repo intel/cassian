@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -12,23 +12,25 @@
 namespace cassian {
 
 Bfloat::Bfloat(float v) {
+  constexpr int remainder_bits = 16;
+  constexpr uint32_t remainder_mask = (1 << remainder_bits) - 1;
+  constexpr uint32_t exponent_mask = 0x7f80;
+  constexpr uint32_t mantissa_mask = 0x007f;
+
   uint32_t tmp = 0;
-  uint16_t remainder = 0;
-  const uint32_t remainder_mask = 0x0000ffff;
-  const int remainder_bits = 16;
+  uint32_t remainder = 0;
+
   std::memcpy(&tmp, &v, sizeof(uint32_t)); // Type punning
   remainder = tmp & remainder_mask;
   tmp = tmp >> remainder_bits; // Fit into 16 bits
-  const int16_t exponent_mask = 0x7f80;
-  const int16_t mantissa_mask = 0x007f;
+
   const bool is_nan_or_inf = (tmp & exponent_mask) == exponent_mask;
 
   if (!is_nan_or_inf) {
-    const int highest_temp = 0xffff;
     const int remainder_highest_bit = 0x8000;
 
-    if ((remainder > remainder_highest_bit && tmp != highest_temp) ||
-        (remainder == remainder_highest_bit && tmp != highest_temp &&
+    if ((remainder > remainder_highest_bit) ||
+        (remainder == remainder_highest_bit &&
          tmp % 2 == 1)) { // Round to nearest or even
       ++tmp;
     }
@@ -37,8 +39,8 @@ Bfloat::Bfloat(float v) {
       tmp |= mantissa_mask;
     }
   }
-  data = 0;
-  std::memcpy(&data, &tmp, sizeof(uint16_t));
+
+  data = static_cast<uint16_t>(tmp);
 }
 
 Bfloat::operator float() const {
