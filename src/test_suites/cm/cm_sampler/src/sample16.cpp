@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -10,6 +10,7 @@
 #include <catch2/catch.hpp>
 
 #include <cassian/image/image.hpp>
+#include <cassian/image/nv12.hpp>
 #include <cassian/main/flags_builder.hpp>
 #include <cassian/main/test_helper.hpp>
 #include <cassian/utility/utility.hpp>
@@ -359,5 +360,88 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
       REQUIRE_THAT(ref, Catch::Equals(res));
     }
     REQUIRE(nullmask[0] == 0);
+  }
+}
+
+TEST_CASE("cm_sample16_nv12", "[cm][image][sampler][nv12]") {
+  constexpr auto simd = 16;
+  constexpr auto width = 16;
+  constexpr auto height = 16;
+  constexpr double norm = std::numeric_limits<uint8_t>::max();
+
+  const std::string source = ca::load_text_file(
+      ca::get_asset("kernels/cm_sampler/sample16_2d_genx.cpp"));
+
+  for (const auto mask : channel_masks) {
+    ca::Nv12Image image({width, height});
+    std::generate(image.y_plane.begin(), image.y_plane.end(), []() {
+      return ca::generate_value<ca::Nv12Image::y_plane_type>(0);
+    });
+    std::generate(image.uv_plane.begin(), image.uv_plane.end(), []() {
+      return ca::generate_value<ca::Nv12Image::uv_plane_type>(0);
+    });
+
+    std::vector<float> ref;
+    ref.reserve(simd * 4);
+    auto out = std::back_inserter(ref);
+
+    const auto u = ca::generate_vector<unsigned>(simd, 0, width - 1, 0);
+    const auto v = ca::generate_vector<unsigned>(simd, 0, height - 1, 0);
+
+    int channels = 0;
+
+    if ((mask & r) != 0) {
+      std::transform(std::begin(u), std::end(u), std::begin(v), out,
+                     [norm, &image](auto x, auto y) {
+                       return (image.uv_plane(x / 2, y / 2) >> 8) / norm;
+                     });
+      channels++;
+    }
+    if ((mask & g) != 0) {
+      std::transform(std::begin(u), std::end(u), std::begin(v), out,
+                     [norm, &image](auto x, auto y) {
+                       return image.y_plane(x, y) / norm;
+                     });
+      channels++;
+    }
+    if ((mask & b) != 0) {
+      constexpr uint16_t u_mask = 0xff;
+      std::transform(std::begin(u), std::end(u), std::begin(v), out,
+                     [u_mask, norm, &image](auto x, auto y) {
+                       return (image.uv_plane(x / 2, y / 2) & u_mask) / norm;
+                     });
+      channels++;
+    }
+    if ((mask & a) != 0) {
+      std::fill_n(out, 16, 1.0);
+      channels++;
+    }
+
+    decltype(ref) res;
+
+    std::vector<float> u_norm;
+    u_norm.reserve(u.size());
+    std::transform(std::begin(u), std::end(u), std::back_inserter(u_norm),
+                   [width](float value) { return value / width; });
+
+    std::vector<float> v_norm;
+    v_norm.reserve(v.size());
+    std::transform(std::begin(v), std::end(v), std::back_inserter(v_norm),
+                   [height](float value) { return value / height; });
+
+    ca::test::output(res, ref.size());
+    ca::test::input(image);
+    ca::test::sampler(ca::SamplerCoordinates::normalized);
+    ca::test::input(u_norm);
+    ca::test::input(v_norm);
+
+    ca::test::kernel("kernel", source,
+                     FlagsBuilder(Language::cm)
+                         .define("CHANNELS", std::to_string(channels))
+                         .define("CHANNEL_MASK", to_cm_string(mask))
+                         .define("READ_TYPE", ca::to_cm_string<float>())
+                         .str());
+
+    REQUIRE_THAT(ref, Catch::Approx(res));
   }
 }
