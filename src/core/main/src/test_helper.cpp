@@ -79,7 +79,9 @@ void Helper::cleanup() {
     rt->release_sampler(sampler);
   }
 
-  rt->release_kernel(kernel_);
+  if (kernel_.id != 0) {
+    rt->release_kernel(kernel_);
+  }
 
   after_kernel_exec_.clear();
   arguments_.clear();
