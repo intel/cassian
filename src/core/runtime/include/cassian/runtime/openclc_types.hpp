@@ -836,8 +836,8 @@ template <> struct OpenCLCBfloat16<1> {
   using host_type = Bfloat;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "short";
-  static constexpr char type_name[] = "bfloat";
+  static constexpr char device_type[] = "ushort";
+  static constexpr char type_name[] = "bfloat16";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -845,8 +845,8 @@ template <> struct OpenCLCBfloat16<2> {
   using host_type = Vector<Bfloat, 2>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "short2";
-  static constexpr char type_name[] = "bfloat2";
+  static constexpr char device_type[] = "ushort2";
+  static constexpr char type_name[] = "bfloat162";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -854,8 +854,8 @@ template <> struct OpenCLCBfloat16<3> {
   using host_type = Vector<Bfloat, 3, 4>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "short3";
-  static constexpr char type_name[] = "bfloat3";
+  static constexpr char device_type[] = "ushort3";
+  static constexpr char type_name[] = "bfloat163";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -863,8 +863,8 @@ template <> struct OpenCLCBfloat16<4> {
   using host_type = Vector<Bfloat, 4>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "short4";
-  static constexpr char type_name[] = "bfloat4";
+  static constexpr char device_type[] = "ushort4";
+  static constexpr char type_name[] = "bfloat164";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -872,8 +872,8 @@ template <> struct OpenCLCBfloat16<8> {
   using host_type = Vector<Bfloat, 8>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "short8";
-  static constexpr char type_name[] = "bfloat8";
+  static constexpr char device_type[] = "ushort8";
+  static constexpr char type_name[] = "bfloat168";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -881,8 +881,8 @@ template <> struct OpenCLCBfloat16<16> {
   using host_type = Vector<Bfloat, 16>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "short16";
-  static constexpr char type_name[] = "bfloat16";
+  static constexpr char device_type[] = "ushort16";
+  static constexpr char type_name[] = "bfloat1616";
   static constexpr char type_abbr[] = "bf16";
 };
 

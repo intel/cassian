@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <string>
 
 #include <cassian/fp_types/type_traits.hpp>
 
@@ -215,7 +216,25 @@ private:
  */
 using bfloat = Bfloat;
 
+static_assert(sizeof(bfloat) == 2, "wrong size of bfloat type");
+
 template <> struct is_floating_point<Bfloat> : std::true_type {};
+
+/**
+ * Convert Bfloat to string representation.
+ *
+ * @param[in] value object to convert.
+ */
+std::string to_string(const Bfloat &value);
+
+/**
+ * Append string representation of Bfloat object to a stream.
+ *
+ * @param[in] os stream to use.
+ * @param[in] value object to convert.
+ * @returns used stream.
+ */
+std::ostream &operator<<(std::ostream &os, const Bfloat &value);
 
 } // namespace cassian
 

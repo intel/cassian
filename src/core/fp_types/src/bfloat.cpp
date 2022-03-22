@@ -6,6 +6,8 @@
  */
 
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 
 #include <cassian/fp_types/bfloat.hpp>
 
@@ -101,6 +103,18 @@ bool Bfloat::nan_sensitive_eq(const Bfloat &rhs) const {
     return true;
   }
   return data == rhs.data;
+}
+
+std::string to_string(const Bfloat &value) {
+  std::stringstream ss;
+  ss << std::noshowbase << "0x" << std::setfill('0') << std::setw(4) << std::hex
+     << +value.decode();
+  return ss.str();
+}
+
+std::ostream &operator<<(std::ostream &os, const Bfloat &value) {
+  os << to_string(value);
+  return os;
 }
 
 } // namespace cassian
