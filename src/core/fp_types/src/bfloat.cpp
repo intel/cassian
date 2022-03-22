@@ -72,6 +72,24 @@ bool Bfloat::operator<=(const Bfloat &rhs) const { return !(*this > rhs); };
 
 bool Bfloat::operator>=(const Bfloat &rhs) const { return !(*this < rhs); };
 
+Bfloat Bfloat::operator+(const Bfloat &rhs) const {
+  return Bfloat(static_cast<float>(*this) + static_cast<float>(rhs));
+};
+
+Bfloat Bfloat::operator-(const Bfloat &rhs) const {
+  return Bfloat(static_cast<float>(*this) - static_cast<float>(rhs));
+};
+
+Bfloat Bfloat::operator+() const {
+  const uint16_t sign_mask = 0x0000;
+  return Bfloat::encode(data | sign_mask);
+}
+
+Bfloat Bfloat::operator-() const {
+  const uint16_t sign_mask = 0x8000;
+  return Bfloat::encode(data ^ ~(data & sign_mask));
+}
+
 bool Bfloat::nan_sensitive_eq(const Bfloat &rhs) const {
   const int16_t exponent_mask = 0x7f80;
   const int16_t mantissa_mask = 0x007f;

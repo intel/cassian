@@ -121,6 +121,32 @@ public:
   bool operator>=(const Bfloat &rhs) const;
 
   /**
+   * Unary plus operator.
+   */
+  Bfloat operator+() const;
+
+  /**
+   * Unary minus operator.
+   */
+  Bfloat operator-() const;
+
+  /**
+   * Addition operator
+   *
+   * @param[in] rhs value to add
+   * @returns sum of lhs and rhs
+   */
+  Bfloat operator+(const Bfloat &rhs) const;
+
+  /**
+   * Subtraction operator
+   *
+   * @param[in] rhs value to subtract
+   * @returns difference between lhs and rhs
+   */
+  Bfloat operator-(const Bfloat &rhs) const;
+
+  /**
    * Nan sensitive equal
    *
    * @returns bool value - result of comparison
