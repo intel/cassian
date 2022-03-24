@@ -5,13 +5,8 @@
  *
  */
 
-#include <algorithm>
-#include <array>
 #include <catch2/catch.hpp>
 #include <common.hpp>
-#include <cstddef>
-#include <numeric>
-#include <string>
 #include <test_config.hpp>
 namespace ca = cassian;
 
@@ -37,7 +32,7 @@ void test_subgroup_size(const TestConfig &config) {
     KernelDescriptor<TEST_TYPE> kernel_description;
     kernel_description.kernel_name = get_kernel_name(name);
     kernel_description.kernel_file_name =
-        "kernels/oclc_intel_sub_group_functions/" + name + ".cl";
+        "kernels/oclc_sub_group_functions/" + name + ".cl";
     kernel_description.kernel_func_name = name;
     kernel_description.args = 2;
     kernel_description.arg1.data = input_data_values.data();
@@ -67,7 +62,7 @@ void test_subgroup_size(const TestConfig &config) {
     KernelDescriptor<TEST_TYPE> kernel_description;
     kernel_description.kernel_name = get_kernel_name(name + "_max_value");
     kernel_description.kernel_file_name =
-        "kernels/oclc_intel_sub_group_functions/" + name + ".cl";
+        "kernels/oclc_sub_group_functions/" + name + ".cl";
     kernel_description.kernel_func_name = name + "_max_value";
     kernel_description.args = 1;
     kernel_description.arg1.data = input_data_values.data();

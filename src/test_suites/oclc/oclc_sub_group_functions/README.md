@@ -16,7 +16,7 @@ OpenCL C functionality and specializations for specific data types:
 * Description: 
   * Run OpenCL C kernel that calls `sub_group_size` in multiple work-groups.
   * Output is compared against reference values computed on the host.
-* Expectations: Work-items in a subgroup return report correct value for subgroup size each time.
+* Expectations: Work-items in a subgroup return correct value for subgroup size each time.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
   * Values:

@@ -5,13 +5,9 @@
  *
  */
 
-#include <algorithm>
-#include <array>
 #include <catch2/catch.hpp>
 #include <common.hpp>
-#include <cstddef>
 #include <numeric>
-#include <string>
 #include <test_config.hpp>
 
 namespace ca = cassian;
@@ -45,7 +41,7 @@ void test_subgroup_broadcast(const TestConfig &config) {
   const std::string name = "sub_group_broadcast";
   kernel_description.kernel_name = get_kernel_name(name);
   kernel_description.kernel_file_name =
-      "kernels/oclc_intel_sub_group_functions/" + name + ".cl";
+      "kernels/oclc_sub_group_functions/" + name + ".cl";
   kernel_description.kernel_func_name = name;
   kernel_description.change_prefix_for_types = true;
 
