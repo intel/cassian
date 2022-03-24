@@ -220,6 +220,8 @@ static_assert(sizeof(bfloat) == 2, "wrong size of bfloat type");
 
 template <> struct is_floating_point<Bfloat> : std::true_type {};
 
+template <> struct is_custom_type<Bfloat> : std::true_type {};
+
 /**
  * Convert Bfloat to string representation.
  *

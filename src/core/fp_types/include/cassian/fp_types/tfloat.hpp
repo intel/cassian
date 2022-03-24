@@ -187,6 +187,8 @@ using tfloat = Tfloat;
 
 template <> struct is_floating_point<Tfloat> : std::true_type {};
 
+template <> struct is_custom_type<Tfloat> : std::true_type {};
+
 /**
  * Convert Tfloat to string representation.
  *

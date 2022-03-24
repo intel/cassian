@@ -636,6 +636,8 @@ using half = Half;
 
 template <> struct is_floating_point<Half> : std::true_type {};
 
+template <> struct is_custom_type<Half> : std::true_type {};
+
 /**
  * Convert Half to string representation.
  *
