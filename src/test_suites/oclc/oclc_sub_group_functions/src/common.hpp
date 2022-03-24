@@ -190,5 +190,27 @@ void calculate_dimensions(std::array<size_t, N> &global_work_size,
     global_work_size_total *= global_work_size.at(i);
   }
 }
+struct LocalWorkgroupInfo {
+  size_t workgroups_count;
+  size_t workgroup_size_scalar;
+};
+
+template <size_t N>
+LocalWorkgroupInfo
+calculate_work_groups_num(std::array<size_t, N> &global_work_size,
+                          std::array<size_t, N> &local_work_size) {
+
+  LocalWorkgroupInfo workgroup_info;
+  size_t gws = 1;
+  size_t lws = 1;
+
+  for (size_t i = 0; i < N; ++i) {
+    gws = gws * global_work_size[i];
+    lws = lws * local_work_size[i];
+  }
+  workgroup_info.workgroups_count = gws / lws;
+  workgroup_info.workgroup_size_scalar = lws;
+  return workgroup_info;
+}
 
 #endif
