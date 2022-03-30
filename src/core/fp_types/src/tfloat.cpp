@@ -68,6 +68,31 @@ bool Tfloat::operator<=(const Tfloat &rhs) const { return !(*this > rhs); };
 
 bool Tfloat::operator>=(const Tfloat &rhs) const { return !(*this < rhs); };
 
+Tfloat operator+(Tfloat lhs, Tfloat rhs) {
+  return Tfloat(static_cast<float>(lhs) + static_cast<float>(rhs));
+};
+
+Tfloat operator-(Tfloat lhs, Tfloat rhs) {
+  return Tfloat(static_cast<float>(lhs) - static_cast<float>(rhs));
+};
+
+Tfloat operator*(Tfloat lhs, Tfloat rhs) {
+  return Tfloat(static_cast<float>(lhs) * static_cast<float>(rhs));
+};
+
+Tfloat operator/(Tfloat lhs, Tfloat rhs) {
+  return Tfloat(static_cast<float>(lhs) / static_cast<float>(rhs));
+};
+
+Tfloat Tfloat::operator+() const {
+  return Tfloat::encode(data);
+}
+
+Tfloat Tfloat::operator-() const {
+  const uint32_t sign_mask = 0x80000000;
+  return Tfloat::encode(data ^ sign_mask);
+}
+
 bool Tfloat::nan_sensitive_eq(const Tfloat &rhs) const {
   const int32_t type_mask = 0xffffe000;
   const int32_t exponent_mask = 0x7f800000;
@@ -92,6 +117,12 @@ std::string to_string(const Tfloat &value) {
 std::ostream &operator<<(std::ostream &os, const Tfloat &value) {
   os << to_string(value);
   return os;
+}
+
+Tfloat abs(Tfloat value) { return Tfloat::encode(value.decode() & ~(1 << 31)); }
+
+Tfloat sqrt(Tfloat value) {
+  return Tfloat(std::sqrt(static_cast<float>(value)));
 }
 
 } // namespace cassian
