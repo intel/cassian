@@ -74,17 +74,24 @@ bool Bfloat::operator<=(const Bfloat &rhs) const { return !(*this > rhs); };
 
 bool Bfloat::operator>=(const Bfloat &rhs) const { return !(*this < rhs); };
 
-Bfloat Bfloat::operator+(const Bfloat &rhs) const {
-  return Bfloat(static_cast<float>(*this) + static_cast<float>(rhs));
+Bfloat operator+(Bfloat lhs, Bfloat rhs) {
+  return Bfloat(static_cast<float>(lhs) + static_cast<float>(rhs));
 };
 
-Bfloat Bfloat::operator-(const Bfloat &rhs) const {
-  return Bfloat(static_cast<float>(*this) - static_cast<float>(rhs));
+Bfloat operator-(Bfloat lhs, Bfloat rhs) {
+  return Bfloat(static_cast<float>(lhs) - static_cast<float>(rhs));
+};
+
+Bfloat operator*(Bfloat lhs, Bfloat rhs) {
+  return Bfloat(static_cast<float>(lhs) * static_cast<float>(rhs));
+};
+
+Bfloat operator/(Bfloat lhs, Bfloat rhs) {
+  return Bfloat(static_cast<float>(lhs) / static_cast<float>(rhs));
 };
 
 Bfloat Bfloat::operator+() const {
-  const uint16_t sign_mask = 0x0000;
-  return Bfloat::encode(data | sign_mask);
+  return Bfloat::encode(data);
 }
 
 Bfloat Bfloat::operator-() const {
@@ -115,6 +122,12 @@ std::string to_string(const Bfloat &value) {
 std::ostream &operator<<(std::ostream &os, const Bfloat &value) {
   os << to_string(value);
   return os;
+}
+
+Bfloat abs(Bfloat value) { return Bfloat::encode(value.decode() & ~(1 << 31)); }
+
+Bfloat sqrt(Bfloat value) {
+  return Bfloat(std::sqrt(static_cast<float>(value)));
 }
 
 } // namespace cassian

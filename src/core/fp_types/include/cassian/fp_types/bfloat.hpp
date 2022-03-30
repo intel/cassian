@@ -8,6 +8,7 @@
 #ifndef CASSIAN_FP_TYPES_BFLOAT_HPP
 #define CASSIAN_FP_TYPES_BFLOAT_HPP
 
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -132,22 +133,6 @@ public:
   Bfloat operator-() const;
 
   /**
-   * Addition operator
-   *
-   * @param[in] rhs value to add
-   * @returns sum of lhs and rhs
-   */
-  Bfloat operator+(const Bfloat &rhs) const;
-
-  /**
-   * Subtraction operator
-   *
-   * @param[in] rhs value to subtract
-   * @returns difference between lhs and rhs
-   */
-  Bfloat operator-(const Bfloat &rhs) const;
-
-  /**
    * Nan sensitive equal
    *
    * @returns bool value - result of comparison
@@ -222,6 +207,178 @@ template <> struct is_floating_point<Bfloat> : std::true_type {};
 
 template <> struct is_custom_type<Bfloat> : std::true_type {};
 
+template <typename T>
+using EnableBfloatArithmeticIfIntegral =
+    std::enable_if_t<std::is_integral_v<T>, Bfloat>;
+
+template <typename T>
+using EnableBfloatArithmeticIfFloatingPoint =
+    std::enable_if_t<std::is_floating_point_v<T>, T>;
+
+/**
+ * Addition operator
+ *
+ * @param[in] lhs left-hand side value
+ * @param[in] rhs right-hand side value
+ * @returns sum of lhs and rhs
+ */
+Bfloat operator+(Bfloat lhs, Bfloat rhs);
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator+(T lhs, Bfloat rhs) {
+  return static_cast<Bfloat>(lhs) + rhs;
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator+(Bfloat lhs, T rhs) {
+  return lhs + static_cast<Bfloat>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator+(T lhs, Bfloat rhs) {
+  return lhs + static_cast<T>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator+(Bfloat lhs, T rhs) {
+  return static_cast<T>(lhs) + rhs;
+}
+
+/**
+ * Subtraction operator
+ *
+ * @param[in] lhs left-hand side value
+ * @param[in] rhs right-hand side value
+ * @returns difference between lhs and rhs
+ */
+Bfloat operator-(Bfloat lhs, Bfloat rhs);
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator-(T lhs, Bfloat rhs) {
+  return static_cast<Bfloat>(lhs) - rhs;
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator-(Bfloat lhs, T rhs) {
+  return lhs - static_cast<Bfloat>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator-(T lhs, Bfloat rhs) {
+  return lhs - static_cast<T>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator-(Bfloat lhs, T rhs) {
+  return static_cast<T>(lhs) - rhs;
+}
+
+/**
+ * Multiplication operator
+ *
+ * @param[in] lhs left-hand side value
+ * @param[in] rhs right-hand side value
+ * @returns product of lhs and rhs
+ */
+Bfloat operator*(Bfloat lhs, Bfloat rhs);
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator*(T lhs, Bfloat rhs) {
+  return static_cast<Bfloat>(lhs) * rhs;
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator*(Bfloat lhs, T rhs) {
+  return lhs * static_cast<Bfloat>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator*(T lhs, Bfloat rhs) {
+  return lhs * static_cast<T>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator*(Bfloat lhs, T rhs) {
+  return static_cast<T>(lhs) * rhs;
+}
+
+/**
+ * Division operator
+ *
+ * @param[in] lhs left-hand side value
+ * @param[in] rhs right-hand side value
+ * @returns quotient
+ */
+Bfloat operator/(Bfloat lhs, Bfloat rhs);
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator/(T lhs, Bfloat rhs) {
+  return static_cast<Bfloat>(lhs) / rhs;
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfIntegral<T> operator/(Bfloat lhs, T rhs) {
+  return lhs / static_cast<Bfloat>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator/(T lhs, Bfloat rhs) {
+  return lhs / static_cast<T>(rhs);
+}
+
+/**
+ * @overload
+ */
+template <typename T>
+EnableBfloatArithmeticIfFloatingPoint<T> operator/(Bfloat lhs, T rhs) {
+  return static_cast<T>(lhs) / rhs;
+}
+
 /**
  * Convert Bfloat to string representation.
  *
@@ -237,6 +394,22 @@ std::string to_string(const Bfloat &value);
  * @returns used stream.
  */
 std::ostream &operator<<(std::ostream &os, const Bfloat &value);
+
+/**
+ * Computes the absolute value of a Bfloat value arg.
+ *
+ * @param[in] value object to use.
+ * @returns absolute value.
+ */
+Bfloat abs(Bfloat value);
+
+/**
+ * Computes the square root of a Bfloat value arg.
+ *
+ * @param[in] value object to use.
+ * @returns square root.
+ */
+Bfloat sqrt(Bfloat value);
 
 } // namespace cassian
 
