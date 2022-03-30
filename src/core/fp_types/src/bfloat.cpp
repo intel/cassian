@@ -89,7 +89,7 @@ Bfloat Bfloat::operator+() const {
 
 Bfloat Bfloat::operator-() const {
   const uint16_t sign_mask = 0x8000;
-  return Bfloat::encode(data ^ ~(data & sign_mask));
+  return Bfloat::encode(data ^ sign_mask);
 }
 
 bool Bfloat::nan_sensitive_eq(const Bfloat &rhs) const {
