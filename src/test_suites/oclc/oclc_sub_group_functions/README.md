@@ -88,3 +88,65 @@ OpenCL C functionality and specializations for specific data types:
   * Dimensions: 1D, 2D, 3D.
   * Values:
     * All work-items in all subgroups return correct (equal to integer numbers) number of subgroups local ids. 
+
+### `sub_group_shuffle`
+* Status: Done
+* Goal: Verify that `sub_group_shuffle` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_shuffle` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Vector data types (2, 3, 4, 8, 16): `char`, `uchar`, `short`, `ushort`, `float`
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its own value to be shuffle. In the same time calls to
+    save results of shuffling in results table from each work item in the subgrups. Finally each
+    workitem checks if in results table are correct values (shuffling occure for each work item)
+    * In variation of the test `sub_group_shuffle_common_offset` test runs with the same common shuffle index for each work item.
+
+### `sub_group_shuffle_up`
+* Status: Done
+* Goal: Verify that `sub_group_shuffle_up` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_shuffle_up` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Vector data types (2, 3, 4, 8, 16): `char`, `uchar`, `short`, `ushort`, `float`
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its own two values `prev` and `cur` to be shuffle. Which value is shuffled depends on `delta_size` which is the third param of the function. 
+    Finally each workitem checks if in results table are correct values (shuffling occure for each work item)
+    
+### `sub_group_shuffle_down`
+* Status: Done
+* Goal: Verify that `sub_group_shuffle_down` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_shuffle_down` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Vector data types (2, 3, 4, 8, 16): `char`, `uchar`, `short`, `ushort`, `float`
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its own two values `cur` and `next` to be shuffle. Which value is shuffled depends on `delta_size` which is the third param of the function. 
+    Finally each workitem checks if in results table are correct values (shuffling occure for each work item)
+
+### `sub_group_shuffle_xor`
+* Status: Done
+* Goal: Verify that `sub_group_shuffle_xor` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_shuffle_xor` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Vector data types (2, 3, 4, 8, 16): `char`, `uchar`, `short`, `ushort`, `float`
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value `data`. Which value is shuffled depends on `mask` param which is the second param of the function. 
+    Finally each workitem checks if in results table are correct values (shuffling occure for each work item)

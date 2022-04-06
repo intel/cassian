@@ -17,6 +17,7 @@
 #include <cassian/utility/metaprogramming.hpp>
 #include <cassian/utility/utility.hpp>
 #include <string>
+#include <test_config.hpp>
 #include <vector>
 
 namespace ca = cassian;
@@ -55,9 +56,12 @@ template <typename T> struct KernelDescriptor {
   KernelDescriptor()
       : args(0), local_mem_size(0), kernel_name(""), kernel_file_name(""),
         kernel_func_name(""), kernel_build_options(""),
-        change_prefix_for_types(false) {}
+        change_prefix_for_types(false), change_prefix_for_all_types(false),
+        delta_size(0) {}
   std::string get_build_options(std::string func_name) {
-    if (change_prefix_for_types) {
+    if (change_prefix_for_all_types) {
+      func_name = "intel_" + func_name;
+    } else if (change_prefix_for_types) {
       if (T::device_type == std::string("char") ||
           T::device_type == std::string("uchar") ||
           T::device_type == std::string("short") ||
@@ -65,19 +69,28 @@ template <typename T> struct KernelDescriptor {
         func_name = "intel_" + func_name;
       }
     }
-    std::string build_options = std::string("-cl-std=CL3.0") +
-                                std::string(" -D DATA_TYPE=") + T::device_type +
-                                std::string(" -D FUNC_NAME=") + func_name;
+    std::string use_all_func;
+    using vector_type_check = typename T::host_type;
+    if (ca::is_vector_v<vector_type_check>) {
+      use_all_func = "all";
+    }
+    std::string build_options =
+        std::string("-cl-std=CL3.0") + std::string(" -D DATA_TYPE=") +
+        T::device_type + std::string(" -D FUNC_NAME=") + func_name +
+        std::string(" -D USE_ALL=") + use_all_func +
+        std::string(" -D DELTA_SIZE=") + std::to_string(delta_size);
     return build_options;
   };
   size_t args;
   ArgData arg1, arg2, arg3;
   size_t local_mem_size;
+  uint32_t delta_size;
   std::string kernel_name;
   std::string kernel_file_name;
   std::string kernel_func_name;
   std::string kernel_build_options;
   bool change_prefix_for_types;
+  bool change_prefix_for_all_types;
 };
 
 int suggest_work_size(const std::string &type);
@@ -211,6 +224,59 @@ calculate_work_groups_num(std::array<size_t, N> &global_work_size,
   workgroup_info.workgroups_count = gws / lws;
   workgroup_info.workgroup_size_scalar = lws;
   return workgroup_info;
+}
+
+template <typename TEST_TYPE, size_t N>
+void test_subgroup_generic(const TestConfig &config,
+                           const std::string func_name,
+                           const uint32_t max_delta_size = 1) {
+  ca::Runtime *runtime = config.runtime();
+  const std::string program_type = config.program_type();
+
+  const size_t global_work_size_per_dimension = config.work_size();
+  std::array<size_t, N> global_work_size = {};
+  std::array<size_t, N> local_work_size = {};
+  size_t global_work_size_total = 1;
+
+  calculate_dimensions(global_work_size, local_work_size,
+                       global_work_size_total, global_work_size_per_dimension,
+                       runtime);
+
+  for (uint32_t delta_size = 1; delta_size <= max_delta_size; delta_size++) {
+    std::vector<uint32_t> input_data_values(global_work_size_total, 1);
+    KernelDescriptor<TEST_TYPE> kernel_description;
+    kernel_description.kernel_name = get_kernel_name(func_name);
+    kernel_description.kernel_file_name =
+        "kernels/oclc_sub_group_functions/" + func_name + ".cl";
+    kernel_description.kernel_func_name = func_name;
+    kernel_description.args = 1;
+    kernel_description.arg1.data = input_data_values.data();
+    kernel_description.arg1.data_count = input_data_values.size();
+    kernel_description.arg1.data_size =
+        input_data_values.size() * sizeof(uint32_t);
+    kernel_description.change_prefix_for_all_types = true;
+    kernel_description.delta_size = delta_size;
+
+    const std::vector<std::vector<uint32_t>> outputs =
+        run_test<uint32_t, TEST_TYPE, N>(kernel_description, global_work_size,
+                                         local_work_size, runtime,
+                                         program_type);
+    const std::vector<uint32_t> reference(kernel_description.arg1.data_count,
+                                          1);
+    REQUIRE_THAT(outputs[0], Catch::Equals(reference));
+  }
+}
+
+using ScalarTestTypes = std::tuple<ca::clc_long_t, ca::clc_ulong_t,
+                                   ca::clc_half_t, ca::clc_double_t>;
+
+using GenericTestTypes =
+    ca::TupleConcat<ca::TypesInt, ca::TypesUint, ca::TypesFloat,
+                    ScalarTestTypes, ca::TypesChar, ca::TypesUchar,
+                    ca::TypesShort, ca::TypesUshort>::type;
+
+template <typename TestType> auto test_name() {
+  return std::string(TestType::type_name);
 }
 
 #endif

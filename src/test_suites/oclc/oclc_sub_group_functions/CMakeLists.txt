@@ -16,7 +16,8 @@ list(
   "src/sub_group_size.cpp"
   "src/num_sub_group.cpp"
   "src/enqueued_num_sub_group.cpp"
-  "src/sub_group_id.cpp")
+  "src/sub_group_id.cpp"
+  "src/sub_group_shuffle.cpp")
 
 list(
   APPEND
@@ -25,7 +26,13 @@ list(
   "kernels/oclc_sub_group_functions/sub_group_size.cl"
   "kernels/oclc_sub_group_functions/num_sub_group.cl"
   "kernels/oclc_sub_group_functions/enqueued_num_sub_group.cl"
-  "kernels/oclc_sub_group_functions/sub_group_id.cl")
+  "kernels/oclc_sub_group_functions/sub_group_id.cl"
+  "kernels/oclc_sub_group_functions/sub_group_shuffle.cl"
+  "kernels/oclc_sub_group_functions/sub_group_shuffle_common_offset.cl"
+  "kernels/oclc_sub_group_functions/sub_group_shuffle_xor.cl"
+  "kernels/oclc_sub_group_functions/sub_group_shuffle_mixed.cl"
+  "kernels/oclc_sub_group_functions/sub_group_shuffle_up.cl"
+  "kernels/oclc_sub_group_functions/sub_group_shuffle_down.cl")
 
 add_executable(oclc_sub_group_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                         ${SOURCES})
