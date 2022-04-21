@@ -26,7 +26,21 @@ enum class Feature {
   image2d,
   sampling,
   int64_atomics,
-  global_offsets
+  global_offsets,
+  fp16_atomics_global_load_store,
+  fp16_atomics_local_load_store,
+  fp16_atomics_global_add,
+  fp32_atomics_global_add,
+  fp64_atomics_global_add,
+  fp16_atomics_local_add,
+  fp32_atomics_local_add,
+  fp64_atomics_local_add,
+  fp16_atomics_global_min_max,
+  fp32_atomics_global_min_max,
+  fp64_atomics_global_min_max,
+  fp16_atomics_local_min_max,
+  fp32_atomics_local_min_max,
+  fp64_atomics_local_min_max
 };
 
 /**

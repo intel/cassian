@@ -542,6 +542,62 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::int64_atomics:
     return extensions_.count("cl_khr_int64_base_atomics") != 0U &&
            extensions_.count("cl_khr_int64_extended_atomics") != 0U;
+  case Feature::fp16_atomics_global_add: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_ADD_EXT) != 0;
+  }
+  case Feature::fp16_atomics_global_load_store: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_LOAD_STORE_EXT) != 0;
+  }
+  case Feature::fp16_atomics_global_min_max: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
+  }
+  case Feature::fp16_atomics_local_add: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_ADD_EXT) != 0;
+  }
+  case Feature::fp16_atomics_local_load_store: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_LOAD_STORE_EXT) != 0;
+  }
+  case Feature::fp16_atomics_local_min_max: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
+  }
+  case Feature::fp32_atomics_global_add: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_ADD_EXT) != 0;
+  }
+  case Feature::fp32_atomics_global_min_max: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
+  }
+  case Feature::fp32_atomics_local_add: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_ADD_EXT) != 0;
+  }
+  case Feature::fp32_atomics_local_min_max: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
+  }
+  case Feature::fp64_atomics_global_add: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_ADD_EXT) != 0;
+  }
+  case Feature::fp64_atomics_global_min_max: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
+  }
+  case Feature::fp64_atomics_local_add: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_ADD_EXT) != 0;
+  }
+  case Feature::fp64_atomics_local_min_max: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
+  }
   default:
     return false;
   }
@@ -589,6 +645,31 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
           device_, CL_DEVICE_SUB_GROUP_SIZES_INTEL);
       return static_cast<int>(
           *std::min_element(std::begin(sizes), std::end(sizes)));
+    }
+    return 0;
+  }
+  case DeviceProperty::fp32_atomics_capabilities: {
+    const bool test = extensions_.count("cl_ext_float_atomics") != 0U;
+    if (extensions_.count("cl_ext_float_atomics") != 0U) {
+      return static_cast<int>(
+          cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
+              device_, CL_DEVICE_SINGLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
+    }
+    return 0;
+  }
+  case DeviceProperty::fp64_atomics_capabilities: {
+    if (extensions_.count("cl_ext_float_atomics") != 0U) {
+      return static_cast<int>(
+          cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
+              device_, CL_DEVICE_DOUBLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
+    }
+    return 0;
+  }
+  case DeviceProperty::fp16_atomics_capabilities: {
+    if (extensions_.count("cl_ext_float_atomics") != 0U) {
+      return static_cast<int>(
+          cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
+              device_, CL_DEVICE_HALF_FP_ATOMIC_CAPABILITIES_EXT, 0));
     }
     return 0;
   }

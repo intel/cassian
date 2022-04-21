@@ -28,6 +28,34 @@ std::string to_string(const Feature feature) {
     return "int64_atomics";
   case Feature::global_offsets:
     return "global_offsets";
+  case Feature::fp16_atomics_global_load_store:
+    return "fp16_atomics_global_load_store";
+  case Feature::fp16_atomics_local_load_store:
+    return "fp16_atomics_local_load_store";
+  case Feature::fp16_atomics_global_add:
+    return "fp16_atomics_global_add";
+  case Feature::fp32_atomics_global_add:
+    return "fp32_atomics_global_add";
+  case Feature::fp64_atomics_global_add:
+    return "fp64_atomics_global_add";
+  case Feature::fp16_atomics_local_add:
+    return "fp16_atomics_local_add";
+  case Feature::fp32_atomics_local_add:
+    return "fp32_atomics_local_add";
+  case Feature::fp64_atomics_local_add:
+    return "fp64_atomics_local_add";
+  case Feature::fp16_atomics_global_min_max:
+    return "fp16_atomics_global_min_max";
+  case Feature::fp32_atomics_global_min_max:
+    return "fp32_atomics_global_min_max";
+  case Feature::fp64_atomics_global_min_max:
+    return "fp64_atomics_global_min_max";
+  case Feature::fp16_atomics_local_min_max:
+    return "fp16_atomics_local_min_max";
+  case Feature::fp32_atomics_local_min_max:
+    return "fp32_atomics_local_min_max";
+  case Feature::fp64_atomics_local_min_max:
+    return "fp64_atomics_local_min_max";
   default:
     return "unknown";
   }

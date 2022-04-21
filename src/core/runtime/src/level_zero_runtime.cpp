@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -843,6 +844,62 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
   case Feature::int64_atomics:
     return (device_module_properties.flags &
             ZE_DEVICE_MODULE_FLAG_INT64_ATOMICS) != 0;
+  case Feature::fp16_atomics_global_add: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_ADD) != 0;
+  }
+  case Feature::fp16_atomics_global_load_store: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_LOAD_STORE) != 0;
+  }
+  case Feature::fp16_atomics_global_min_max: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_MIN_MAX) != 0;
+  }
+  case Feature::fp16_atomics_local_add: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_ADD) != 0;
+  }
+  case Feature::fp16_atomics_local_load_store: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_LOAD_STORE) != 0;
+  }
+  case Feature::fp16_atomics_local_min_max: {
+    return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_MIN_MAX) != 0;
+  }
+  case Feature::fp32_atomics_global_add: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_ADD) != 0;
+  }
+  case Feature::fp32_atomics_global_min_max: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_MIN_MAX) != 0;
+  }
+  case Feature::fp32_atomics_local_add: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_ADD) != 0;
+  }
+  case Feature::fp32_atomics_local_min_max: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_MIN_MAX) != 0;
+  }
+  case Feature::fp64_atomics_global_add: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_ADD) != 0;
+  }
+  case Feature::fp64_atomics_global_min_max: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_MIN_MAX) != 0;
+  }
+  case Feature::fp64_atomics_local_add: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_ADD) != 0;
+  }
+  case Feature::fp64_atomics_local_min_max: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_MIN_MAX) != 0;
+  }
   default:
     return false;
   }
@@ -877,6 +934,20 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
     throw RuntimeException("Failed to get Level Zero device image properties");
   }
 
+  ze_float_atomic_ext_properties_t float_atomic_ext_properties = {};
+  float_atomic_ext_properties.stype =
+      ZE_STRUCTURE_TYPE_FLOAT_ATOMIC_EXT_PROPERTIES;
+  float_atomic_ext_properties.pNext = nullptr;
+
+  ze_device_module_properties_t device_module_properties = {};
+  device_module_properties.stype = ZE_STRUCTURE_TYPE_MODULE_PROPERTIES;
+  device_module_properties.pNext = &float_atomic_ext_properties;
+  result =
+      wrapper_.zeDeviceGetModuleProperties(device_, &device_module_properties);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to get Level Zero device module properties");
+  }
+
   switch (property) {
   case DeviceProperty::max_group_size_x:
     return static_cast<int>(device_compute_properties.maxGroupSizeX);
@@ -902,6 +973,12 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
     return -1;
   case DeviceProperty::simd_width:
     return static_cast<int>(device_properties.physicalEUSimdWidth);
+  case DeviceProperty::fp16_atomics_capabilities:
+    return static_cast<int>(float_atomic_ext_properties.fp16Flags);
+  case DeviceProperty::fp32_atomics_capabilities:
+    return static_cast<int>(float_atomic_ext_properties.fp32Flags);
+  case DeviceProperty::fp64_atomics_capabilities:
+    return static_cast<int>(float_atomic_ext_properties.fp64Flags);
   default:
     throw RuntimeException("Failed to find device property");
   }

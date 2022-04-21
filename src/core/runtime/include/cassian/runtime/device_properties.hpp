@@ -28,6 +28,9 @@ enum class DeviceProperty {
   device_id,
   device_revision,
   simd_width,
+  fp32_atomics_capabilities,
+  fp64_atomics_capabilities,
+  fp16_atomics_capabilities
 };
 
 } // namespace cassian
