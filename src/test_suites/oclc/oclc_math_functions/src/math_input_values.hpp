@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -47,7 +47,7 @@ public:
     Value<T> val = {};
     val.val_1 = a;
     val.val_2 = b;
-    val.val_3 = b;
+    val.val_3 = c;
     random_values.push_back(val);
   }
 
@@ -62,6 +62,15 @@ public:
     Value<T> val = {};
     val.val_1 = a;
     val.val_2 = b;
+    edge_case_values.push_back(val);
+  }
+
+  template <typename INPUT_1, typename INPUT_2, typename INPUT_3>
+  void add_edge_case(const INPUT_1 &a, const INPUT_2 &b, const INPUT_3 &c) {
+    Value<T> val = {};
+    val.val_1 = a;
+    val.val_2 = b;
+    val.val_3 = c;
     edge_case_values.push_back(val);
   }
 };

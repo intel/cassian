@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -45,6 +45,14 @@ class UnknownTypeException : public std::runtime_error {
 
 using FloatingPointScalarTypes =
     cassian::TupleConcat<cassian::clc_float_t, cassian::clc_double_t>;
+
+enum class AddressSpace {
+  clc_global,
+  clc_local,
+  clc_private,
+  clc_constant,
+  clc_generic
+};
 
 template <typename T>
 T generate_value(const cassian::scalar_type_v<T> &min,
@@ -401,6 +409,27 @@ template <typename T> T calculate_cosh(const T &input_a) {
   }
 }
 
+template <typename T> T calculate_cospi(const T &input) {
+  constexpr cassian::scalar_type_v<T> pi_value = M_PI;
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      if (std::floor(input[i]) - input[i] == 0 && input[i] != INFINITY) {
+        result[i] = 1;
+      } else {
+        result[i] = std::cos(pi_value * input[i]);
+      }
+    }
+    return result;
+  } else {
+    if (std::floor(input) - input == 0 && input != INFINITY) {
+      return 1;
+    } else {
+      return std::cos(pi_value * input);
+    }
+  }
+}
+
 template <typename OUT, typename IN> OUT calculate_ilogb(const IN &input_a) {
   if constexpr (cassian::is_vector_v<IN>) {
     OUT result(0.0F);
@@ -458,6 +487,18 @@ template <typename T> T calculate_exp2(const T &input_a) {
     return result;
   } else {
     return std::exp2(input_a);
+  }
+}
+
+template <typename T> T calculate_exp10(const T &input_a) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::pow(10, input_a[i]);
+    }
+    return result;
+  } else {
+    return std::pow(10, input_a);
   }
 }
 
@@ -519,6 +560,258 @@ T calculate_mad(const T &input_a, const T &input_b, const T &input_c) {
     return result;
   } else {
     return input_a * input_b + input_c;
+  }
+}
+
+template <typename T> T calculate_maxmag(const T &input_a, const T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      if (std::abs(input_a[i]) > std::abs(input_b[i]))
+        result[i] = input_a[i];
+      else if (std::abs(input_a[i]) < std::abs(input_b[i]))
+        result[i] = input_b[i];
+      else
+        result[i] = std::fmax(input_a[i], input_b[i]);
+    }
+    return result;
+  } else {
+    if (std::abs(input_a) > std::abs(input_b))
+      return input_a;
+    else if (std::abs(input_a) < std::abs(input_b))
+      return input_b;
+    else
+      return std::fmax(input_a, input_b);
+  }
+}
+
+template <typename T> T calculate_minmag(const T &input_a, const T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      if (std::abs(input_a[i]) < std::abs(input_b[i]))
+        result[i] = input_a[i];
+      else if (std::abs(input_a[i]) > std::abs(input_b[i]))
+        result[i] = input_b[i];
+      else
+        result[i] = std::fmin(input_a[i], input_b[i]);
+    }
+    return result;
+  } else {
+    if (std::abs(input_a) < std::abs(input_b))
+      return input_a;
+    else if (std::abs(input_a) > std::abs(input_b))
+      return input_b;
+    else
+      return std::fmin(input_a, input_b);
+  }
+}
+
+template <typename T>
+T calculate_nextafter(const T &input_a, const T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::nextafter(input_a[i], input_b[i]);
+    }
+    return result;
+  } else {
+    return std::nextafter(input_a, input_b);
+  }
+}
+
+template <typename T> T calculate_pow(const T &input_a, const T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::pow(input_a[i], input_b[i]);
+    }
+    return result;
+  } else {
+    return std::pow(input_a, input_b);
+  }
+}
+
+template <typename T>
+T calculate_remainder(const T &input_a, const T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::remainder(input_a[i], input_b[i]);
+    }
+    return result;
+  } else {
+    return std::remainder(input_a, input_b);
+  }
+}
+
+template <typename T> T calculate_rint(const T &input_a) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::rint(input_a[i]);
+    }
+    return result;
+  } else {
+    return std::rint(input_a);
+  }
+}
+
+template <typename T> T calculate_round(const T &input_a) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::round(input_a[i]);
+    }
+    return result;
+  } else {
+    return std::round(input_a);
+  }
+}
+
+template <typename T> T calculate_rsqrt(const T &input_a) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = 1 / std::sqrt(input_a[i]);
+    }
+    return result;
+  } else {
+    return 1 / std::sqrt(input_a);
+  }
+}
+
+template <typename T> T calculate_sin(const T &input) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::sin(input[i]);
+    }
+    return result;
+  } else {
+    return std::sin(input);
+  }
+}
+
+template <typename T> T calculate_sinh(const T &input) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::sinh(input[i]);
+    }
+    return result;
+  } else {
+    return std::sinh(input);
+  }
+}
+
+template <typename T> T calculate_sinpi(const T &input) {
+  constexpr cassian::scalar_type_v<T> pi_value = M_PI;
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      if (input[i] == 0) {
+        result[i] = 0;
+      } else if (std::floor(input[i]) - input[i] == 0 && input[i] != INFINITY) {
+        result[i] = 0;
+      } else {
+        result[i] = std::sin(pi_value * input[i]);
+      }
+    }
+    return result;
+  } else {
+    if (input == 0) {
+      return 0;
+    } else if (std::floor(input) - input == 0 && input != INFINITY) {
+      return 0;
+    } else {
+      return std::sin(pi_value * input);
+    }
+  }
+}
+
+template <typename T> T calculate_tan(const T &input) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::tan(input[i]);
+    }
+    return result;
+  } else {
+    return std::tan(input);
+  }
+}
+
+template <typename T> T calculate_tanh(const T &input) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::tanh(input[i]);
+    }
+    return result;
+  } else {
+    return std::tanh(input);
+  }
+}
+
+template <typename T> T calculate_tanpi(const T &input) {
+  constexpr cassian::scalar_type_v<T> pi_value = M_PI;
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::tan(pi_value * input[i]);
+    }
+    return result;
+  } else {
+    return std::tan(pi_value * input);
+  }
+}
+
+template <typename T> T calculate_tgamma(const T &input) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::tgamma(input[i]);
+    }
+    return result;
+  } else {
+    return std::tgamma(input);
+  }
+}
+
+template <typename T> T calculate_trunc(const T &input) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::trunc(input[i]);
+    }
+    return result;
+  } else {
+    return std::trunc(input);
+  }
+}
+
+template <typename T> T calculate_divide(const T &input_a, const T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = input_a[i] / input_b[i];
+    }
+    return result;
+  } else {
+    return input_a / input_b;
+  }
+}
+
+template <typename T> T calculate_recip(const T &input) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = 1.0 / input[i];
+    }
+    return result;
+  } else {
+    return 1.0 / input;
   }
 }
 
@@ -610,6 +903,18 @@ template <typename T> T calculate_hypot(const T &input_a, const T &input_b) {
   }
 }
 
+template <typename T> T calculate_lgamma(const T &input_a) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::lgamma(input_a[i]);
+    }
+    return result;
+  } else {
+    return std::lgamma(input_a);
+  }
+}
+
 template <typename T> T calculate_log(const T &input_a) {
   if constexpr (cassian::is_vector_v<T>) {
     T result(0.0F);
@@ -667,6 +972,157 @@ template <typename T> T calculate_logb(const T &input_a) {
     return result;
   } else {
     return std::logb(input_a);
+  }
+}
+
+template <typename T_1, typename T_2> T_1 calculate_nan(const T_2 &input_a) {
+  if constexpr (cassian::is_vector_v<T_2>) {
+    T_1 result(0.0F);
+    for (auto i = 0; i < T_1::vector_size; i++) {
+      result[i] = input_a[i] | 0x7fc00000U;
+    }
+    return result;
+  } else {
+    return input_a | 0x7fc00000U;
+  }
+}
+
+template <typename T_1, typename T_2>
+T_1 calculate_pown(const T_1 &input_a, const T_2 &input_b) {
+  if constexpr (cassian::is_vector_v<T_1>) {
+    T_1 result(0.0F);
+    for (auto i = 0; i < T_1::vector_size; i++) {
+      result[i] = std::pow(input_a[i], input_b[i]);
+    }
+    return result;
+  } else {
+    return std::pow(input_a, input_b);
+  }
+}
+
+template <typename T> T calculate_powr(const T &input_a, const T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::pow(input_a[i], input_b[i]);
+    }
+    return result;
+  } else {
+    return std::pow(input_a, input_b);
+  }
+}
+
+template <typename T_1, typename T_2>
+T_1 calculate_rootn(const T_1 &input_a, const T_2 &input_b) {
+  if constexpr (cassian::is_vector_v<T_1>) {
+    T_1 result(0.0F);
+    for (auto i = 0; i < T_1::vector_size; i++) {
+      result[i] = std::pow(input_a[i], 1.0F / input_b[i]);
+    }
+    return result;
+  } else {
+    return std::pow(input_a, 1.0F / input_b);
+  }
+}
+
+template <typename T> T calculate_fract(const T &input_a, T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      if (std::isnan(input_a[i])) {
+        result[i] = NAN;
+      } else if (std::isinf(input_a[i])) {
+        result[i] = 0;
+      } else {
+        result[i] =
+            std::fmin(input_a[i] - std::floor(input_a[i]), 0x1.fffffep-1f);
+      }
+      input_b[i] = std::floor(input_a[i]);
+    }
+    return result;
+  } else {
+    if (std::isnan(input_a)) {
+      input_b = std::floor(input_a);
+      return std::numeric_limits<T>::quiet_NaN();
+    } else if (std::isinf(input_a)) {
+      input_b = std::floor(input_a);
+      return 0;
+    } else {
+      input_b = std::floor(input_a);
+      return std::fmin(input_a - std::floor(input_a), 0x1.fffffep-1f);
+    }
+  }
+}
+
+template <typename T> T calculate_modf(const T &input_a, T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::modf(input_a[i], &input_b[i]);
+    }
+    return result;
+  } else {
+    return std::modf(input_a, &input_b);
+  }
+}
+
+template <typename T> T calculate_sincos(const T &input_a, T &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::sin(input_a[i]);
+      input_b[i] = std::cos(input_a[i]);
+    }
+    return result;
+  } else {
+    input_b = std::cos(input_a);
+    return std::sin(input_a);
+  }
+}
+
+template <typename T, typename T_1>
+T calculate_frexp(const T &input_a, T_1 &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::frexp(input_a[i], &input_b[i]);
+      if (input_b[i] == -1)
+        input_b[i] = 0;
+    }
+    return result;
+  } else {
+    auto result = std::frexp(input_a, &input_b);
+    if (input_b == -1)
+      input_b = 0;
+    return result;
+  }
+}
+
+template <typename T, typename T_1>
+T calculate_remquo(const T &input_a, const T &input_b, T_1 &input_c) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::remquo(input_a[i], input_b[i], &input_c[i]);
+    }
+    return result;
+  } else {
+    return std::remquo(input_a, input_b, &input_c);
+  }
+}
+
+template <typename T, typename T_1>
+T calculate_lgamma_r(const T &input_a, T_1 &input_b) {
+  if constexpr (cassian::is_vector_v<T>) {
+    T result(0.0F);
+    for (auto i = 0; i < T::vector_size; i++) {
+      result[i] = std::lgamma(input_a[i]);
+      input_b[i] = input_a[i] > 0 ? 1 : 0;
+    }
+    return result;
+  } else {
+    input_b = input_a > 0 ? 1 : 0;
+    return std::lgamma(input_a);
   }
 }
 

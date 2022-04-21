@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -71,6 +71,7 @@ enum class Function {
   round,
   rsqrt,
   sincos,
+  sin,
   sinh,
   sinpi,
   sqrt,
@@ -207,16 +208,17 @@ enum class FloatConstants {
       Function::nextafter, Function::pow, Function::pown, Function::powr,      \
       Function::remainder, Function::remquo, Function::rint, Function::rootn,  \
       Function::round, Function::rsqrt, Function::sincos, Function::sinh,      \
-      Function::sinpi, Function::sqrt, Function::tan, Function::tanh,          \
-      Function::tanpi, Function::tgamma, Function::trunc, Function::half_cos,  \
-      Function::half_divide, Function::half_exp, Function::half_exp2,          \
-      Function::half_exp10, Function::half_log, Function::half_log2,           \
-      Function::half_log10, Function::half_powr, Function::half_recip,         \
-      Function::half_rsqrt, Function::half_sin, Function::half_sqrt,           \
-      Function::half_tan, Function::native_cos, Function::native_divide,       \
-      Function::native_exp, Function::native_exp2, Function::native_exp10,     \
-      Function::native_log, Function::native_log2, Function::native_log10,     \
-      Function::native_powr, Function::native_recip, Function::native_rsqrt,   \
-      Function::native_sin, Function::native_sqrt, Function::native_tan)
+      Function::sin, Function::sinpi, Function::sqrt, Function::tan,           \
+      Function::tanh, Function::tanpi, Function::tgamma, Function::trunc,      \
+      Function::half_cos, Function::half_divide, Function::half_exp,           \
+      Function::half_exp2, Function::half_exp10, Function::half_log,           \
+      Function::half_log2, Function::half_log10, Function::half_powr,          \
+      Function::half_recip, Function::half_rsqrt, Function::half_sin,          \
+      Function::half_sqrt, Function::half_tan, Function::native_cos,           \
+      Function::native_divide, Function::native_exp, Function::native_exp2,    \
+      Function::native_exp10, Function::native_log, Function::native_log2,     \
+      Function::native_log10, Function::native_powr, Function::native_recip,   \
+      Function::native_rsqrt, Function::native_sin, Function::native_sqrt,     \
+      Function::native_tan)
 
 #endif

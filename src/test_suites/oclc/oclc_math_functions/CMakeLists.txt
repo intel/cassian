@@ -23,9 +23,13 @@ list(
   "src/math_macros.cpp"
   "src/math_constants.cpp")
 
-list(APPEND KERNELS "kernels/oclc_math_functions/math_functions.cl"
-     "kernels/oclc_math_functions/math_macros.cl"
-     "kernels/oclc_math_functions/math_constants.cl")
+list(
+  APPEND
+  KERNELS
+  "kernels/oclc_math_functions/math_functions.cl"
+  "kernels/oclc_math_functions/math_macros.cl"
+  "kernels/oclc_math_functions/math_constants.cl"
+  "kernels/oclc_math_functions/math_functions_store.cl")
 
 add_executable(oclc_math_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                    ${SOURCES})

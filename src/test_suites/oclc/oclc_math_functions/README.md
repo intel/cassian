@@ -35,12 +35,12 @@ OpenCL C functionality.
     * `copysign`
     * `cos`
     * `cosh`
-    * `cospi` - TODO
+    * `cospi`
     * `erfc`
     * `erf`
     * `exp`
     * `exp2`
-    * `exp10` - TODO
+    * `exp10`
     * `expm1`
     * `fabs`
     * `fdim`
@@ -52,72 +52,72 @@ OpenCL C functionality.
     * `hypot`
     * `ilogb` 
     * `ldexp`
-    * `lgamma` - TODO
+    * `lgamma`
     * `log`
     * `log2`
     * `log10`
     * `log1p`
     * `logb`
     * `mad`
-    * `maxmag` - TODO
-    * `minmag` - TODO
-    * `nan` - TODO
-    * `nextafter` - TODO
-    * `pow` - TODO
-    * `pown` - TODO
-    * `powr` - TODO
-    * `remainder` - TODO
-    * `rint` - TODO
-    * `rootn` - TODO
-    * `round` - TODO
-    * `rsqrt` - TODO
-    * `sinh` - TODO
-    * `sinpi` - TODO
+    * `maxmag`
+    * `minmag`
+    * `nan`
+    * `nextafter`
+    * `pow`
+    * `pown`
+    * `powr`
+    * `remainder`
+    * `rint`
+    * `rootn`
+    * `round`
+    * `rsqrt`
+    * `sinh`
+    * `sinpi`
     * `sqrt`
-    * `tan` - TODO
-    * `tanh` - TODO
-    * `tanpi` - TODO
-    * `tgamma` - TODO
-    * `trunc` - TODO
-    * `half_cos` - TODO
-    * `half_divide` - TODO
-    * `half_exp` - TODO
-    * `half_exp2` - TODO
-    * `half_exp10` - TODO
-    * `half_log` - TODO
-    * `half_log2` - TODO
-    * `half_log10` - TODO
-    * `half_powr` - TODO
-    * `half_recip` - TODO
-    * `half_rsqrt` - TODO
-    * `half_sin` - TODO
-    * `half_sqrt` - TODO
-    * `half_tan` - TODO
-    * `native_cos` - TODO
-    * `native_divide` - TODO
-    * `native_exp` - TODO
-    * `native_exp2` - TODO
-    * `native_exp10` - TODO
-    * `native_log` - TODO
-    * `native_log2` - TODO
-    * `native_log10` - TODO
-    * `native_powr` - TODO
-    * `native_recip` - TODO
-    * `native_rsqrt` - TODO
-    * `native_sin` - TODO
-    * `native_sqrt` - TODO
-    * `native_tan` - TODO
+    * `tan`
+    * `tanh`
+    * `tanpi`
+    * `tgamma`
+    * `trunc`
+    * `half_cos`
+    * `half_divide`
+    * `half_exp`
+    * `half_exp2`
+    * `half_exp10`
+    * `half_log`
+    * `half_log2`
+    * `half_log10`
+    * `half_powr`
+    * `half_recip`
+    * `half_rsqrt`
+    * `half_sin`
+    * `half_sqrt`
+    * `half_tan`
+    * `native_cos`
+    * `native_divide`
+    * `native_exp`
+    * `native_exp2`
+    * `native_exp10`
+    * `native_log`
+    * `native_log2`
+    * `native_log10`
+    * `native_powr`
+    * `native_recip`
+    * `native_rsqrt`
+    * `native_sin`
+    * `native_sqrt`
+    * `native_tan`
   * `math_functions_specializations` - Specialization of given functions.
     * `fmax` - gentype fmax(gentype x, float/double y)
     * `fmin` - gentype fmin(gentype x, float/double y)
     * `ldexp` - gentype ldexp(gentype x, int k)
   * `math_function_store_functions` - Store functions.
-    * `fract` - TODO
-    * `frexp` - TODO
-    * `lgamma_r` - TODO
-    * `modf` - TODO
-    * `remquo` - TODO
-    * `sincos` - TODO
+    * `fract`
+    * `frexp`
+    * `lgamma_r`
+    * `modf`
+    * `remquo`
+    * `sincos`
 
 ### Math macros
 * Status: DONE
