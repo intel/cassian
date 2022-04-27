@@ -33,7 +33,7 @@ template <typename T> struct TestCase {
   ca::Runtime *runtime = nullptr;
   std::string program_type;
 
-  test_host_type input = NULL;
+  test_host_type input = 0;
 };
 
 std::string get_kernel_path() {
