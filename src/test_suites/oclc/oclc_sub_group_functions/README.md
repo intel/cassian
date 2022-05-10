@@ -150,3 +150,130 @@ OpenCL C functionality and specializations for specific data types:
   * Values:
     * Each work item register its value `data`. Which value is shuffled depends on `mask` param which is the second param of the function. 
     Finally each workitem checks if in results table are correct values (shuffling occure for each work item)
+
+### `sub_group_reduce_min`
+* Status: Done
+* Goal: Verify that `sub_group_reduce_min` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_reduce_min` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the reduce function. The minimal value `expected_value` among all subgroup workitems should be result. 
+
+### `sub_group_reduce_max`
+* Status: Done
+* Goal: Verify that `sub_group_reduce_max` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_reduce_max` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the reduce function. The maximal value `expected_value` among all subgroup workitems should be result. 
+
+### `sub_group_reduce_add`
+* Status: Done
+* Goal: Verify that `sub_group_reduce_add` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_reduce_add` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the reducing. The maximal value `expected_value` among all subgroup workitems should be result.
+
+### `sub_group_scan_inclusive_min`
+* Status: Done
+* Goal: Verify that `sub_group_scan_inclusive_min` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_scan_inclusive_min` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the scan function. The minimal value `expected_value` for each work item should be returned.
+    Because minimal value is 1 (value registered for first work item) test expect 1 for all work items.
+
+### `sub_group_scan_inclusive_max`
+* Status: Done
+* Goal: Verify that `sub_group_scan_inclusive_max` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_scan_inclusive_max` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the scan function. The maximal value `expected_value` for each work item should be returned.
+    In this case maximal result value is changing and equals to `sub_group_local_id + 1` (value of current work item).
+
+### `sub_group_scan_inclusive_add`
+* Status: Done
+* Goal: Verify that `sub_group_scan_inclusive_add` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_scan_inclusive_add` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the scan function. The value `expected_value` for each work item should be returned.
+    In this case result value is changing for each work item and equals the sum of `sub_group_local_id + 1` all
+    previous and current work item.
+
+### `sub_group_scan_exclusive_min`
+* Status: Done
+* Goal: Verify that `sub_group_scan_exclusive_min` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_scan_exclusive_min` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the scan function. The minimal value `expected_value` for each work item should be returned.
+    Exclusion from calculation means values from all work items are calculated without me. That why maximal value for particular data type is expected as initial value for first work item.
+    Others work items get value 1 as result (coming from first work item).
+
+### `sub_group_scan_exclusive_max`
+* Status: Done
+* Goal: Verify that `sub_group_scan_exclusive_max` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_scan_exclusive_max` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the scan function. The maximal value `expected_value` for each work item should be returned.
+    Exclusion from calculation means values from all work items are calculated without me. That why minimal value for particular data type is expected as initial value for first work item.
+    Others work items get value `sub_group_local_id` as result.
+
+### `sub_group_scan_exclusive_add`
+* Status: Done
+* Goal: Verify that `sub_group_scan_exclusive_add` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_scan_exclusive_add` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters:
+  * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
+  * Dimensions: 1D, 2D, 3D.
+  * Values:
+    * Each work item register its value to the scan function. The value `expected_value` for each work item should be returned.
+    In this case result value is changing for each work item and equals the sum of `sub_group_local_id + 1` all only
+    previous. For first work item (no previous workitems) value 0 is returned. 

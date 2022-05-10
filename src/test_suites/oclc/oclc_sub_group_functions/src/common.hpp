@@ -69,6 +69,50 @@ template <typename T> struct KernelDescriptor {
         func_name = "intel_" + func_name;
       }
     }
+    std::string max_value;
+    if (T::device_type == std::string("char"))
+      max_value = "SCHAR_MAX";
+    else if (T::device_type == std::string("uchar"))
+      max_value = "UCHAR_MAX";
+    else if (T::device_type == std::string("short"))
+      max_value = "SHRT_MAX";
+    else if (T::device_type == std::string("ushort"))
+      max_value = "USHRT_MAX";
+    else if (T::device_type == std::string("int"))
+      max_value = "INT_MAX";
+    else if (T::device_type == std::string("uint"))
+      max_value = "UINT_MAX";
+    else if (T::device_type == std::string("long"))
+      max_value = "LONG_MAX";
+    else if (T::device_type == std::string("ulong"))
+      max_value = "ULONG_MAX";
+    else if (T::device_type == std::string("float") ||
+             T::device_type == std::string("double") ||
+             T::device_type == std::string("half"))
+      max_value = "INFINITY";
+
+    std::string min_value;
+    if (T::device_type == std::string("char"))
+      min_value = "SCHAR_MIN";
+    else if (T::device_type == std::string("uchar"))
+      min_value = "0";
+    else if (T::device_type == std::string("short"))
+      min_value = "SHRT_MIN";
+    else if (T::device_type == std::string("ushort"))
+      min_value = "0";
+    else if (T::device_type == std::string("int"))
+      min_value = "INT_MIN";
+    else if (T::device_type == std::string("uint"))
+      min_value = "0";
+    else if (T::device_type == std::string("long"))
+      min_value = "LONG_MIN";
+    else if (T::device_type == std::string("ulong"))
+      min_value = "0";
+    else if (T::device_type == std::string("float") ||
+             T::device_type == std::string("double") ||
+             T::device_type == std::string("half"))
+      min_value = "-INFINITY";
+
     std::string use_all_func;
     using vector_type_check = typename T::host_type;
     if (ca::is_vector_v<vector_type_check>) {
@@ -78,7 +122,9 @@ template <typename T> struct KernelDescriptor {
         std::string("-cl-std=CL3.0") + std::string(" -D DATA_TYPE=") +
         T::device_type + std::string(" -D FUNC_NAME=") + func_name +
         std::string(" -D USE_ALL=") + use_all_func +
-        std::string(" -D DELTA_SIZE=") + std::to_string(delta_size);
+        std::string(" -D DELTA_SIZE=") + std::to_string(delta_size) +
+        std::string(" -D MAX_VALUE=") + max_value +
+        std::string(" -D MIN_VALUE=") + min_value;
     return build_options;
   };
   size_t args;
@@ -254,7 +300,7 @@ void test_subgroup_generic(const TestConfig &config,
     kernel_description.arg1.data_count = input_data_values.size();
     kernel_description.arg1.data_size =
         input_data_values.size() * sizeof(uint32_t);
-    kernel_description.change_prefix_for_all_types = true;
+    kernel_description.change_prefix_for_all_types = false;
     kernel_description.delta_size = delta_size;
 
     const std::vector<std::vector<uint32_t>> outputs =

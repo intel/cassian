@@ -17,7 +17,9 @@ list(
   "src/num_sub_group.cpp"
   "src/enqueued_num_sub_group.cpp"
   "src/sub_group_id.cpp"
-  "src/sub_group_shuffle.cpp")
+  "src/sub_group_shuffle.cpp"
+  "src/sub_group_reduce.cpp"
+  "src/sub_group_scan.cpp")
 
 list(
   APPEND
@@ -32,7 +34,16 @@ list(
   "kernels/oclc_sub_group_functions/sub_group_shuffle_xor.cl"
   "kernels/oclc_sub_group_functions/sub_group_shuffle_mixed.cl"
   "kernels/oclc_sub_group_functions/sub_group_shuffle_up.cl"
-  "kernels/oclc_sub_group_functions/sub_group_shuffle_down.cl")
+  "kernels/oclc_sub_group_functions/sub_group_shuffle_down.cl"
+  "kernels/oclc_sub_group_functions/sub_group_reduce_min.cl"
+  "kernels/oclc_sub_group_functions/sub_group_reduce_max.cl"
+  "kernels/oclc_sub_group_functions/sub_group_reduce_add.cl"
+  "kernels/oclc_sub_group_functions/sub_group_scan_inclusive_add.cl"
+  "kernels/oclc_sub_group_functions/sub_group_scan_inclusive_min.cl"
+  "kernels/oclc_sub_group_functions/sub_group_scan_inclusive_max.cl"
+  "kernels/oclc_sub_group_functions/sub_group_scan_exclusive_add.cl"
+  "kernels/oclc_sub_group_functions/sub_group_scan_exclusive_min.cl"
+  "kernels/oclc_sub_group_functions/sub_group_scan_exclusive_max.cl")
 
 add_executable(oclc_sub_group_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                         ${SOURCES})
