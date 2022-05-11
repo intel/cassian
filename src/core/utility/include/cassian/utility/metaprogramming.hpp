@@ -243,6 +243,14 @@ struct TupleZip<std::tuple<T...>, std::tuple<U...>> {
   using type = std::tuple<std::tuple<T, U>...>;
 };
 
+template <typename... T, typename... U, typename... V>
+struct TupleZip<std::tuple<T...>, std::tuple<U...>, std::tuple<V...>> {
+  /**
+   * @c std::tuple containing three-element @c std::tuples of types.
+   */
+  using type = std::tuple<std::tuple<T, U, V>...>;
+};
+
 } // namespace cassian
 
 #endif
