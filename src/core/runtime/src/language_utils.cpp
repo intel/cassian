@@ -21,9 +21,9 @@ bool check_kernel_compilation(Runtime *runtime, const std::string &kernel_name,
     auto k = runtime->create_kernel(kernel_name, source, compiler_flags,
                                     program_type, std::nullopt, quiet);
     runtime->release_kernel(k);
-  } catch (const RuntimeException &e) {
+  } catch (const RuntimeException &) {
     return false;
-  } catch (const OfflineCompilerException &e) {
+  } catch (const OfflineCompilerException &) {
     return false;
   }
   return true;

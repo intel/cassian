@@ -8,7 +8,8 @@
 #ifndef CASSIAN_RUNTIME_IMAGE_PROPERTIES_HPP
 #define CASSIAN_RUNTIME_IMAGE_PROPERTIES_HPP
 #include <array>
-#include <stdint.h>
+#include <cassert>
+#include <cstdint>
 
 /**
  * Cassian namespace.
@@ -22,7 +23,7 @@ struct ImageDimensions {
   /**
    * Image width
    */
-  uint32_t width = 1;
+  uint64_t width = 1;
 
   /**
    * Image height
@@ -70,9 +71,11 @@ struct ImageDimensions {
    * Assignment operator for 3-dimension array.
    */
   ImageDimensions &operator=(const std::array<size_t, 3> &rhs) {
+    assert(rhs[1] <= UINT32_MAX);
+    assert(rhs[2] <= UINT32_MAX);
     width = rhs[0];
-    height = rhs[1];
-    depth = rhs[2];
+    height = static_cast<uint32_t>(rhs[1]);
+    depth = static_cast<uint32_t>(rhs[2]);
     return *this;
   }
 
@@ -80,8 +83,9 @@ struct ImageDimensions {
    * Assignment operator for 2-dimension array.
    */
   ImageDimensions &operator=(const std::array<size_t, 2> &rhs) {
+    assert(rhs[1] <= UINT32_MAX);
     width = rhs[0];
-    height = rhs[1];
+    height = static_cast<uint32_t>(rhs[1]);
     depth = 1;
     return *this;
   }
