@@ -19,7 +19,8 @@ list(
   "src/sub_group_id.cpp"
   "src/sub_group_shuffle.cpp"
   "src/sub_group_reduce.cpp"
-  "src/sub_group_scan.cpp")
+  "src/sub_group_scan.cpp"
+  "src/sub_group_all_any.cpp")
 
 list(
   APPEND
@@ -43,7 +44,11 @@ list(
   "kernels/oclc_sub_group_functions/sub_group_scan_inclusive_max.cl"
   "kernels/oclc_sub_group_functions/sub_group_scan_exclusive_add.cl"
   "kernels/oclc_sub_group_functions/sub_group_scan_exclusive_min.cl"
-  "kernels/oclc_sub_group_functions/sub_group_scan_exclusive_max.cl")
+  "kernels/oclc_sub_group_functions/sub_group_scan_exclusive_max.cl"
+  "kernels/oclc_sub_group_functions/sub_group_all.cl"
+  "kernels/oclc_sub_group_functions/sub_group_all_negative.cl"
+  "kernels/oclc_sub_group_functions/sub_group_any.cl"
+  "kernels/oclc_sub_group_functions/sub_group_any_negative.cl")
 
 add_executable(oclc_sub_group_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                         ${SOURCES})

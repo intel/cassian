@@ -257,3 +257,29 @@ OpenCL C functionality and specializations for specific data types:
 * Parameters:
   * Scalar data types: `char`, `uchar`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `half`, `double`.
   * Dimensions: 1D, 2D, 3D.  
+
+### `sub_group_all`
+* Status: Done
+* Goal: Verify that `sub_group_all` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_all` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters: 
+  * Dimensions: 1D, 2D, 3D.
+* Test cases:
+  * Positive case - test when predicate for all subgroups work-items evaluate to true.
+  * Negative case - test when predicate for some subgroups work-items evaluate to false.
+
+### `sub_group_any`
+* Status: Done
+* Goal: Verify that `sub_group_any` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `sub_group_any` in multiple work-groups and sub-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Work-items in a sub-group are properly synchronized and computed values are correct.
+* Parameters: 
+  * Dimensions: 1D, 2D, 3D.
+* Test cases:
+  * Positive case - test when predicate for some subgroups work-items evaluate to true.
+  * Negative case - test when predicate for all subgroups work-items evaluate to false.
