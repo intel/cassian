@@ -48,8 +48,7 @@ struct ArgData {
   ArgData(void *data = nullptr, size_t data_size = 0, size_t data_count = 0,
           bool is_image = false, bool is_local_memory = false)
       : data(data), data_size(data_size), data_count(data_count),
-        is_image(is_image), image_config(image_config),
-        is_local_memory(is_local_memory) {}
+        is_image(is_image), is_local_memory(is_local_memory) {}
 };
 
 template <typename T> struct KernelDescriptor {
