@@ -389,6 +389,13 @@ std::string to_string(const Tfloat &value);
 std::ostream &operator<<(std::ostream &os, const Tfloat &value);
 
 /**
+ * Checks whether the value is NaN.
+ *
+ * @param[in] value object to use.
+ */
+bool isnan(Tfloat value);
+
+/**
  * Computes the absolute value of a Tfloat value arg.
  *
  * @param[in] value object to use.

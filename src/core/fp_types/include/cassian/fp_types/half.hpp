@@ -655,6 +655,13 @@ std::string to_string(const Half &value);
 std::ostream &operator<<(std::ostream &os, const Half &value);
 
 /**
+ * Checks whether the value is NaN.
+ *
+ * @param[in] value object to use.
+ */
+bool isnan(Half value);
+
+/**
  * Computes the absolute value of a Half value arg.
  *
  * @param[in] value object to use.

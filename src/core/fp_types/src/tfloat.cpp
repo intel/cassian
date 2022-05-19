@@ -119,7 +119,17 @@ std::ostream &operator<<(std::ostream &os, const Tfloat &value) {
   return os;
 }
 
-Tfloat abs(Tfloat value) { return Tfloat::encode(value.decode() & ~(1 << 31)); }
+bool isnan(Tfloat value) {
+  const int32_t exponent_mask = 0x7f800000;
+  const int32_t mantissa_mask = 0x007fe000;
+  return (value.decode() & exponent_mask) == exponent_mask &&
+         (value.decode() & mantissa_mask) != 0;
+}
+
+Tfloat abs(Tfloat value) {
+  const uint32_t sign_mask = 0x80000000;
+  return Tfloat::encode(value.decode() & ~sign_mask);
+}
 
 Tfloat sqrt(Tfloat value) {
   return Tfloat(std::sqrt(static_cast<float>(value)));

@@ -246,6 +246,13 @@ std::ostream &operator<<(std::ostream &os, const Half &value) {
   return os;
 }
 
+bool isnan(Half value) {
+  const int16_t exponent_mask = 0x7c00;
+  const int16_t mantissa_mask = 0x03ff;
+  return (value.decode() & exponent_mask) == exponent_mask &&
+         (value.decode() & mantissa_mask) != 0;
+}
+
 Half abs(Half value) { return Half::encode(value.decode() & ~(1 << 15)); }
 
 Half sqrt(Half value) { return Half(std::sqrt(static_cast<float>(value))); }

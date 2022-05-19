@@ -396,6 +396,13 @@ std::string to_string(const Bfloat &value);
 std::ostream &operator<<(std::ostream &os, const Bfloat &value);
 
 /**
+ * Checks whether the value is NaN.
+ *
+ * @param[in] value object to use.
+ */
+bool isnan(Bfloat value);
+
+/**
  * Computes the absolute value of a Bfloat value arg.
  *
  * @param[in] value object to use.

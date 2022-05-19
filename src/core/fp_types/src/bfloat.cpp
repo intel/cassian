@@ -124,7 +124,17 @@ std::ostream &operator<<(std::ostream &os, const Bfloat &value) {
   return os;
 }
 
-Bfloat abs(Bfloat value) { return Bfloat::encode(value.decode() & ~(1 << 31)); }
+bool isnan(Bfloat value) {
+  const int16_t exponent_mask = 0x7f80;
+  const int16_t mantissa_mask = 0x007f;
+  return (value.decode() & exponent_mask) == exponent_mask &&
+         (value.decode() & mantissa_mask) != 0;
+}
+
+Bfloat abs(Bfloat value) {
+  const uint16_t sign_mask = 0x8000;
+  return Bfloat::encode(value.decode() & ~sign_mask);
+}
 
 Bfloat sqrt(Bfloat value) {
   return Bfloat(std::sqrt(static_cast<float>(value)));
