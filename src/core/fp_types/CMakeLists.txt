@@ -4,9 +4,14 @@
 # SPDX-License-Identifier: MIT
 #
 
-list(APPEND PUBLIC_HEADERS "include/cassian/fp_types/bfloat.hpp"
-     "include/cassian/fp_types/half.hpp" "include/cassian/fp_types/tfloat.hpp"
-     "include/cassian/fp_types/type_traits.hpp")
+list(
+  APPEND
+  PUBLIC_HEADERS
+  "include/cassian/fp_types/bfloat.hpp"
+  "include/cassian/fp_types/half.hpp"
+  "include/cassian/fp_types/tfloat.hpp"
+  "include/cassian/fp_types/type_traits.hpp"
+  "include/cassian/fp_types/math.hpp")
 list(APPEND PRIVATE_HEADERS)
 list(APPEND SOURCES "src/bfloat.cpp" "src/half.cpp" "src/tfloat.cpp")
 
