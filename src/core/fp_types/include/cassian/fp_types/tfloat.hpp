@@ -411,6 +411,15 @@ Tfloat abs(Tfloat value);
  */
 Tfloat sqrt(Tfloat value);
 
+/**
+ * Computes the next representable value of from in the direction of to.
+ *
+ * @param[in] from base value.
+ * @param[in] to value toward which the return value is approximated.
+ * @returns the next representable value.
+ */
+Tfloat nextafter(const Tfloat from, const Tfloat to);
+
 } // namespace cassian
 
 /**

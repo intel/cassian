@@ -135,4 +135,12 @@ Tfloat sqrt(Tfloat value) {
   return Tfloat(std::sqrt(static_cast<float>(value)));
 }
 
+Tfloat nextafter(const Tfloat from, const Tfloat to) {
+  return (from < to)
+             ? Tfloat(from + std::numeric_limits<Tfloat>::epsilon())
+             : (from > to
+                    ? Tfloat(from - std::numeric_limits<Tfloat>::epsilon())
+                    : Tfloat(to));
+}
+
 } // namespace cassian

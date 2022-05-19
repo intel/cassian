@@ -257,4 +257,11 @@ Half abs(Half value) { return Half::encode(value.decode() & ~(1 << 15)); }
 
 Half sqrt(Half value) { return Half(std::sqrt(static_cast<float>(value))); }
 
+Half nextafter(const Half from, const Half to) {
+  return (from < to)
+             ? Half(from + std::numeric_limits<Half>::epsilon())
+             : (from > to ? Half(from - std::numeric_limits<Half>::epsilon())
+                          : Half(to));
+}
+
 } // namespace cassian

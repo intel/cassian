@@ -677,6 +677,15 @@ Half abs(Half value);
  */
 Half sqrt(Half value);
 
+/**
+ * Computes the next representable value of from in the direction of to.
+ *
+ * @param[in] from base value.
+ * @param[in] to value toward which the return value is approximated.
+ * @returns the next representable value.
+ */
+Half nextafter(const Half from, const Half to);
+
 } // namespace cassian
 
 /**

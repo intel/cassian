@@ -140,4 +140,12 @@ Bfloat sqrt(Bfloat value) {
   return Bfloat(std::sqrt(static_cast<float>(value)));
 }
 
+Bfloat nextafter(const Bfloat from, const Bfloat to) {
+  return (from < to)
+             ? Bfloat(from + std::numeric_limits<Bfloat>::epsilon())
+             : (from > to
+                    ? Bfloat(from - std::numeric_limits<Bfloat>::epsilon())
+                    : Bfloat(to));
+}
+
 } // namespace cassian

@@ -418,6 +418,15 @@ Bfloat abs(Bfloat value);
  */
 Bfloat sqrt(Bfloat value);
 
+/**
+ * Computes the next representable value of from in the direction of to.
+ *
+ * @param[in] from base value.
+ * @param[in] to value toward which the return value is approximated.
+ * @returns the next representable value.
+ */
+Bfloat nextafter(const Bfloat from, const Bfloat to);
+
 } // namespace cassian
 
 /**
