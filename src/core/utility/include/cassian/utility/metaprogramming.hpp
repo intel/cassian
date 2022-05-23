@@ -51,6 +51,19 @@ template <typename T, typename... U> struct ProductRow {
 };
 
 /**
+ * Specialization of ProductRow for @c std::tuple as first parameter.
+ * Allows nesting CartesianProduct calls to produce permutations of more than
+ * 2 sets of types.
+ *
+ * @tparam T... types wrapped in @c std::tuple
+ * @tparam U... types to use as last type
+ */
+template <typename... T, typename... U>
+struct ProductRow<std::tuple<T...>, U...> {
+  using type = std::tuple<std::tuple<T..., U>...>;
+};
+
+/**
  * Helper struct for CartesianProduct.
  * Creates @c std::tuple containing elements of type V<T, (U1, U2, U3...)>.
  *
