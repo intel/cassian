@@ -14,21 +14,21 @@ constexpr unsigned simd = SIMD;
 
 extern "C" _GENX_MAIN_ void test(
 #if defined(SRC0_VECTOR)
-    SurfaceIndex src0_buf [[type("buffer_t")]],
+    svmptr_t src0_buf [[type("svmptr_t")]],
 #elif defined(SRC0_SCALAR)
     src0_t src0,
 #endif
-    SurfaceIndex dst_buf [[type("buffer_t")]]) {
+    svmptr_t dst_buf [[type("svmptr_t")]]) {
   const auto tid = cm_linear_global_id();
   const auto index = tid * simd;
 
 #if defined(SRC0_VECTOR)
   vector<src0_t, simd> src0;
-  read(src0_buf, index * sizeof(src0_t), src0);
+  cm_svm_block_read(src0_buf + index * sizeof(src0_t), src0);
 #elif defined(SRC0_CONST)
   constexpr src0_t src0 = SRC0_VALUE;
 #endif
 
   vector<dst_t, simd> dst = TEST_OP src0;
-  write(dst_buf, index * sizeof(dst_t), dst);
+  cm_svm_block_write(dst_buf + index * sizeof(dst_t), dst);
 }
