@@ -7,14 +7,14 @@
 
 #include <cm/cm.h>
 
-extern "C" _GENX_MAIN_ void test(SurfaceIndex input_s [[type("buffer_t")]],
-                                 SurfaceIndex test_s [[type("buffer_t")]],
-                                 SurfaceIndex etalon_s [[type("buffer_t")]]) {
+extern "C" _GENX_MAIN_ void test(svmptr_t input_s [[type("svmptr_t")]],
+                                 svmptr_t test_s [[type("svmptr_t")]],
+                                 svmptr_t etalon_s [[type("svmptr_t")]]) {
   vector<int, 8> input_v(0);
   vector<int, 8> test_v(0);
   vector<int, 8> etalon_v(0);
 
-  read(input_s, 0, input_v);
+  cm_svm_block_read(input_s, input_v);
 
   for (int i = 0; i < 8; i++) {
     bool pred = false;
@@ -29,6 +29,6 @@ extern "C" _GENX_MAIN_ void test(SurfaceIndex input_s [[type("buffer_t")]],
       etalon_v(i) = ~input_v(i);
   }
 
-  write(test_s, 0, test_v);
-  write(etalon_s, 0, etalon_v);
+  cm_svm_block_write(test_s, test_v);
+  cm_svm_block_write(etalon_s, etalon_v);
 }

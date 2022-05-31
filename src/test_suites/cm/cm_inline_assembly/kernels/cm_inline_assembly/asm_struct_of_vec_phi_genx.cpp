@@ -7,17 +7,17 @@
 
 #include <cm/cm.h>
 
-extern "C" _GENX_MAIN_ void test(SurfaceIndex a_idx [[type("buffer_t")]],
-                                 SurfaceIndex b_idx [[type("buffer_t")]],
-                                 SurfaceIndex res_a_idx [[type("buffer_t")]],
-                                 SurfaceIndex res_b_idx [[type("buffer_t")]]) {
+extern "C" _GENX_MAIN_ void test(svmptr_t a_idx [[type("svmptr_t")]],
+                                 svmptr_t b_idx [[type("svmptr_t")]],
+                                 svmptr_t res_a_idx [[type("svmptr_t")]],
+                                 svmptr_t res_b_idx [[type("svmptr_t")]]) {
   constexpr int width = 16;
 
   vector<int, width> a;
   vector<int, width> b;
 
-  read(a_idx, 0, a);
-  read(b_idx, 0, b);
+  cm_svm_block_read(a_idx, a);
+  cm_svm_block_read(b_idx, b);
 
   int cond = a[0];
   vector<int, width> res_a;
@@ -35,6 +35,6 @@ extern "C" _GENX_MAIN_ void test(SurfaceIndex a_idx [[type("buffer_t")]],
         : "r"(a), "r"(b), "n"(width));
   }
 
-  write(res_a_idx, 0, res_a);
-  write(res_b_idx, 0, res_b);
+  cm_svm_block_write(res_a_idx, res_a);
+  cm_svm_block_write(res_b_idx, res_b);
 }

@@ -8,8 +8,8 @@
 #include <cm/cm.h>
 
 extern "C" _GENX_MAIN_ void //
-test(SurfaceIndex test_surf [[type("buffer_t")]],
-     SurfaceIndex etalon_surf [[type("buffer_t")]]) {
+test(svmptr_t test_surf [[type("svmptr_t")]],
+     svmptr_t etalon_surf [[type("svmptr_t")]]) {
   using data_t = DATA_TYPE;
   vector<data_t, 8> test_vec;
   vector<data_t, 8> etalon_vec;
@@ -24,6 +24,6 @@ test(SurfaceIndex test_surf [[type("buffer_t")]],
     etalon_vec(i) = value;
   }
 
-  write(test_surf, 0, test_vec);
-  write(etalon_surf, 0, etalon_vec);
+  cm_svm_block_write(test_surf, test_vec);
+  cm_svm_block_write(etalon_surf, etalon_vec);
 }

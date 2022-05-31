@@ -7,7 +7,7 @@
 
 #include <cm/cm.h>
 
-extern "C" _GENX_MAIN_ void test(SurfaceIndex out [[type("buffer_t")]]) {
+extern "C" _GENX_MAIN_ void test(svmptr_t out [[type("svmptr_t")]]) {
   vector<int, 8> src = 0;
   vector<int, 8> dst = 0;
 
@@ -25,5 +25,5 @@ extern "C" _GENX_MAIN_ void test(SurfaceIndex out [[type("buffer_t")]]) {
         : "a"(src(i + 1)), "a"(src(i)));
   }
 
-  write(out, 0, dst);
+  cm_svm_block_write(out, dst);
 }

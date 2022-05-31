@@ -7,17 +7,17 @@
 
 #include <cm/cm.h>
 
-extern "C" _GENX_MAIN_ void test(SurfaceIndex in0 [[type("buffer_t")]],
-                                 SurfaceIndex in1 [[type("buffer_t")]],
-                                 SurfaceIndex in2 [[type("buffer_t")]],
-                                 SurfaceIndex out [[type("buffer_t")]]) {
+extern "C" _GENX_MAIN_ void test(svmptr_t in0 [[type("svmptr_t")]],
+                                 svmptr_t in1 [[type("svmptr_t")]],
+                                 svmptr_t in2 [[type("svmptr_t")]],
+                                 svmptr_t out [[type("svmptr_t")]]) {
   vector<int, 8> v0(0);
   vector<int, 8> v1(0);
   vector<int, 8> v2(0);
 
-  read(in0, 0, v0);
-  read(in1, 0, v1);
-  read(in2, 0, v2);
+  cm_svm_block_read(in0, v0);
+  cm_svm_block_read(in1, v1);
+  cm_svm_block_read(in2, v2);
 
   asm("add (M1, %2) %0(0,0)<1> %0(0,0)<1;1,0> %1(0,0)<1;1,0>"
       : "+rw"(v0)
@@ -27,5 +27,5 @@ extern "C" _GENX_MAIN_ void test(SurfaceIndex in0 [[type("buffer_t")]],
       : "+r"(v0)
       : "r"(v2), "n"(sizeof(v0) / sizeof(int)));
 
-  write(out, 0, v0);
+  cm_svm_block_write(out, v0);
 }

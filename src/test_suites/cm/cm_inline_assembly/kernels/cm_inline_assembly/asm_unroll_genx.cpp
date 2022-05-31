@@ -7,8 +7,8 @@
 
 #include <cm/cm.h>
 
-extern "C" _GENX_MAIN_ void test(SurfaceIndex test_s [[type("buffer_t")]],
-                                 SurfaceIndex etalon_s [[type("buffer_t")]]) {
+extern "C" _GENX_MAIN_ void test(svmptr_t test_s [[type("svmptr_t")]],
+                                 svmptr_t etalon_s [[type("svmptr_t")]]) {
   vector<int, 8> test_v;
   vector<int, 8> etalon_v;
 
@@ -22,6 +22,6 @@ extern "C" _GENX_MAIN_ void test(SurfaceIndex test_s [[type("buffer_t")]],
     etalon_v(i) = i;
   }
 
-  write(test_s, 0, test_v);
-  write(etalon_s, 0, etalon_v);
+  cm_svm_block_write(test_s, test_v);
+  cm_svm_block_write(etalon_s, etalon_v);
 }

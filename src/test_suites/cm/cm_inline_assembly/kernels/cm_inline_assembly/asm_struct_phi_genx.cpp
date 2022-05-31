@@ -7,12 +7,12 @@
 
 #include <cm/cm.h>
 
-extern "C" _GENX_MAIN_ void test(SurfaceIndex inp [[type("buffer_t")]],
-                                 SurfaceIndex out [[type("buffer_t")]]) {
+extern "C" _GENX_MAIN_ void test(svmptr_t inp [[type("svmptr_t")]],
+                                 svmptr_t out [[type("svmptr_t")]]) {
   constexpr int width = 4;
   vector<int, width> arg;
 
-  read(inp, 0, arg);
+  cm_svm_block_read(inp, arg);
 
   int arg_a = arg[0];
   int arg_b = arg[1];
@@ -34,5 +34,5 @@ extern "C" _GENX_MAIN_ void test(SurfaceIndex inp [[type("buffer_t")]],
   res[0] = res_a;
   res[1] = res_b;
 
-  write(out, 0, res);
+  cm_svm_block_write(out, res);
 }

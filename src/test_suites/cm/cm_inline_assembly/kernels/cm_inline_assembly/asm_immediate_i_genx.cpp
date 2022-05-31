@@ -8,8 +8,8 @@
 #include <cm/cm.h>
 
 extern "C" _GENX_MAIN_ void //
-test(SurfaceIndex test_surface [[type("buffer_t")]],
-     SurfaceIndex etalon_surface [[type("buffer_t")]]) {
+test(svmptr_t test_surface [[type("svmptr_t")]],
+     svmptr_t etalon_surface [[type("svmptr_t")]]) {
   vector<long long, 8> test_vector;
   vector<long long, 8> etalon_vector;
 
@@ -63,6 +63,6 @@ test(SurfaceIndex test_surface [[type("buffer_t")]],
   etalon_vector(7) = ulong_const;
   test_vector(7) = v_ulong;
 
-  write(etalon_surface, 0, etalon_vector);
-  write(test_surface, 0, test_vector);
+  cm_svm_block_write(etalon_surface, etalon_vector);
+  cm_svm_block_write(test_surface, test_vector);
 }

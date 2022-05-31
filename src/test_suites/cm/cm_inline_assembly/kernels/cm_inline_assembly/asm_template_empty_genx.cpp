@@ -8,17 +8,17 @@
 #include <cm/cm.h>
 
 extern "C" _GENX_MAIN_ void //
-test(SurfaceIndex in_surface [[type("buffer_t")]],
-     SurfaceIndex out_surface [[type("buffer_t")]]) {
+test(svmptr_t in_surface [[type("svmptr_t")]],
+     svmptr_t out_surface [[type("svmptr_t")]]) {
   vector<int, 8> in_vector;
   vector<int, 8> out_vector;
 
-  read(in_surface, 0, in_vector);
+  cm_svm_block_read(in_surface, in_vector);
 
   for (int i = 0; i < 8; i++) {
     asm("");
     out_vector(i) = in_vector(i) - 1;
   }
 
-  write(out_surface, 0, out_vector);
+  cm_svm_block_write(out_surface, out_vector);
 }

@@ -7,14 +7,14 @@
 
 #include "cm/cm.h"
 
-void _GENX_MAIN_ test(SurfaceIndex in0 [[type("buffer_t")]],
-                      SurfaceIndex in1 [[type("buffer_t")]],
-                      SurfaceIndex out [[type("buffer_t")]]) {
+void _GENX_MAIN_ test(svmptr_t in0 [[type("svmptr_t")]],
+                      svmptr_t in1 [[type("svmptr_t")]],
+                      svmptr_t out [[type("svmptr_t")]]) {
   vector<ushort, 8> cond;
   vector<uint, 8> a, b;
 
-  read(in0, 0, a);
-  read(in1, 0, b);
+  cm_svm_block_read(in0, a);
+  cm_svm_block_read(in1, b);
 
   vector<uint, 8> c = 0;
 
@@ -23,5 +23,5 @@ void _GENX_MAIN_ test(SurfaceIndex in0 [[type("buffer_t")]],
   SIMD_IF_BEGIN(cond == 0) { c = a + b; }
   SIMD_IF_END
 
-  write(out, 0, c);
+  cm_svm_block_write(out, c);
 }

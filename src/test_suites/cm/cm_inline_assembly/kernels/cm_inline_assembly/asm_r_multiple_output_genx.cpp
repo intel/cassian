@@ -8,20 +8,20 @@
 #include <cm/cm.h>
 
 extern "C" _GENX_MAIN_ void //
-test(SurfaceIndex in0_surface [[type("buffer_t")]],
-     SurfaceIndex in1_surface [[type("buffer_t")]],
-     SurfaceIndex in2_surface [[type("buffer_t")]],
-     SurfaceIndex out_surface [[type("buffer_t")]]) {
+test(svmptr_t in0_surface [[type("svmptr_t")]],
+     svmptr_t in1_surface [[type("svmptr_t")]],
+     svmptr_t in2_surface [[type("svmptr_t")]],
+     svmptr_t out_surface [[type("svmptr_t")]]) {
   vector<int, 8> in1, in2, in3, tmp(0), out;
 
-  read(in0_surface, 0, in1);
-  read(in1_surface, 0, in2);
-  read(in2_surface, 0, in3);
+  cm_svm_block_read(in0_surface, in1);
+  cm_svm_block_read(in1_surface, in2);
+  cm_svm_block_read(in2_surface, in3);
 
   asm("add (M1, 8) %1 %2 %3\n"
       "add (M1, 8) %0 %4 %5"
       : "=r"(out), "+r"(tmp)
       : "r"(in1), "r"(in2), "r"(in3));
 
-  write(out_surface, 0, out);
+  cm_svm_block_write(out_surface, out);
 }

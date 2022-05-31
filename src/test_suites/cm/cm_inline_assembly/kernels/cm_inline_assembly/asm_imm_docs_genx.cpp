@@ -20,18 +20,18 @@ inline _GENX_ vector<T, EXEC_SIZE> madd(vector<T, EXEC_SIZE> s1,
   return dst;
 }
 
-_GENX_MAIN_ void test(SurfaceIndex src0 [[type("buffer_t")]],
-                      SurfaceIndex src1 [[type("buffer_t")]],
-                      SurfaceIndex src2 [[type("buffer_t")]],
-                      SurfaceIndex dst [[type("buffer_t")]]) {
+_GENX_MAIN_ void test(svmptr_t src0 [[type("svmptr_t")]],
+                      svmptr_t src1 [[type("svmptr_t")]],
+                      svmptr_t src2 [[type("svmptr_t")]],
+                      svmptr_t dst [[type("svmptr_t")]]) {
 
   vector<ushort, 8> s1, s2, s3;
 
-  read(src0, 0, s1);
-  read(src1, 0, s2);
-  read(src2, 0, s3);
+  cm_svm_block_read(src0, s1);
+  cm_svm_block_read(src1, s2);
+  cm_svm_block_read(src2, s3);
 
   vector<ushort, 8> d = madd(s1, s2, s3);
 
-  write(dst, 0, d);
+  cm_svm_block_write(dst, d);
 }

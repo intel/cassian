@@ -8,15 +8,15 @@
 #include <cm/cm.h>
 
 extern "C" _GENX_MAIN_ void //
-test(SurfaceIndex in_surface [[type("buffer_t")]],
-     SurfaceIndex test_surface [[type("buffer_t")]],
-     SurfaceIndex etalon_surface [[type("buffer_t")]]) {
+test(svmptr_t in_surface [[type("svmptr_t")]],
+     svmptr_t test_surface [[type("svmptr_t")]],
+     svmptr_t etalon_surface [[type("svmptr_t")]]) {
   vector<int, 8> in0_vector;
   vector<int, 8> in1_vector;
   vector<int, 8> test_vector;
   vector<int, 8> etalon_vector;
 
-  read(in_surface, 0, in0_vector);
+  cm_svm_block_read(in_surface, in0_vector);
 
 #pragma nounroll
   for (int i = 0; i < 8; i++) {
@@ -28,6 +28,6 @@ test(SurfaceIndex in_surface [[type("buffer_t")]],
     etalon_vector(i) = in0_vector(i) + i + 10;
   }
 
-  write(test_surface, 0, test_vector);
-  write(etalon_surface, 0, etalon_vector);
+  cm_svm_block_write(test_surface, test_vector);
+  cm_svm_block_write(etalon_surface, etalon_vector);
 }
