@@ -14,7 +14,7 @@ constexpr unsigned height = HEIGHT;
 
 extern "C" _GENX_MAIN_ void kernel(SurfaceIndex image
                                    [[type("image2d_media_block_t")]],
-                                   SurfaceIndex input [[type("buffer_t")]],
+                                   svmptr_t input [[type("svmptr_t")]],
                                    unsigned x, unsigned y) {
   matrix<data_t, height, width> data;
   constexpr unsigned grain = 16 / sizeof(data_t);
@@ -27,7 +27,8 @@ extern "C" _GENX_MAIN_ void kernel(SurfaceIndex image
 
 #pragma unroll
   for (unsigned offset = 0; offset < tmp.n_elems(); offset += grain) {
-    read(input, offset * sizeof(data_t), tmp.template select<grain, 1>(offset));
+    cm_svm_block_read(input + offset * sizeof(data_t),
+                      tmp.template select<grain, 1>(offset));
   }
 
   data = tmp.template select<data.n_elems(), 1>(0);

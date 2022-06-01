@@ -12,7 +12,7 @@ using data_t = TYPE;
 constexpr unsigned width = WIDTH;
 constexpr unsigned height = HEIGHT;
 
-extern "C" _GENX_MAIN_ void kernel(SurfaceIndex result [[type("buffer_t")]],
+extern "C" _GENX_MAIN_ void kernel(svmptr_t result [[type("svmptr_t")]],
                                    SurfaceIndex image
                                    [[type("image2d_media_block_t")]],
                                    unsigned x, unsigned y) {
@@ -31,7 +31,7 @@ extern "C" _GENX_MAIN_ void kernel(SurfaceIndex result [[type("buffer_t")]],
 
 #pragma unroll
   for (unsigned offset = 0; offset < tmp.n_elems(); offset += grain) {
-    write(result, offset * sizeof(data_t),
-          tmp.template select<grain, 1>(offset));
+    cm_svm_block_write(result + offset * sizeof(data_t),
+                       tmp.template select<grain, 1>(offset));
   }
 }
