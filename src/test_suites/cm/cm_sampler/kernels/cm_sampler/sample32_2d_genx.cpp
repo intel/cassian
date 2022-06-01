@@ -7,7 +7,7 @@
 
 #include <cm/cm.h>
 
-extern "C" _GENX_MAIN_ void kernel(SurfaceIndex out [[type("buffer_t")]],
+extern "C" _GENX_MAIN_ void kernel(svmptr_t out [[type("svmptr_t")]],
                                    SurfaceIndex image [[type("image2d_t")]],
                                    SamplerIndex sampler [[type("sampler_t")]],
                                    float u, float v, float du, float dv) {
@@ -21,6 +21,6 @@ extern "C" _GENX_MAIN_ void kernel(SurfaceIndex out [[type("buffer_t")]],
 
 #pragma unroll
   for (int i = 0; i < channels; i++) {
-    write(out, i * 32 * sizeof(uint16_t), result.row(i));
+    cm_svm_block_write(out + i * 32 * sizeof(uint16_t), result.row(i));
   }
 }
