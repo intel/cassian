@@ -20,23 +20,23 @@ extern "C" _GENX_MAIN_ _GENX_FLOAT_CONTROL_(CM_DENORM_ALLOW) void kernel(
 #elif defined(INPUT_SCALAR)
     in_t in,
 #else
-    SurfaceIndex in_buf [[type("buffer_t")]],
+    svmptr_t in_buf [[type("svmptr_t")]],
 #endif
-    SurfaceIndex out_buf [[type("buffer_t")]]) {
+    svmptr_t out_buf [[type("svmptr_t")]]) {
 
 #if defined(INPUT_MATRIX)
   constexpr int simd_u = SIMD_U;
   constexpr int simd_v = SIMD_V;
 
   matrix<in_t, simd_u, simd_v> in;
-  read(in_buf, 0, in.template format<in_t>());
+  cm_svm_block_read(in_buf, in.template format<in_t>());
 
   matrix<out_t, simd_u, simd_v> out = TEST_FUNC(in, SAT_FLAG);
 #elif defined(INPUT_VECTOR)
   constexpr int simd = SIMD;
 
   vector<in_t, simd> in;
-  read(in_buf, 0, in);
+  cm_svm_block_read(in_buf, in);
 
   vector<out_t, simd> out = TEST_FUNC(in, SAT_FLAG);
 #elif defined(INPUT_CONST)
@@ -46,5 +46,5 @@ extern "C" _GENX_MAIN_ _GENX_FLOAT_CONTROL_(CM_DENORM_ALLOW) void kernel(
 #elif defined(INPUT_SCALAR)
   vector<out_t, 8> out = TEST_FUNC(in, SAT_FLAG);
 #endif
-  write(out_buf, 0, out.template format<out_t>());
+  cm_svm_block_write(out_buf, out.template format<out_t>());
 }
