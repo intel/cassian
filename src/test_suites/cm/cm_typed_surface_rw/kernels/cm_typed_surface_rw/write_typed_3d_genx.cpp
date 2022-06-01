@@ -10,9 +10,9 @@
 using type_t = TYPE;
 
 extern "C" _GENX_MAIN_ void kernel(SurfaceIndex out_img [[type("image3d_t")]],
-                                   SurfaceIndex ubuf [[type("buffer_t")]],
-                                   SurfaceIndex vbuf [[type("buffer_t")]],
-                                   SurfaceIndex rbuf [[type("buffer_t")]]) {
+                                   svmptr_t ubuf [[type("svmptr_t")]],
+                                   svmptr_t vbuf [[type("svmptr_t")]],
+                                   svmptr_t rbuf [[type("svmptr_t")]]) {
   constexpr int channels = CHANNELS;
   constexpr int simd = SIMD;
   constexpr auto channel_mask = CHANNEL_MASK;
@@ -25,9 +25,9 @@ extern "C" _GENX_MAIN_ void kernel(SurfaceIndex out_img [[type("image3d_t")]],
   vector<unsigned, simd> v;
   vector<unsigned, simd> r;
 
-  read(ubuf, 0, u);
-  read(vbuf, 0, v);
-  read(rbuf, 0, r);
+  cm_svm_block_read(ubuf, u);
+  cm_svm_block_read(vbuf, v);
+  cm_svm_block_read(rbuf, r);
 
   write_typed(out_img, channel_mask, data, u, v, r);
 }
