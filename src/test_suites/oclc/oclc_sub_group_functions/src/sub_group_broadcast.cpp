@@ -51,17 +51,12 @@ void test_subgroup_broadcast(const TestConfig &config) {
   const std::vector<uint32_t> reference(kernel_description.arg1.data_count, 1);
   REQUIRE_THAT(outputs[0], Catch::Equals(reference));
 }
-using AllTestTypes =
-    std::tuple<ca::clc_char_t, ca::clc_uchar_t, ca::clc_short_t,
-               ca::clc_ushort_t, ca::clc_int_t, ca::clc_uint_t, ca::clc_long_t,
-               ca::clc_ulong_t, ca::clc_float_t, ca::clc_half_t,
-               ca::clc_double_t>;
 template <typename T> std::string test_name() {
   return std::string(T::type_name);
 }
 
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_broadcast", "", AllTestTypes,
-                                    test_name<TestType>) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_broadcast", "",
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;

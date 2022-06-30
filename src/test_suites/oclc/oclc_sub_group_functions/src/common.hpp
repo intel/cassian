@@ -315,6 +315,8 @@ void test_subgroup_generic(const TestConfig &config,
 using ScalarTestTypes = std::tuple<ca::clc_long_t, ca::clc_ulong_t,
                                    ca::clc_half_t, ca::clc_double_t>;
 
+using AllScalarTestTypes =
+    ca::TupleConcat<ca::ScalarTypes, std::tuple<ca::clc_half_t>>::type;
 using GenericTestTypes =
     ca::TupleConcat<ca::TypesInt, ca::TypesUint, ca::TypesFloat,
                     ScalarTestTypes, ca::TypesChar, ca::TypesUchar,

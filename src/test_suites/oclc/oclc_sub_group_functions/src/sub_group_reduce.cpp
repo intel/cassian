@@ -11,8 +11,8 @@ namespace ca = cassian;
 
 namespace {
 
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_min", "", ca::ScalarTypes,
-                                    test_name<TestType>) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_min", "",
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
@@ -33,8 +33,8 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_min", "", ca::ScalarTypes,
   }
 }
 
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_max", "", ca::ScalarTypes,
-                                    test_name<TestType>) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_max", "",
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
@@ -55,8 +55,8 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_max", "", ca::ScalarTypes,
   }
 }
 
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_add", "", ca::ScalarTypes,
-                                    test_name<TestType>) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_reduce_add", "",
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;

@@ -12,7 +12,7 @@ namespace ca = cassian;
 namespace {
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_min", "",
-                                    ca::ScalarTypes, test_name<TestType>) {
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
@@ -34,7 +34,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_min", "",
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_max", "",
-                                    ca::ScalarTypes, test_name<TestType>) {
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
@@ -56,7 +56,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_max", "",
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_add", "",
-                                    ca::ScalarTypes, test_name<TestType>) {
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
@@ -78,7 +78,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_add", "",
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_min", "",
-                                    ca::ScalarTypes, test_name<TestType>) {
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
@@ -100,7 +100,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_min", "",
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_max", "",
-                                    ca::ScalarTypes, test_name<TestType>) {
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
@@ -122,7 +122,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_max", "",
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_add", "",
-                                    ca::ScalarTypes, test_name<TestType>) {
+                                    AllScalarTestTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   using scalar_type = typename TestType::scalar_type;
