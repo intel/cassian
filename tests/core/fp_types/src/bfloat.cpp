@@ -6,6 +6,7 @@
  */
 
 #include <cstdint>
+#include <sstream>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -233,6 +234,292 @@ TEST_CASE("bfloat - Greater than or equal operator") {
     const cassian::Bfloat a(2.0F);
     const cassian::Bfloat b(3.0F);
     REQUIRE_FALSE(a >= b);
+  }
+}
+
+TEST_CASE("bfloat - Unary plus operator") {
+  const cassian::Bfloat a(2.0F);
+  REQUIRE(+a == a);
+}
+
+TEST_CASE("bfloat - Unary minus operator") {
+  const cassian::Bfloat a(2.0F);
+  const cassian::Bfloat b(-2.0F);
+  REQUIRE(-a == b);
+}
+
+TEST_CASE("bfloat - Addition operator") {
+  SECTION("bfloat + bfloat") {
+    const cassian::Bfloat a(2.0F);
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F + 3.0F);
+    REQUIRE(a + b == c);
+  }
+
+  SECTION("bfloat + integer") {
+    const cassian::Bfloat a(2.0F);
+    const int b = 3;
+    const cassian::Bfloat c(2.0F + 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a + b)>);
+    REQUIRE(a + b == c);
+  }
+
+  SECTION("integer + bfloat") {
+    const int a = 2;
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F + 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a + b)>);
+    REQUIRE(a + b == c);
+  }
+
+  SECTION("bfloat + float") {
+    const cassian::Bfloat a(2.0F);
+    const float b = 3.0F;
+    const float c = 2.0F + 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a + b)>);
+    REQUIRE(a + b == c);
+  }
+
+  SECTION("float + bfloat") {
+    const float a = 2.0F;
+    const cassian::Bfloat b(3.0F);
+    const float c = 2.0F + 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a + b)>);
+    REQUIRE(a + b == c);
+  }
+}
+
+TEST_CASE("bfloat - Subtraction operator") {
+  SECTION("bfloat - bfloat") {
+    const cassian::Bfloat a(2.0F);
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F - 3.0F);
+    REQUIRE(a - b == c);
+  }
+
+  SECTION("bfloat - integer") {
+    const cassian::Bfloat a(2.0F);
+    const int b = 3;
+    const cassian::Bfloat c(2.0F - 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a - b)>);
+    REQUIRE(a - b == c);
+  }
+
+  SECTION("integer - bfloat") {
+    const int a = 2;
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F - 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a - b)>);
+    REQUIRE(a - b == c);
+  }
+
+  SECTION("bfloat - float") {
+    const cassian::Bfloat a(2.0F);
+    const float b = 3.0F;
+    const float c = 2.0F - 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a - b)>);
+    REQUIRE(a - b == c);
+  }
+
+  SECTION("float - bfloat") {
+    const float a = 2.0F;
+    const cassian::Bfloat b(3.0F);
+    const float c = 2.0F - 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a - b)>);
+    REQUIRE(a - b == c);
+  }
+}
+
+TEST_CASE("bfloat - Multiplication operator") {
+  SECTION("bfloat * bfloat") {
+    const cassian::Bfloat a(2.0F);
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F * 3.0F);
+    REQUIRE(a * b == c);
+  }
+
+  SECTION("bfloat * integer") {
+    const cassian::Bfloat a(2.0F);
+    const int b = 3;
+    const cassian::Bfloat c(2.0F * 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a * b)>);
+    REQUIRE(a * b == c);
+  }
+
+  SECTION("integer * bfloat") {
+    const int a = 2;
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F * 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a * b)>);
+    REQUIRE(a * b == c);
+  }
+
+  SECTION("bfloat * float") {
+    const cassian::Bfloat a(2.0F);
+    const float b = 3.0F;
+    const float c = 2.0F * 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a * b)>);
+    REQUIRE(a * b == c);
+  }
+
+  SECTION("float * bfloat") {
+    const float a = 2.0F;
+    const cassian::Bfloat b(3.0F);
+    const float c = 2.0F * 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a * b)>);
+    REQUIRE(a * b == c);
+  }
+}
+
+TEST_CASE("bfloat - Division operator") {
+  SECTION("bfloat / bfloat") {
+    const cassian::Bfloat a(2.0F);
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F / 3.0F);
+    REQUIRE(a / b == c);
+  }
+
+  SECTION("bfloat / integer") {
+    const cassian::Bfloat a(2.0F);
+    const int b = 3;
+    const cassian::Bfloat c(2.0F / 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a / b)>);
+    REQUIRE(a / b == c);
+  }
+
+  SECTION("integer / bfloat") {
+    const int a = 2;
+    const cassian::Bfloat b(3.0F);
+    const cassian::Bfloat c(2.0F / 3.0F);
+    REQUIRE(std::is_same_v<cassian::Bfloat, decltype(a / b)>);
+    REQUIRE(a / b == c);
+  }
+
+  SECTION("bfloat / float") {
+    const cassian::Bfloat a(2.0F);
+    const float b = 3.0F;
+    const float c = 2.0F / 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a / b)>);
+    REQUIRE(a / b == c);
+  }
+
+  SECTION("float / bfloat") {
+    const float a = 2.0F;
+    const cassian::Bfloat b(3.0F);
+    const float c = 2.0F / 3.0F;
+    REQUIRE(std::is_same_v<float, decltype(a / b)>);
+    REQUIRE(a / b == c);
+  }
+}
+
+TEST_CASE("bfloat - abs") {
+  SECTION("+zero") {
+    const auto a = cassian::Bfloat::encode(0x0000);
+    REQUIRE(cassian::abs(a) == a);
+  }
+
+  SECTION("-zero") {
+    const auto a = cassian::Bfloat::encode(0x8000);
+    REQUIRE(cassian::abs(a) == -a);
+  }
+
+  SECTION("one") {
+    const auto a = cassian::Bfloat::encode(0x3f80);
+    REQUIRE(cassian::abs(a) == a);
+  }
+
+  SECTION("-one") {
+    const auto a = cassian::Bfloat::encode(0xbf80);
+    REQUIRE(cassian::abs(a) == -a);
+  }
+}
+
+TEST_CASE("bfloat - sqrt") {
+  const cassian::Bfloat a(2.0F);
+  const float b = 2.0F;
+  REQUIRE(cassian::sqrt(a) == cassian::Bfloat(std::sqrt(b)));
+}
+
+TEST_CASE("bfloat - to_string") {
+  SECTION("zero") {
+    const cassian::Bfloat input(0.0F);
+    const std::string output = cassian::to_string(input);
+    const std::string expected = "0x0000";
+    REQUIRE(output == expected);
+  }
+
+  SECTION("denorm") {
+    const cassian::Bfloat input = cassian::Bfloat::encode(0x0001);
+    const std::string output = cassian::to_string(input);
+    const std::string expected = "0x0001";
+    REQUIRE(output == expected);
+  }
+
+  SECTION("one") {
+    const cassian::Bfloat input(1.0F);
+    const std::string output = cassian::to_string(input);
+    const std::string expected = "0x3f80";
+    REQUIRE(output == expected);
+  }
+}
+
+TEST_CASE("bfloat - stream operator") {
+  std::stringstream ss;
+  SECTION("zero") {
+    const cassian::Bfloat input(0.0F);
+    ss << input;
+    const std::string expected = "0x0000";
+    REQUIRE(ss.str() == expected);
+  }
+
+  SECTION("denorm") {
+    const cassian::Bfloat input = cassian::Bfloat::encode(0x0001);
+    ss << input;
+    const std::string expected = "0x0001";
+    REQUIRE(ss.str() == expected);
+  }
+
+  SECTION("one") {
+    const cassian::Bfloat input(1.0F);
+    ss << input;
+    const std::string expected = "0x3f80";
+    REQUIRE(ss.str() == expected);
+  }
+}
+
+TEST_CASE("bfloat - isnan") {
+  SECTION("with NaN") {
+    const cassian::Bfloat a = cassian::Bfloat::encode(0x7fff);
+    REQUIRE(cassian::isnan(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Bfloat a(0.0F);
+    REQUIRE_FALSE(cassian::isnan(a));
+  }
+}
+
+TEST_CASE("bfloat - nextafter") {
+  SECTION("zero -> one") {
+    const cassian::Bfloat a(0.0F);
+    const cassian::Bfloat b(1.0F);
+    const cassian::Bfloat epsilon =
+        std::numeric_limits<cassian::Bfloat>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == epsilon);
+  }
+
+  SECTION("zero -> -one") {
+    const cassian::Bfloat a(0.0F);
+    const cassian::Bfloat b(-1.0F);
+    const cassian::Bfloat epsilon =
+        std::numeric_limits<cassian::Bfloat>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == -epsilon);
+  }
+
+  SECTION("zero -> zero") {
+    const cassian::Bfloat a(0.0F);
+    const cassian::Bfloat b(0.0F);
+    REQUIRE(cassian::nextafter(a, b) == b);
   }
 }
 

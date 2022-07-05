@@ -90,9 +90,7 @@ Bfloat operator/(Bfloat lhs, Bfloat rhs) {
   return Bfloat(static_cast<float>(lhs) / static_cast<float>(rhs));
 };
 
-Bfloat Bfloat::operator+() const {
-  return Bfloat::encode(data);
-}
+Bfloat Bfloat::operator+() const { return Bfloat::encode(data); }
 
 Bfloat Bfloat::operator-() const {
   const uint16_t sign_mask = 0x8000;
