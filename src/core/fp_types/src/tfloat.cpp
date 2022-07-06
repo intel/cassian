@@ -84,9 +84,7 @@ Tfloat operator/(Tfloat lhs, Tfloat rhs) {
   return Tfloat(static_cast<float>(lhs) / static_cast<float>(rhs));
 };
 
-Tfloat Tfloat::operator+() const {
-  return Tfloat::encode(data);
-}
+Tfloat Tfloat::operator+() const { return Tfloat::encode(data); }
 
 Tfloat Tfloat::operator-() const {
   const uint32_t sign_mask = 0x80000000;
