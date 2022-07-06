@@ -540,4 +540,38 @@ TEST_CASE("half - stream operator") {
   }
 }
 
+TEST_CASE("half - isnan") {
+  SECTION("with NaN") {
+    const cassian::Half a = cassian::Half::encode(0x7f00);
+    REQUIRE(cassian::isnan(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Half a(0.0F);
+    REQUIRE_FALSE(cassian::isnan(a));
+  }
+}
+
+TEST_CASE("half - nextafter") {
+  SECTION("zero -> one") {
+    const cassian::Half a(0.0F);
+    const cassian::Half b(1.0F);
+    const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == epsilon);
+  }
+
+  SECTION("zero -> -one") {
+    const cassian::Half a(0.0F);
+    const cassian::Half b(-1.0F);
+    const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == -epsilon);
+  }
+
+  SECTION("zero -> zero") {
+    const cassian::Half a(0.0F);
+    const cassian::Half b(0.0F);
+    REQUIRE(cassian::nextafter(a, b) == b);
+  }
+}
+
 } // namespace
