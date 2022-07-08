@@ -36,9 +36,9 @@ std::vector<uint32_t> run_kernel(const ca::Kernel &kernel,
                                  ca::Runtime *runtime) {
   std::vector<ca::Buffer> buffers;
 
-  size_t total_work_items = 0;
+  size_t total_work_items = 1;
   for (const auto &gws : global_work_size) {
-    total_work_items += gws;
+    total_work_items *= gws;
   }
 
   ca::Buffer output_buffer =
@@ -64,9 +64,9 @@ std::vector<uint32_t> run_kernel(const ca::Kernel &kernel,
 template <size_t N>
 std::vector<uint32_t>
 get_reference(const std::array<size_t, N> &global_work_size) {
-  size_t total_work_items = 0;
+  size_t total_work_items = 1;
   for (const auto &gws : global_work_size) {
-    total_work_items += gws;
+    total_work_items *= gws;
   }
   return std::vector<uint32_t>(total_work_items, N);
 }
