@@ -28,30 +28,32 @@ void test_num_subgroup(const TestConfig &config) {
                        runtime);
 
   std::vector<uint32_t> input_data_values(global_work_size_total, 1);
-  KernelDescriptor<TEST_TYPE> kernel_description;
-  kernel_description.kernel_name = get_kernel_name(name);
-  kernel_description.kernel_file_name =
+  TestCaseDescriptor<TEST_TYPE> test_description;
+  TestArguments arg1;
+  TestArguments arg2;
+  test_description.kernel_name = get_kernel_name(name);
+  test_description.kernel_file_name =
       "kernels/oclc_sub_group_functions/" + name + ".cl";
-  kernel_description.kernel_func_name = name;
-  kernel_description.args = 2;
-  kernel_description.arg1.data = input_data_values.data();
-  kernel_description.arg1.data_count = input_data_values.size();
-  kernel_description.arg1.data_size =
-      input_data_values.size() * sizeof(uint32_t);
+  test_description.kernel_func_name = name;
 
-  kernel_description.arg2.data = input_data_values.data();
-  kernel_description.arg2.data_count = input_data_values.size();
-  kernel_description.arg2.data_size =
-      input_data_values.size() * sizeof(uint32_t);
+  arg1.data = input_data_values.data();
+  arg1.data_count = input_data_values.size();
+  arg1.data_size = input_data_values.size() * sizeof(uint32_t);
+
+  arg2.data = input_data_values.data();
+  arg2.data_count = input_data_values.size();
+  arg2.data_size = input_data_values.size() * sizeof(uint32_t);
+
+  test_description.test_args.push_back(arg1);
+  test_description.test_args.push_back(arg2);
 
   const std::vector<std::vector<uint32_t>> outputs =
-      run_test<uint32_t, TEST_TYPE, N>(kernel_description, global_work_size,
+      run_test<uint32_t, TEST_TYPE, N>(test_description, global_work_size,
                                        local_work_size, runtime, program_type);
 
   uint32_t max_sub_group_id =
       *std::max_element(outputs[1].begin(), outputs[1].end());
-  const std::vector<uint32_t> references(kernel_description.arg1.data_count,
-                                         max_sub_group_id);
+  const std::vector<uint32_t> references(arg1.data_count, max_sub_group_id);
   REQUIRE_THAT(outputs[0], Catch::Equals(references));
 }
 

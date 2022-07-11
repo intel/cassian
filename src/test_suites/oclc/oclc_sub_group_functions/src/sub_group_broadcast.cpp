@@ -32,23 +32,24 @@ void test_subgroup_broadcast(const TestConfig &config) {
   std::vector<uint32_t> input_data_values(global_work_size_total);
   std::iota(input_data_values.begin(), input_data_values.end(), 0);
 
-  KernelDescriptor<TEST_TYPE> kernel_description;
-  kernel_description.args = 1;
-  kernel_description.arg1.data = input_data_values.data();
-  kernel_description.arg1.data_count = input_data_values.size();
-  kernel_description.arg1.data_size =
-      input_data_values.size() * sizeof(uint32_t);
+  TestCaseDescriptor<TEST_TYPE> test_description;
+  TestArguments arg1;
   const std::string name = "sub_group_broadcast";
-  kernel_description.kernel_name = get_kernel_name(name);
-  kernel_description.kernel_file_name =
+  test_description.kernel_name = get_kernel_name(name);
+  test_description.kernel_file_name =
       "kernels/oclc_sub_group_functions/" + name + ".cl";
-  kernel_description.kernel_func_name = name;
-  kernel_description.change_prefix_for_types = true;
+  test_description.kernel_func_name = name;
+  test_description.change_prefix_for_types = true;
+  arg1.data = input_data_values.data();
+  arg1.data_count = input_data_values.size();
+  arg1.data_size = input_data_values.size() * sizeof(uint32_t);
+
+  test_description.test_args.push_back(arg1);
 
   const std::vector<std::vector<uint32_t>> outputs =
-      run_test<uint32_t, TEST_TYPE, N>(kernel_description, global_work_size,
+      run_test<uint32_t, TEST_TYPE, N>(test_description, global_work_size,
                                        local_work_size, runtime, program_type);
-  const std::vector<uint32_t> reference(kernel_description.arg1.data_count, 1);
+  const std::vector<uint32_t> reference(arg1.data_count, 1);
   REQUIRE_THAT(outputs[0], Catch::Equals(reference));
 }
 template <typename T> std::string test_name() {

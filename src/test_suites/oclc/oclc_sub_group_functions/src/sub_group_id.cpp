@@ -31,38 +31,40 @@ void test_num_subgroup(const TestConfig &config) {
       calculate_work_groups_num(global_work_size, local_work_size);
 
   std::vector<uint32_t> input_data_values(global_work_size_total, 1);
-  KernelDescriptor<TEST_TYPE> kernel_description;
-  kernel_description.kernel_name = get_kernel_name(name);
-  kernel_description.kernel_file_name =
+  TestCaseDescriptor<TEST_TYPE> test_description;
+  TestArguments arg1;
+  TestArguments arg2;
+  TestArguments arg3;
+  test_description.kernel_name = get_kernel_name(name);
+  test_description.kernel_file_name =
       "kernels/oclc_sub_group_functions/" + name + ".cl";
-  kernel_description.kernel_func_name = name;
-  kernel_description.args = 3;
-  kernel_description.arg1.data = input_data_values.data();
-  kernel_description.arg1.data_count = input_data_values.size();
-  kernel_description.arg1.data_size =
-      input_data_values.size() * sizeof(uint32_t);
+  test_description.kernel_func_name = name;
 
-  kernel_description.arg2.data = input_data_values.data();
-  kernel_description.arg2.data_count = input_data_values.size();
-  kernel_description.arg2.data_size =
-      input_data_values.size() * sizeof(uint32_t);
+  arg1.data = input_data_values.data();
+  arg1.data_count = input_data_values.size();
+  arg1.data_size = input_data_values.size() * sizeof(uint32_t);
 
-  kernel_description.arg3.data = input_data_values.data();
-  kernel_description.arg3.data_count = input_data_values.size();
-  kernel_description.arg3.data_size =
-      input_data_values.size() * sizeof(uint32_t);
+  arg2.data = input_data_values.data();
+  arg2.data_count = input_data_values.size();
+  arg2.data_size = input_data_values.size() * sizeof(uint32_t);
+
+  arg3.data = input_data_values.data();
+  arg3.data_count = input_data_values.size();
+  arg3.data_size = input_data_values.size() * sizeof(uint32_t);
+
+  test_description.test_args.push_back(arg1);
+  test_description.test_args.push_back(arg2);
+  test_description.test_args.push_back(arg3);
 
   const std::vector<std::vector<uint32_t>> outputs =
-      run_test<uint32_t, TEST_TYPE, N>(kernel_description, global_work_size,
+      run_test<uint32_t, TEST_TYPE, N>(test_description, global_work_size,
                                        local_work_size, runtime, program_type);
 
-  std::vector<uint32_t> sub_group_local_ids_ref(
-      kernel_description.arg1.data_count, 0);
-  std::vector<uint32_t> group_ids(kernel_description.arg1.data_count, 0);
+  std::vector<uint32_t> sub_group_local_ids_ref(arg1.data_count, 0);
+  std::vector<uint32_t> group_ids(arg1.data_count, 0);
   std::iota(group_ids.begin(), group_ids.end(), 1);
 
-  std::vector<uint32_t> sub_group_ids_ref(kernel_description.arg2.data_count,
-                                          0);
+  std::vector<uint32_t> sub_group_ids_ref(arg2.data_count, 0);
   uint32_t max_sub_group_local_id =
       *std::max_element(outputs[0].begin(), outputs[0].end());
   uint32_t max_sub_group_size =
@@ -70,10 +72,10 @@ void test_num_subgroup(const TestConfig &config) {
   for (uint32_t i = 0; i < sub_group_local_ids_ref.size(); i++) {
     sub_group_local_ids_ref[i] = i % (max_sub_group_local_id + 1);
   }
-  const std::vector<uint32_t> sub_group_sizes_ref(
-      kernel_description.arg1.data_count, max_sub_group_local_id + 1);
+  const std::vector<uint32_t> sub_group_sizes_ref(arg1.data_count,
+                                                  max_sub_group_local_id + 1);
   // verify get_sub_group_id using offsets
-  std::vector<bool> check_offsets(kernel_description.arg1.data_count, false);
+  std::vector<bool> check_offsets(arg1.data_count, false);
   for (uint32_t wg = 0; wg < workgroup_info.workgroups_count; wg++) {
     for (uint32_t i = 0; i < sub_group_local_ids_ref.size(); i++) {
       size_t offset = outputs[1][i] * max_sub_group_size + outputs[0][i];

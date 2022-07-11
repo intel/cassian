@@ -35,7 +35,7 @@ struct ImageConfig {
   ca::ImageChannelOrder order;
 };
 
-struct ArgData {
+struct TestArguments {
   void *data;
   size_t data_size;
   size_t data_count;
@@ -45,15 +45,16 @@ struct ArgData {
   ImageConfig image_config;
   // memory flags
   bool is_local_memory;
-  ArgData(void *data = nullptr, size_t data_size = 0, size_t data_count = 0,
-          bool is_image = false, bool is_local_memory = false)
+  TestArguments(void *data = nullptr, size_t data_size = 0,
+                size_t data_count = 0, bool is_image = false,
+                bool is_local_memory = false)
       : data(data), data_size(data_size), data_count(data_count),
         is_image(is_image), is_local_memory(is_local_memory) {}
 };
 
-template <typename T> struct KernelDescriptor {
-  KernelDescriptor()
-      : args(0), local_mem_size(0), kernel_name(""), kernel_file_name(""),
+template <typename T> struct TestCaseDescriptor {
+  TestCaseDescriptor()
+      : local_mem_size(0), kernel_name(""), kernel_file_name(""),
         kernel_func_name(""), kernel_build_options(""),
         change_prefix_for_types(false), change_prefix_for_all_types(false),
         delta_size(0) {}
@@ -126,8 +127,7 @@ template <typename T> struct KernelDescriptor {
         std::string(" -D MIN_VALUE=") + min_value;
     return build_options;
   };
-  size_t args;
-  ArgData arg1, arg2, arg3;
+  std::vector<TestArguments> test_args;
   size_t local_mem_size;
   uint32_t delta_size;
   std::string kernel_name;
@@ -140,42 +140,23 @@ template <typename T> struct KernelDescriptor {
 
 int suggest_work_size(const std::string &type);
 template <typename T, typename TEST_TYPE, size_t N>
-std::vector<std::vector<T>>
-run_kernel(const ca::Kernel &kernel,
-           const std::array<size_t, N> global_work_size,
-           const std::array<size_t, N> local_work_size,
-           KernelDescriptor<TEST_TYPE> test_description, ca::Runtime *runtime) {
+std::vector<std::vector<T>> run_kernel(
+    const ca::Kernel &kernel, const std::array<size_t, N> global_work_size,
+    const std::array<size_t, N> local_work_size,
+    TestCaseDescriptor<TEST_TYPE> test_description, ca::Runtime *runtime) {
 
   std::vector<ca::Buffer> buffers;
   std::vector<std::vector<T>> outputs;
+  uint32_t kernel_arg_id = 0;
 
-  for (uint8_t args_count = 1; args_count <= test_description.args;
-       args_count++) {
-    if (args_count == 1) {
-      if (!test_description.arg1.is_image) {
-        ca::Buffer buffer =
-            runtime->create_buffer(test_description.arg1.data_size);
-        buffers.push_back(buffer);
-        runtime->write_buffer(buffer, test_description.arg1.data);
-        runtime->set_kernel_argument(kernel, 0, buffer);
-      }
-    } else if (args_count == 2) {
-      if (!test_description.arg2.is_image) {
-        ca::Buffer buffer =
-            runtime->create_buffer(test_description.arg2.data_size);
-        buffers.push_back(buffer);
-        runtime->write_buffer(buffer, test_description.arg2.data);
-        runtime->set_kernel_argument(kernel, 1, buffer);
-      }
-    } else if (args_count == 3) {
-      if (!test_description.arg3.is_image) {
-        ca::Buffer buffer =
-            runtime->create_buffer(test_description.arg3.data_size);
-        buffers.push_back(buffer);
-        runtime->write_buffer(buffer, test_description.arg3.data);
-        runtime->set_kernel_argument(kernel, 2, buffer);
-      }
+  for (auto test_arg : test_description.test_args) {
+    if (!test_arg.is_image) {
+      ca::Buffer buffer = runtime->create_buffer(test_arg.data_size);
+      buffers.push_back(buffer);
+      runtime->write_buffer(buffer, test_arg.data);
+      runtime->set_kernel_argument(kernel, kernel_arg_id, buffer);
     }
+    kernel_arg_id++;
   }
 
   runtime->run_kernel(kernel, global_work_size, local_work_size);
@@ -191,7 +172,7 @@ run_kernel(const ca::Kernel &kernel,
 
 template <typename T, typename TEST_TYPE, size_t N>
 std::vector<std::vector<T>>
-run_test(KernelDescriptor<TEST_TYPE> test_description,
+run_test(TestCaseDescriptor<TEST_TYPE> test_description,
          const std::array<size_t, N> global_work_size,
          const std::array<size_t, N> local_work_size, ca::Runtime *runtime,
          const std::string program_type) {
@@ -289,25 +270,24 @@ void test_subgroup_generic(const TestConfig &config,
 
   for (uint32_t delta_size = 1; delta_size <= max_delta_size; delta_size++) {
     std::vector<uint32_t> input_data_values(global_work_size_total, 1);
-    KernelDescriptor<TEST_TYPE> kernel_description;
-    kernel_description.kernel_name = get_kernel_name(func_name);
-    kernel_description.kernel_file_name =
+    TestCaseDescriptor<TEST_TYPE> test_description;
+    TestArguments arg1;
+    test_description.kernel_name = get_kernel_name(func_name);
+    test_description.kernel_file_name =
         "kernels/oclc_sub_group_functions/" + func_name + ".cl";
-    kernel_description.kernel_func_name = func_name;
-    kernel_description.args = 1;
-    kernel_description.arg1.data = input_data_values.data();
-    kernel_description.arg1.data_count = input_data_values.size();
-    kernel_description.arg1.data_size =
-        input_data_values.size() * sizeof(uint32_t);
-    kernel_description.change_prefix_for_all_types = false;
-    kernel_description.delta_size = delta_size;
+    test_description.kernel_func_name = func_name;
+    test_description.change_prefix_for_all_types = false;
+    test_description.delta_size = delta_size;
+    arg1.data = input_data_values.data();
+    arg1.data_count = input_data_values.size();
+    arg1.data_size = input_data_values.size() * sizeof(uint32_t);
+    test_description.test_args.push_back(arg1);
 
     const std::vector<std::vector<uint32_t>> outputs =
-        run_test<uint32_t, TEST_TYPE, N>(kernel_description, global_work_size,
+        run_test<uint32_t, TEST_TYPE, N>(test_description, global_work_size,
                                          local_work_size, runtime,
                                          program_type);
-    const std::vector<uint32_t> reference(kernel_description.arg1.data_count,
-                                          1);
+    const std::vector<uint32_t> reference(arg1.data_count, 1);
     REQUIRE_THAT(outputs[0], Catch::Equals(reference));
   }
 }
