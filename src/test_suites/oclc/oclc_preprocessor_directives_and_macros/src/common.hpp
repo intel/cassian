@@ -18,14 +18,14 @@ int suggest_work_size(const std::string &type);
 
 template <typename T>
 std::vector<T> run_kernel(const cassian::Kernel &kernel,
-                          const std::vector<T> &input,
+                          const std::vector<T> &input, const size_t work_size,
                           cassian::Runtime *runtime) {
   cassian::Buffer output_buffer =
       runtime->create_buffer(sizeof(T) * input.size());
 
   runtime->set_kernel_argument(kernel, 0, output_buffer);
 
-  runtime->run_kernel(kernel, input.size());
+  runtime->run_kernel(kernel, work_size);
 
   std::vector<T> output = runtime->read_buffer_to_vector<T>(output_buffer);
   runtime->release_buffer(output_buffer);
@@ -65,7 +65,7 @@ public:
       : file_name(std::move(file_name)), work_size(work_size) {}
 
   bool match(std::vector<T> const &in) const override {
-    for (auto i = 0; i < work_size * (file_name.length() + 1);
+    for (size_t i = 0; i < work_size * (file_name.length() + 1);
          i = (i + 1) * (file_name.length() + 1)) {
       if (file_name.compare(0, file_name.length() + 1,
                             reinterpret_cast<const char *>(in.data()) + i) !=

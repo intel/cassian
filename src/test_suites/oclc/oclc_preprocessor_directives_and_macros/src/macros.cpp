@@ -23,6 +23,7 @@ namespace {
 
 template <typename T>
 std::vector<T> test_macro(const TestConfig &config, const std::vector<T> &input,
+                          const size_t work_size,
                           const std::string &build_options) {
   const auto kernel_source = ca::load_text_file(ca::get_asset(
       "kernels/oclc_preprocessor_directives_and_macros/test_macros.cl"));
@@ -30,7 +31,7 @@ std::vector<T> test_macro(const TestConfig &config, const std::vector<T> &input,
   const auto program_type = config.program_type();
   const ca::Kernel kernel = runtime->create_kernel("macro_test", kernel_source,
                                                    build_options, program_type);
-  auto output = run_kernel(kernel, input, runtime);
+  auto output = run_kernel(kernel, input, work_size, runtime);
   runtime->release_kernel(kernel);
   return output;
 }
@@ -46,7 +47,8 @@ TEST_CASE("Preprocessor directives and macros", "") {
       const std::string file_name = ca::convert_to_forward_slashes(__FILE__);
       build_options << " -DFILE_MACRO -DFILE_NAME=" + file_name;
       std::vector<type::host_type> input(work_size * (file_name.length() + 1));
-      const auto output = test_macro(config, input, build_options.str());
+      const auto output =
+          test_macro(config, input, work_size, build_options.str());
       REQUIRE_THAT(output,
                    FileMacroMatcher<type::host_type>(file_name, work_size));
     }
@@ -63,14 +65,16 @@ TEST_CASE("Preprocessor directives and macros", "") {
            oclc_version_std_list) {
         DYNAMIC_SECTION("CL" << cl_std_value) {
           build_options << " -cl-std=CL" << cl_std_value;
-          const auto output = test_macro(config, input, build_options.str());
+          const auto output =
+              test_macro(config, input, work_size, build_options.str());
           std::vector<type::host_type> reference(work_size);
           std::fill(reference.begin(), reference.end(), reference_value);
           REQUIRE_THAT(reference, Catch::Equals(output));
         }
       }
       SECTION("CL default") {
-        const auto output = test_macro(config, input, build_options.str());
+        const auto output =
+            test_macro(config, input, work_size, build_options.str());
         REQUIRE_THAT(output, IsBetweenMatcher(120, 300));
       }
     }
