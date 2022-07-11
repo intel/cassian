@@ -20,7 +20,8 @@ list(
   "src/sub_group_shuffle.cpp"
   "src/sub_group_reduce.cpp"
   "src/sub_group_scan.cpp"
-  "src/sub_group_all_any.cpp")
+  "src/sub_group_all_any.cpp"
+  "src/sub_group_block.cpp")
 
 list(
   APPEND
@@ -48,7 +49,13 @@ list(
   "kernels/oclc_sub_group_functions/sub_group_all.cl"
   "kernels/oclc_sub_group_functions/sub_group_all_negative.cl"
   "kernels/oclc_sub_group_functions/sub_group_any.cl"
-  "kernels/oclc_sub_group_functions/sub_group_any_negative.cl")
+  "kernels/oclc_sub_group_functions/sub_group_any_negative.cl"
+  "kernels/oclc_sub_group_functions/sub_group_block_read.cl"
+  "kernels/oclc_sub_group_functions/sub_group_block_write.cl"
+  "kernels/oclc_sub_group_functions/sub_group_block_read_write.cl"
+  "kernels/oclc_sub_group_functions/sub_group_block_read_image.cl"
+  "kernels/oclc_sub_group_functions/sub_group_block_write_image.cl"
+  "kernels/oclc_sub_group_functions/sub_group_block_read_write_image.cl")
 
 add_executable(oclc_sub_group_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                         ${SOURCES})

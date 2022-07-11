@@ -16,6 +16,7 @@
 #include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/metaprogramming.hpp>
 #include <cassian/utility/utility.hpp>
+#include <numeric>
 #include <string>
 #include <test_config.hpp>
 #include <vector>
@@ -38,6 +39,8 @@ struct ImageConfig {
 struct TestArguments {
   void *data;
   size_t data_size;
+  size_t image_dim_0;
+  size_t image_dim_1;
   size_t data_count;
 
   bool is_image;
@@ -57,8 +60,26 @@ template <typename T> struct TestCaseDescriptor {
       : local_mem_size(0), kernel_name(""), kernel_file_name(""),
         kernel_func_name(""), kernel_build_options(""),
         change_prefix_for_types(false), change_prefix_for_all_types(false),
-        delta_size(0) {}
+        delta_size(0), block_test_type(false) {}
   std::string get_build_options(std::string func_name) {
+    return block_test_type ? get_build_options_block(func_name)
+                           : get_build_options_generic(func_name);
+  };
+
+  std::vector<TestArguments> test_args;
+
+  size_t local_mem_size;
+  uint32_t delta_size;
+  std::string kernel_name;
+  std::string kernel_file_name;
+  std::string kernel_func_name;
+  std::string kernel_build_options;
+  bool change_prefix_for_types;
+  bool change_prefix_for_all_types;
+  bool block_test_type;
+
+private:
+  std::string get_build_options_generic(std::string func_name) {
     if (change_prefix_for_all_types) {
       func_name = "intel_" + func_name;
     } else if (change_prefix_for_types) {
@@ -127,15 +148,71 @@ template <typename T> struct TestCaseDescriptor {
         std::string(" -D MIN_VALUE=") + min_value;
     return build_options;
   };
-  std::vector<TestArguments> test_args;
-  size_t local_mem_size;
-  uint32_t delta_size;
-  std::string kernel_name;
-  std::string kernel_file_name;
-  std::string kernel_func_name;
-  std::string kernel_build_options;
-  bool change_prefix_for_types;
-  bool change_prefix_for_all_types;
+
+  std::string get_build_options_block(std::string func_name) {
+
+    std::string part_func_name;
+    std::string func_name1;
+    std::string func_name2;
+
+    std::size_t image_pos = func_name.find("_image");
+    if (image_pos != std::string::npos) {
+      part_func_name = func_name.substr(0, image_pos);
+      func_name = part_func_name;
+    }
+    std::size_t pos = func_name.find("read_write");
+
+    if (pos != std::string::npos) {
+      part_func_name = func_name.substr(0, pos);
+      func_name1 = "intel_" + part_func_name + "read";
+      func_name2 = "intel_" + part_func_name + "write";
+    } else {
+      func_name1 = "intel_" + func_name;
+    }
+
+    std::string vec_size = "1";
+    std::string input_data_type = "uint";
+    using vector_type_check = typename T::host_type;
+    using scalar_type_check = typename T::scalar_type::host_type;
+    size_t var_size = sizeof(scalar_type_check);
+    if (var_size == 4) {
+      func_name1 = func_name1 + "_ui";
+      if (pos != std::string::npos)
+        func_name2 = func_name2 + "_ui";
+    } else if (var_size == 1) {
+      func_name1 = func_name1 + "_uc";
+      if (pos != std::string::npos)
+        func_name2 = func_name2 + "_uc";
+      input_data_type = "uchar";
+    } else if (var_size == 2) {
+      func_name1 = func_name1 + "_us";
+      if (pos != std::string::npos)
+        func_name2 = func_name2 + "_us";
+      input_data_type = "ushort";
+    } else if (var_size == 8) {
+      func_name1 = func_name1 + "_ul";
+      if (pos != std::string::npos)
+        func_name2 = func_name2 + "_ul";
+      input_data_type = "ulong";
+    }
+
+    if constexpr (ca::is_vector_v<vector_type_check>) {
+      func_name1 = func_name1 + std::to_string(vector_type_check::vector_size);
+      if (pos != std::string::npos)
+        func_name2 =
+            func_name2 + std::to_string(vector_type_check::vector_size);
+      vec_size = std::to_string(vector_type_check::vector_size);
+    }
+
+    std::string build_options =
+        std::string("-cl-std=CL3.0") + std::string(" -D DATA_TYPE=") +
+        T::device_type + std::string(" -D FUNC_NAME1=") + func_name1 +
+        std::string(" -D FUNC_NAME2=") + func_name2 +
+        std::string(" -D VECTOR_SIZE=") + vec_size +
+        std::string(" -D INPUT_DATA_TYPE=") + input_data_type;
+    printf("Build options: %s\n", build_options.c_str());
+    return build_options;
+  };
 };
 
 int suggest_work_size(const std::string &type);
@@ -146,7 +223,10 @@ std::vector<std::vector<T>> run_kernel(
     TestCaseDescriptor<TEST_TYPE> test_description, ca::Runtime *runtime) {
 
   std::vector<ca::Buffer> buffers;
+  std::vector<ca::Image> images;
   std::vector<std::vector<T>> outputs;
+  std::vector<size_t> img_data_count;
+
   uint32_t kernel_arg_id = 0;
 
   for (auto test_arg : test_description.test_args) {
@@ -155,6 +235,34 @@ std::vector<std::vector<T>> run_kernel(
       buffers.push_back(buffer);
       runtime->write_buffer(buffer, test_arg.data);
       runtime->set_kernel_argument(kernel, kernel_arg_id, buffer);
+    } else {
+      img_data_count.push_back(test_arg.data_count);
+      ca::ImageFormat format = ca::ImageFormat::unsigned_int32;
+      int elements_per_pixel = 1;
+      // needed to handle all image bytes because no image format for u64
+      // data type
+      using scalar_type_check = typename TEST_TYPE::scalar_type::host_type;
+      size_t var_size = sizeof(scalar_type_check);
+
+      if (var_size == 8) {
+        elements_per_pixel = 2;
+      }
+      ca::ImageDimensions dims(test_arg.image_dim_0 * elements_per_pixel,
+                               test_arg.image_dim_1);
+
+      if (var_size == 2) {
+        format = ca::ImageFormat::unsigned_int16;
+      } else if (var_size == 1) {
+        format = ca::ImageFormat::unsigned_int8;
+      }
+      constexpr ca::ImageChannelOrder channels = ca::ImageChannelOrder::r;
+
+      auto image =
+          runtime->create_image(dims, ca::ImageType::t_2d, format, channels);
+      runtime->write_image(image, test_arg.data);
+
+      images.push_back(image);
+      runtime->set_kernel_argument(kernel, kernel_arg_id, image);
     }
     kernel_arg_id++;
   }
@@ -166,6 +274,14 @@ std::vector<std::vector<T>> run_kernel(
     outputs.push_back(output);
     runtime->release_buffer(each_buffer);
   }
+  uint32_t img_id = 0;
+  for (auto each_image : images) {
+    std::vector<T> output(img_data_count[img_id], 0);
+    runtime->read_image(each_image, output.data());
+    outputs.push_back(output);
+    runtime->release_image(each_image);
+    img_id++;
+  }
 
   return outputs;
 }
@@ -173,7 +289,7 @@ std::vector<std::vector<T>> run_kernel(
 template <typename T, typename TEST_TYPE, size_t N>
 std::vector<std::vector<T>>
 run_test(TestCaseDescriptor<TEST_TYPE> test_description,
-         const std::array<size_t, N> global_work_size,
+         std::array<size_t, N> global_work_size,
          const std::array<size_t, N> local_work_size, ca::Runtime *runtime,
          const std::string program_type) {
   std::string build_options =
@@ -302,6 +418,11 @@ using GenericTestTypes =
                     ScalarTestTypes, ca::TypesChar, ca::TypesUchar,
                     ca::TypesShort, ca::TypesUshort>::type;
 
+using BlockFunctionTestTypes = std::tuple<
+    ca::clc_uint_t, ca::clc_uint2_t, ca::clc_uint4_t, ca::clc_uint8_t,
+    ca::clc_uchar_t, ca::clc_uchar2_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
+    ca::clc_ushort_t, ca::clc_ushort2_t, ca::clc_ushort4_t, ca::clc_ushort8_t,
+    ca::clc_ulong_t, ca::clc_ulong2_t, ca::clc_ulong4_t, ca::clc_ulong8_t>;
 template <typename TestType> auto test_name() {
   return std::string(TestType::type_name);
 }
