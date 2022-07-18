@@ -37,6 +37,64 @@ T dot_product(const T &a, const T &b) {
 }
 
 /**
+ * Computes cross product of two vectors
+ * @param[in] a input vector.
+ * @param[in] b input vector.
+ * @returns vector.
+ */
+template <typename T, EnableIfIsVector<T> = 0>
+T cross_product(const T &a, const T &b) {
+  T result;
+  result[0] = (a[1] * b[2]) - (a[2] * b[1]);
+  result[1] = (a[2] * b[0]) - (a[0] * b[2]);
+  result[2] = (a[0] * b[1]) - (a[1] * b[0]);
+  return result;
+}
+
+template <typename T, EnableIfIsScalar<T> = 0>
+T cross_product(const T &a, const T &b) {
+  return a * b;
+}
+
+/**
+ * Computes distance between two vectors
+ * @param[in] a input vector.
+ * @param[in] b input vector.
+ * @returns scalar.
+ */
+template <typename T, EnableIfIsVector<T> = 0>
+scalar_type_v<T> distance(const T &a, const T &b) {
+  scalar_type_v<T> result = 0.0;
+  for (int i = 0; i < T::vector_size; i++) {
+    result += std::pow(a[i] - b[i], 2);
+  }
+  return std::sqrt(result);
+}
+
+template <typename T, EnableIfIsScalar<T> = 0>
+T distance(const T &a, const T &b) {
+  return std::abs(a - b);
+}
+
+/**
+ * Computes length of vector
+ * @param[in] a input vector.
+ * @returns scalar.
+ */
+template <typename T, EnableIfIsVector<T> = 0>
+scalar_type_v<T> length(const T &a) {
+  scalar_type_v<T> length = 0.0;
+  for (int i = 0; i < T::vector_size; i++) {
+    length += std::pow(a[i], 2);
+  }
+  return std::sqrt(length);
+}
+
+template <typename T, EnableIfIsScalar<T> = 0> T length(const T &a) {
+  return std::sqrt(std::pow(a, 2));
+}
+
+/**
  * Normalizes a vector. Returns a vector in the same direction
  * as `a` but with a length of 1.
  * @param[in] a input vector.

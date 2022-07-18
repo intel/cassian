@@ -12,7 +12,7 @@ OpenCL C functionality.
 * Description: Get the device return value from OpenCL C function and compare it with the value returned on the host taking ULP into account.
 * Tested functions:
   * `gentype` - Single and double precision generic type function
-    * `cross`(TODO), `dot`, `distance`(TODO), `length`(TODO), `normalize`, `fast_distance`(TODO), `fast_length`(TODO), `fast_normalize`(TODO)
+    * `cross`, `dot`, `distance`, `length`, `normalize`, `fast_distance`, `fast_length`, `fast_normalize`
 * Input values:
   * `Random` - Random values from function domain, randomized across all of the work items.
   * `Special` - Special values for given function.

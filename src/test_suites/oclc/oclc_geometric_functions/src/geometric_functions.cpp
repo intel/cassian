@@ -83,11 +83,11 @@ template <typename T, typename OUTPUT_TYPE, typename INPUT_TYPE>
 void run_section(const T &oclc_function, const std::vector<INPUT_TYPE> &input_a,
                  const std::vector<INPUT_TYPE> &input_b,
                  const std::string &function_string, const TestConfig &config) {
-  ca::logging::debug() << "Input values:" << input_to_string(input_a, input_b)
-                       << '\n';
   const auto build_options = oclc_function.get_build_options(function_string);
   const auto work_size = config.work_size();
-
+  ca::logging::debug() << "Build options: " << build_options << '\n';
+  ca::logging::debug() << "Input A: " << ca::to_string(input_a) << '\n';
+  ca::logging::debug() << "Input B: " << ca::to_string(input_b) << '\n';
   auto reference_vector = std::vector<OUTPUT_TYPE>(work_size);
   for (auto j = 0; j < work_size; j++) {
     if (oclc_function.get_arg_num() == 2) {
@@ -141,15 +141,17 @@ void run_test(const std::vector<T> &list_of_functions,
                                                 function_string, config);
       }
     }
-    const auto list_of_special = oclc_function.get_special_values();
-    for (auto i = 0; i < list_of_special.size(); i++) {
+    const auto special_input_vectors =
+        oclc_function.get_special_values_vectors(work_size);
+    std::vector<INPUT_TYPE> input_b;
+    for (auto i = 0; i < special_input_vectors.size(); i++) {
       const auto section_name = create_section_name(
           function_string, "special " + std::to_string(i + 1));
       SECTION(section_name) {
-        const auto input_a = create_input_vector<INPUT_TYPE>(
-            list_of_special[i], 0, arg_num, work_size);
-        const auto input_b = create_input_vector<INPUT_TYPE>(
-            list_of_special[i], 1, arg_num, work_size);
+        std::vector<INPUT_TYPE> input_a = special_input_vectors[i][0];
+        if (arg_num == 2) {
+          input_b = special_input_vectors[i][1];
+        }
         run_section<T, OUTPUT_TYPE, INPUT_TYPE>(oclc_function, input_a, input_b,
                                                 function_string, config);
       }
@@ -179,21 +181,31 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("geometric_functions", "", FuncTypes,
   using VectorFunc = VectorOclcFunction<TestType, host_type>;
   using ScalarFunc = ScalarOclcFunction<TestType, host_type>;
 
-  const std::initializer_list<VectorFunc> list_of_vector_functions{VectorFunc(
-      Function::normalize) /*, VectorFunc(Function::fast_normalize)*/};
+  const std::initializer_list<VectorFunc> list_of_vector_functions{
+      VectorFunc(Function::normalize)};
+  const std::initializer_list<VectorFunc> cross_vector_function{
+      VectorFunc(Function::cross)};
   const std::initializer_list<ScalarFunc> list_of_scalar_functions{
-      ScalarFunc(Function::dot)/*,       ScalarFunc(Function::distance),
-      ScalarFunc(Function::length),      ScalarFunc(Function::fast_distance),
-      ScalarFunc(Function::fast_length)*/};
-
+      ScalarFunc(Function::dot), ScalarFunc(Function::distance),
+      ScalarFunc(Function::length)};
   run_test<VectorFunc, host_type>(list_of_vector_functions, config);
   run_test<ScalarFunc, scalar_type, host_type>(list_of_scalar_functions,
                                                config);
-}
+  if constexpr (get_vector_width<host_type>() == 3 ||
+                get_vector_width<host_type>() == 4) {
+    run_test<VectorFunc, host_type>(cross_vector_function, config);
+  }
+  const std::initializer_list<VectorFunc> list_of_vector_fast_functions{
+      VectorFunc(Function::fast_normalize)};
 
-// TODO
-// using CrossFuncTypes =
-//     ca::TupleConcat<ca::clc_float3_t, ca::clc_float4_t, ca::clc_double3_t,
-//                     ca::clc_double4_t>::type;
+  const std::initializer_list<ScalarFunc> list_of_scalar_fast_functions{
+      ScalarFunc(Function::fast_distance), ScalarFunc(Function::fast_length)};
+
+  if constexpr (std::is_same_v<host_type, float>) {
+    run_test<VectorFunc, host_type>(list_of_vector_fast_functions, config);
+    run_test<ScalarFunc, scalar_type, host_type>(list_of_scalar_fast_functions,
+                                                 config);
+  }
+}
 
 } // namespace

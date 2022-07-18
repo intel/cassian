@@ -73,20 +73,96 @@ public:
     case Function::dot:
       return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
                cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
+    case Function::cross:
+      return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
+               cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
+    case Function::distance:
+      return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
+               cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
+    case Function::fast_distance:
+      return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
+               cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
     case Function::normalize:
+      return {{INPUT_TYPE(min)}, {INPUT_TYPE(max)}};
+    case Function::fast_normalize:
+      return {{INPUT_TYPE(min)}, {INPUT_TYPE(max)}};
+    case Function::length:
+      return {{INPUT_TYPE(min)}, {INPUT_TYPE(max)}};
+    case Function::fast_length:
       return {{INPUT_TYPE(min)}, {INPUT_TYPE(max)}};
     default:
       throw UnknownFunctionException(
           Catch::StringMaker<Function>::convert(function) + " uninitialized");
     }
   };
-  std::vector<std::vector<INPUT_TYPE>> get_special_values() const {
+
+  std::vector<std::vector<std::vector<INPUT_TYPE>>>
+  get_special_values_vectors(const int work_size) const {
+    const auto min = -1.123456789;
+    const auto max = 1.987654321;
+    const auto seed = 0;
     constexpr auto inf = std::numeric_limits<SCALAR_TYPE>::infinity();
     switch (function) {
     case Function::dot:
-      return {{INPUT_TYPE(inf), INPUT_TYPE(inf)}};
-    case Function::normalize:
-      return {{INPUT_TYPE(inf)}, {INPUT_TYPE(-inf)}};
+      return {
+          {std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf)),
+           std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf))},
+      };
+    case Function::cross:
+      return {{{std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf)),
+                std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf))}}};
+    case Function::normalize: {
+      auto vector_with_nan =
+          cassian::generate_vector<INPUT_TYPE>(work_size, min, max, seed);
+      if constexpr (cassian::is_vector_v<INPUT_TYPE>) {
+        for (int i = 0; i < work_size; ++i) {
+          vector_with_nan[i][0] = std::numeric_limits<SCALAR_TYPE>::quiet_NaN();
+        }
+      } else {
+        std::fill(vector_with_nan.begin(), vector_with_nan.end(),
+                  INPUT_TYPE(0));
+      }
+      return {{std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf))},
+              {std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(-inf))},
+              {std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(0))},
+              {vector_with_nan}};
+    }
+    case Function::fast_normalize: {
+      auto vector_with_nan =
+          cassian::generate_vector<INPUT_TYPE>(work_size, min, max, seed);
+      if constexpr (cassian::is_vector_v<INPUT_TYPE>) {
+        for (int i = 0; i < work_size; ++i) {
+          vector_with_nan[i][0] = std::numeric_limits<SCALAR_TYPE>::quiet_NaN();
+        }
+      } else {
+        std::fill(vector_with_nan.begin(), vector_with_nan.end(),
+                  INPUT_TYPE(0));
+      }
+      return {{std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf))},
+              {std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(-inf))},
+              {std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(0))},
+              {vector_with_nan}};
+    }
+    case Function::distance:
+      return {{std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf)),
+               std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(-inf))},
+              {std::vector<INPUT_TYPE>(
+                   work_size,
+                   INPUT_TYPE(std::numeric_limits<SCALAR_TYPE>::max() + 1)),
+               std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(0))},
+              {std::vector<INPUT_TYPE>(
+                   work_size,
+                   INPUT_TYPE(std::numeric_limits<SCALAR_TYPE>::min() - 1)),
+               std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(0))}};
+    case Function::fast_distance:
+      return {{std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf)),
+               std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(-inf))}};
+    case Function::length:
+      return {{std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf))},
+              {std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(-inf))}};
+    case Function::fast_length:
+      return {{std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf))},
+              {std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(-inf))}};
     default:
       throw UnknownFunctionException(
           Catch::StringMaker<Function>::convert(function) + " uninitialized");
@@ -107,15 +183,17 @@ public:
   vector_type
   calculate_reference(const INPUT_TYPE &input_value_a,
                       const INPUT_TYPE &input_value_b = INPUT_TYPE(0)) const {
-    (void)input_value_b;
     switch (this->get_function()) {
-    case Function::normalize: {
+    case Function::normalize:
       return cassian::normalize(input_value_a);
+    case Function::fast_normalize:
+      return cassian::normalize(input_value_a);
+    case Function::cross:
+      return cassian::cross_product(input_value_a, input_value_b);
     default:
       throw UnknownFunctionException(
           Catch::StringMaker<Function>::convert(this->get_function()) +
           " uninitialized");
-    }
     }
   }
 };
@@ -135,6 +213,14 @@ public:
     switch (this->get_function()) {
     case Function::dot: {
       return cassian::dot_product(input_value_a, input_value_b);
+    case Function::distance:
+      return cassian::distance(input_value_a, input_value_b);
+    case Function::fast_distance:
+      return cassian::distance(input_value_a, input_value_b);
+    case Function::length:
+      return cassian::length(input_value_a);
+    case Function::fast_length:
+      return cassian::length(input_value_a);
     default:
       throw UnknownFunctionException(
           Catch::StringMaker<Function>::convert(this->get_function()) +

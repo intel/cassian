@@ -113,20 +113,62 @@ get_ulp_values(const std::vector<T> &input_a, const std::vector<T> &input_b,
       const auto a = get_max_element(input_a[i]);
       const auto b = get_max_element(input_b[i]);
       const auto max = std::max(a, b);
-      const auto aet_value = max * max * (2 * vector_width - 1) * FLT_EPSILON;
+      const auto aet_value = max * max * (2 * vector_width - 1) *
+                             std::numeric_limits<float>::epsilon();
+      ulp_values.push_back(std::fabs(aet_value));
+    }
+    return ulp_values;
+  }
+  case Function::cross: {
+    std::vector<scalar_type> ulp_values;
+    for (auto i = 0; i < size; i++) {
+      const auto a = get_max_element(input_a[i]);
+      const auto b = get_max_element(input_b[i]);
+      const auto max = std::max(a, b);
+      const auto aet_value =
+          max * max * 3 * std::numeric_limits<float>::epsilon();
       ulp_values.push_back(std::fabs(aet_value));
     }
     return ulp_values;
   }
   case Function::normalize: {
-    constexpr auto size_of_type = sizeof(scalar_type);
-    if constexpr (size_of_type == sizeof(double)) {
+    if constexpr (std::is_same_v<scalar_type, double>) {
       const scalar_type ulp = (4.5 + vector_width) * epsilon;
       return std::vector<scalar_type>(size, ulp);
     } else {
       const scalar_type ulp = (2.0F + vector_width) * epsilon;
       return std::vector<scalar_type>(size, ulp);
     }
+  }
+  case Function::distance: {
+    if constexpr (std::is_same_v<scalar_type, double>) {
+      const scalar_type ulp = (5.5 + 2 * vector_width) * epsilon;
+      return std::vector<scalar_type>(size, ulp);
+    } else {
+      const scalar_type ulp = (2.5F + 2 * vector_width) * epsilon;
+      return std::vector<scalar_type>(size, ulp);
+    }
+  }
+  case Function::length: {
+    if constexpr (std::is_same_v<scalar_type, double>) {
+      const scalar_type ulp = (5.5 + vector_width) * epsilon;
+      return std::vector<scalar_type>(size, ulp);
+    } else {
+      const scalar_type ulp = (2.75F + 0.5F * vector_width) * epsilon;
+      return std::vector<scalar_type>(size, ulp);
+    }
+  }
+  case Function::fast_distance: {
+    const scalar_type ulp = (8191.5F + 2 * vector_width) * epsilon;
+    return std::vector<scalar_type>(size, ulp);
+  }
+  case Function::fast_length: {
+    const scalar_type ulp = (8191.5F + vector_width) * epsilon;
+    return std::vector<scalar_type>(size, ulp);
+  }
+  case Function::fast_normalize: {
+    const scalar_type ulp = (8192.0F + vector_width) * epsilon;
+    return std::vector<scalar_type>(size, ulp);
   }
   default:
     throw UnknownFunctionException(

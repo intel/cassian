@@ -35,6 +35,52 @@ TEST_CASE("dot_product", "") {
     REQUIRE(reference == result);
   }
 }
+TEST_CASE("cross_product", "") {
+  SECTION("vectors - integers") {
+    const ca::Vector<int32_t, 3> vector_a = {1, 2, 3};
+    const ca::Vector<int32_t, 3> vector_b = {4, 5, 6};
+    const ca::Vector<int32_t, 3> result = ca::cross_product(vector_a, vector_b);
+    const ca::Vector<int32_t, 3> reference = {-3, 6, -3};
+    REQUIRE(reference == result);
+  }
+  SECTION("vectors - floating point") {
+    const ca::Vector<double, 3> vector_a = {2.0, 2.0, 2.0};
+    const ca::Vector<double, 3> vector_b = {3.0, 3.0, 3.0};
+    const ca::Vector<double, 3> result = ca::cross_product(vector_a, vector_b);
+    const ca::Vector<double, 3> reference = {0.0, 0.0, 0.0};
+    REQUIRE(reference == result);
+  }
+}
+TEST_CASE("distance", "") {
+  SECTION("vectors - integers") {
+    const ca::Vector<int32_t, 4> vector_a = {1, 2, 3, 4};
+    const ca::Vector<int32_t, 4> vector_b = {5, 6, 7, 8};
+    const int32_t result = ca::distance(vector_a, vector_b);
+    const int32_t reference = 8;
+    REQUIRE(reference == result);
+  }
+  SECTION("vectors - floating point") {
+    const ca::Vector<double, 4> vector_a = {2.0, 2.0, 2.0, 2.0};
+    const ca::Vector<double, 4> vector_b = {3.0, 3.0, 3.0, 3.0};
+    const double result = ca::distance(vector_a, vector_b);
+    const double reference = 2.0;
+    REQUIRE(reference == result);
+  }
+}
+TEST_CASE("length", "") {
+  SECTION("vectors - integers") {
+    const ca::Vector<int32_t, 3> vector = {10, 10, 5};
+    const int32_t result = ca::length(vector);
+    const int32_t reference = 15;
+    REQUIRE(reference == result);
+  }
+  SECTION("vectors - floating point") {
+    const ca::Vector<double, 3> vector = {7.0, 6.0, 6.0};
+    const double result = ca::length(vector);
+    const double reference = 11.0;
+    REQUIRE(reference == result);
+  }
+}
 TEST_CASE("normalize", "") {
   SECTION("3 element vector with one infinity") {
     const ca::Vector<float, 3, 4> vector = {
