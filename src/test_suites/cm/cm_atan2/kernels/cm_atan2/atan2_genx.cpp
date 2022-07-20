@@ -20,10 +20,10 @@ extern "C" _GENX_MAIN_ _GENX_FLOAT_CONTROL_(CM_DENORM_ALLOW) void kernel(
 #elif defined(INPUT_SCALAR)
     in_t in0, in_t in1,
 #else
-    svmptr_t  in0_buf [[type("svmptr_t")]],
-    svmptr_t  in1_buf [[type("svmptr_t")]],
+    svmptr_t in0_buf [[type("svmptr_t")]],
+    svmptr_t in1_buf [[type("svmptr_t")]],
 #endif
-    svmptr_t  out_buf [[type("svmptr_t")]]) {
+    svmptr_t out_buf [[type("svmptr_t")]]) {
 #if defined(INPUT_MATRIX)
   constexpr int simd_u = SIMD_U;
   constexpr int simd_v = SIMD_V;

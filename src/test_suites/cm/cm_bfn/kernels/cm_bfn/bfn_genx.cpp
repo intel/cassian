@@ -18,8 +18,7 @@ extern "C" _GENX_MAIN_ void kernel(
     in_t in0, in_t in1, in_t in2
 #elif defined(INPUT_VECTOR)
     svmptr_t in0_buf [[type("svmptr_t")]],
-    svmptr_t in1_buf [[type("svmptr_t")]],
-    svmptr_t in2_buf [[type("svmptr_t")]]
+    svmptr_t in1_buf [[type("svmptr_t")]], svmptr_t in2_buf [[type("svmptr_t")]]
 #endif
 #endif
 ) {
