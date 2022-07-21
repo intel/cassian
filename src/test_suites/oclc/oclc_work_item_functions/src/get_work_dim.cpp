@@ -21,10 +21,10 @@ namespace ca = cassian;
 
 namespace {
 
-ca::Kernel create_kernel(const std::string &path, ca::Runtime *runtime,
+ca::Kernel create_kernel(const std::string &path,
+                         const std::string &kernel_name, ca::Runtime *runtime,
                          const std::string &program_type) {
   const std::string source = ca::load_text_file(ca::get_asset(path));
-  const std::string kernel_name = "test_kernel";
   const std::string build_options;
   return runtime->create_kernel(kernel_name, source, build_options,
                                 program_type);
@@ -81,13 +81,15 @@ void run_test(const ca::Kernel &kernel,
   REQUIRE_THAT(output, Catch::Equals(reference));
 }
 
-template <size_t N> void test_get_work_dim(const TestConfig &config) {
+template <size_t N>
+void test_get_work_dim(const TestConfig &config,
+                       const std::string &kernel_name) {
   ca::Runtime *runtime = config.runtime();
   const std::string program_type = config.program_type();
 
   const ca::Kernel kernel =
-      create_kernel("kernels/oclc_work_item_functions/get_work_dim.cl", runtime,
-                    program_type);
+      create_kernel("kernels/oclc_work_item_functions/get_work_dim.cl",
+                    kernel_name, runtime, program_type);
 
   const size_t global_work_size_per_dimension = config.work_size();
   std::array<size_t, N> global_work_size = {};
@@ -101,9 +103,15 @@ template <size_t N> void test_get_work_dim(const TestConfig &config) {
 }
 
 TEST_CASE("get_work_dim", "") {
-  SECTION("1D") { test_get_work_dim<1>(get_test_config()); }
-  SECTION("2D") { test_get_work_dim<2>(get_test_config()); }
-  SECTION("3D") { test_get_work_dim<3>(get_test_config()); }
+  SECTION("1D") { test_get_work_dim<1>(get_test_config(), "test_kernel"); }
+  SECTION("2D") { test_get_work_dim<2>(get_test_config(), "test_kernel"); }
+  SECTION("3D") { test_get_work_dim<3>(get_test_config(), "test_kernel"); }
+}
+
+TEST_CASE("get_work_dim - wrappers", "") {
+  SECTION("1D") {
+    test_get_work_dim<1>(get_test_config(), "test_kernel_wrappers");
+  }
 }
 
 } // namespace

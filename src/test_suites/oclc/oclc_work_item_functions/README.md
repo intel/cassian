@@ -16,6 +16,16 @@ OpenCL C functionality.
 * Expectations: Returned value is the same as enqueued NDRange dimension.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
+  
+#### `get_work_dim - wrappers`
+* Status: DONE
+* Goal: Verify that outside the kernel `get_work_dim` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `get_work_dim` via the wrapper.
+  * Output is compared against reference values computed on the host.
+* Expectations: Returned value is the same as enqueued NDRange dimension.
+* Parameters:
+  * Dimensions: 1D.
 
 ### `get_global_size`
 * Status: TODO
@@ -36,6 +46,16 @@ OpenCL C functionality.
 * Expectations: Returned values contain all ids within enqueued global work size.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
+  
+#### `get_global_id - wrappers`
+* Status: DONE
+* Goal: Verify that outside the kernel `get_global_id` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `get_global_id` via the wrapper.
+  * Output is compared against reference values computed on the host.
+* Expectations: Returned values contain all ids within enqueued global work size.
+* Parameters:
+  * Dimensions: 3D.
 
 ### `get_local_size`
 * Status: TODO
@@ -67,6 +87,16 @@ OpenCL C functionality.
 * Expectations: Returned values contain all ids within enqueued local work sizes.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
+  
+#### `get_local_id - wrappers`
+* Status: DONE
+* Goal: Verify that outside the kernel `get_local_id` function works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `get_local_id` in multiple work-groups via the wrapper.
+  * Output is compared against reference values computed on the host.
+* Expectations: Returned values contain all ids within enqueued local work sizes.
+* Parameters:
+  * Dimensions: 3D.
 
 ### `get_num_groups`
 * Status: TODO

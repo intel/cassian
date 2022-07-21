@@ -30,8 +30,8 @@ ca::Kernel create_kernel(const std::string &path,
                                 program_type);
 }
 
-std::string get_kernel_name(const size_t n) {
-  return "test_kernel_" + std::to_string(n);
+std::string get_kernel_name(const size_t n, const std::string &kernel_name) {
+  return kernel_name + '_' + std::to_string(n);
 }
 
 template <size_t N>
@@ -100,14 +100,15 @@ void run_test(const ca::Kernel &kernel,
   }
 }
 
-template <size_t N> void test_get_local_id(const TestConfig &config) {
+template <size_t N>
+void test_get_local_id(const TestConfig &config,
+                       const std::string &kernel_name) {
   ca::Runtime *runtime = config.runtime();
   const std::string program_type = config.program_type();
 
-  const std::string kernel_name = get_kernel_name(N);
   const ca::Kernel kernel =
       create_kernel("kernels/oclc_work_item_functions/get_local_id.cl",
-                    kernel_name, runtime, program_type);
+                    get_kernel_name(N, kernel_name), runtime, program_type);
 
   const size_t global_work_size_per_dimension = config.work_size();
   std::array<size_t, N> global_work_size = {};
@@ -141,9 +142,15 @@ template <size_t N> void test_get_local_id(const TestConfig &config) {
 }
 
 TEST_CASE("get_local_id", "") {
-  SECTION("1D") { test_get_local_id<1>(get_test_config()); }
-  SECTION("2D") { test_get_local_id<2>(get_test_config()); }
-  SECTION("3D") { test_get_local_id<3>(get_test_config()); }
+  SECTION("1D") { test_get_local_id<1>(get_test_config(), "test_kernel"); }
+  SECTION("2D") { test_get_local_id<2>(get_test_config(), "test_kernel"); }
+  SECTION("3D") { test_get_local_id<3>(get_test_config(), "test_kernel"); }
+}
+
+TEST_CASE("get_local_id - wrappers", "") {
+  SECTION("3D") {
+    test_get_local_id<3>(get_test_config(), "test_kernel_wrappers");
+  }
 }
 
 } // namespace
