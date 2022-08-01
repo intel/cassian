@@ -14,11 +14,30 @@ list(
   "src/test_config.cpp"
   "src/get_work_dim.cpp"
   "src/get_global_id.cpp"
-  "src/get_local_id.cpp")
+  "src/get_local_id.cpp"
+  "src/get_global_size.cpp"
+  "src/get_local_size.cpp"
+  "src/get_num_groups.cpp"
+  "src/get_group_id.cpp"
+  "src/get_global_offset.cpp"
+  "src/get_global_linear_id.cpp"
+  "src/get_local_linear_id.cpp"
+  "src/get_enqueued_local_size.cpp")
 
-list(APPEND KERNELS "kernels/oclc_work_item_functions/get_work_dim.cl"
-     "kernels/oclc_work_item_functions/get_global_id.cl"
-     "kernels/oclc_work_item_functions/get_local_id.cl")
+list(
+  APPEND
+  KERNELS
+  "kernels/oclc_work_item_functions/get_work_dim.cl"
+  "kernels/oclc_work_item_functions/get_global_id.cl"
+  "kernels/oclc_work_item_functions/get_local_id.cl"
+  "kernels/oclc_work_item_functions/get_global_size.cl"
+  "kernels/oclc_work_item_functions/get_local_size.cl"
+  "kernels/oclc_work_item_functions/get_num_groups.cl"
+  "kernels/oclc_work_item_functions/get_group_id.cl"
+  "kernels/oclc_work_item_functions/get_global_offset.cl"
+  "kernels/oclc_work_item_functions/get_global_linear_id.cl"
+  "kernels/oclc_work_item_functions/get_local_linear_id.cl"
+  "kernels/oclc_work_item_functions/get_enqueued_local_size.cl")
 
 add_executable(oclc_work_item_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                         ${SOURCES})

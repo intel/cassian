@@ -28,7 +28,7 @@ OpenCL C functionality.
   * Dimensions: 1D.
 
 ### `get_global_size`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_global_size` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_global_size`.
@@ -58,7 +58,7 @@ OpenCL C functionality.
   * Dimensions: 3D.
 
 ### `get_local_size`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_local_size` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_local_size` in multiple work-groups.
@@ -68,7 +68,7 @@ OpenCL C functionality.
   * Dimensions: 1D, 2D, 3D.
 
 ### `get_enqueued_local_size`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_enqueued_local_size` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_enqueued_local_size` in multiple work-groups.
@@ -76,7 +76,7 @@ OpenCL C functionality.
 * Expectations: Returned value is the same as enqueued local work size.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
-  * Work-group size: uniform, non-uniform.
+  * Work-group size: uniform, TODO: non-uniform.
 
 ### `get_local_id`
 * Status: DONE
@@ -99,7 +99,7 @@ OpenCL C functionality.
   * Dimensions: 3D.
 
 ### `get_num_groups`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_num_groups` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_num_groups`.
@@ -109,7 +109,7 @@ OpenCL C functionality.
   * Dimensions: 1D, 2D, 3D.
 
 ### `get_group_id`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_group_id` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_group_id` in multiple work-groups.
@@ -119,7 +119,7 @@ OpenCL C functionality.
   * Dimensions: 1D, 2D, 3D.
 
 ### `get_global_offset`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_global_offset` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_global_offset`.
@@ -127,9 +127,10 @@ OpenCL C functionality.
 * Expectations: Returned value is the same as global work offset passed to enqueue function.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
+  * Offsets: TODO
 
 ### `get_global_linear_id`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_global_linear_id` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_global_linear_id`.
@@ -137,9 +138,10 @@ OpenCL C functionality.
 * Expectations: Returned values map into linear id space within global work size.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
+  * Offsets: TODO
 
 ### `get_local_linear_id`
-* Status: TODO
+* Status: DONE
 * Goal: Verify that `get_local_linear_id` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_local_linear_id` in multiple work-groups.
