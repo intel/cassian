@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2021-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -13,9 +13,10 @@ list(
   "src/common.cpp"
   "src/test_config.cpp"
   "src/arguments.cpp"
+  "src/excess_arguments.cpp"
   "src/text.cpp")
 list(APPEND KERNELS "kernels/oclc_printf/arguments.cl"
-     "kernels/oclc_printf/text.cl")
+     "kernels/oclc_printf/excess_arguments.cl" "kernels/oclc_printf/text.cl")
 
 add_executable(oclc_printf ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 

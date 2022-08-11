@@ -20,3 +20,10 @@ The goal of these tests is to verify output of printf function.
 * Goal: Verify that printf function prints arguments in specified format.
 * Description: Run OpenCL C kernel with printf call.
 * Expectations: Text with arguments passed to printf function should be printed to stdout with correct formatting.
+
+### Excess arguments
+
+* Status: DONE
+* Goal: Verify that printf function evaluates excess arguments
+* Description: Run OpenCL C kernel with printf call.
+* Expectations: Text with arguments passed to printf function should be printed to stdout with correct formatting and excess arguments should be evaluated.
