@@ -51,6 +51,7 @@ public:
   cl_api_clReleaseSampler clReleaseSampler = nullptr;
   cl_api_clCompileProgram clCompileProgram = nullptr;
   cl_api_clLinkProgram clLinkProgram = nullptr;
+  cl_api_clGetProgramInfo clGetProgramInfo = nullptr;
 
 private:
   std::unique_ptr<Library> library_;

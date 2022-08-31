@@ -102,4 +102,10 @@ void DummyRuntime::run_kernel_common(
     const Kernel & /*kernel*/, std::array<size_t, 3> /*global_work_size*/,
     const std::array<size_t, 3> * /*local_work_size*/) {}
 
+std::vector<uint8_t> DummyRuntime::create_program_and_get_native_binary(
+    const std::string & /*source*/, const std::string & /*build_options*/,
+    const std::string & /*program_type*/,
+    const std::optional<std::string> & /*spirv_options*/, bool /*quiet*/) {
+  return std::vector<uint8_t>();
+}
 } // namespace cassian

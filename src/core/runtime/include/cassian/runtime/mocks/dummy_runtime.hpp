@@ -66,6 +66,10 @@ public:
   bool is_feature_supported(Feature feature) const override;
   int get_device_property(DeviceProperty property) const override;
   std::string name() const override;
+  std::vector<uint8_t> create_program_and_get_native_binary(
+      const std::string &source, const std::string &build_options,
+      const std::string &program_type,
+      const std::optional<std::string> &spirv_options, bool quiet);
 
 protected:
   void set_kernel_argument(const Kernel &kernel, int argument_index,

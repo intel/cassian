@@ -56,6 +56,10 @@ public:
       const std::string &kernel_name,
       const std::vector<ProgramDescriptor> &program_descriptors,
       const std::string &linker_options, bool quiet) override;
+  std::vector<uint8_t> create_program_and_get_native_binary(
+      const std::string &source, const std::string &build_options,
+      const std::string &program_type,
+      const std::optional<std::string> &spirv_options, bool quiet) override;
   void set_kernel_argument(const Kernel &kernel, int argument_index,
                            const Buffer &buffer) override;
   void set_kernel_argument(const Kernel &kernel, int argument_index,

@@ -103,5 +103,7 @@ LevelZeroWrapper::LevelZeroWrapper() {
       library_->get_function("zeModuleBuildLogDestroy"));
   zeImageViewCreateExp = reinterpret_cast<ze_pfnImageViewCreateExp_t>(
       library_->get_function("zeImageViewCreateExp"));
+  zeModuleGetNativeBinary = reinterpret_cast<ze_pfnModuleGetNativeBinary_t>(
+      library_->get_function("zeModuleGetNativeBinary"));
 }
 } // namespace cassian

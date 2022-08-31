@@ -625,6 +625,35 @@ Kernel LevelZeroRuntime::create_kernel_from_multiple_programs(
   return Kernel(id);
 }
 
+std::vector<uint8_t> LevelZeroRuntime::create_program_and_get_native_binary(
+    const std::string &source, const std::string &build_options,
+    const std::string &program_type,
+    const std::optional<std::string> &spirv_options, bool quiet) {
+
+  ze_module_handle_t module = ze_create_module(
+      source, build_options, program_type, spirv_options, quiet);
+
+  size_t binary_size = 0;
+  ze_result_t status = ZE_RESULT_SUCCESS;
+  status = wrapper_.zeModuleGetNativeBinary(module, &binary_size, nullptr);
+  if (status != ZE_RESULT_SUCCESS) {
+    throw RuntimeException(
+        "Failed to get size using zeModuleGetNativeBinary command");
+  }
+  std::vector<uint8_t> program_bytes(binary_size);
+  status = wrapper_.zeModuleGetNativeBinary(module, &binary_size,
+                                            program_bytes.data());
+  if (status != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to get pModuleNativeBinary using "
+                           "zeModuleGetNativeBinary command");
+  }
+  status = wrapper_.zeModuleDestroy(module);
+  if (status != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to destroy module");
+  }
+  return program_bytes;
+}
+
 void LevelZeroRuntime::set_kernel_argument(const Kernel &kernel,
                                            const int argument_index,
                                            const Buffer &buffer) {

@@ -526,6 +526,21 @@ public:
       const std::string &linker_options = "", bool quiet = false) = 0;
 
   /**
+   * Create program and get info.
+   *
+   * @param[in] source kernel source code.
+   * @param[in] build_options build options to use during kernel construction.
+   * @param[in] program_type program type to use during kernel construction.
+   * @returns Program data bytes.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  virtual std::vector<uint8_t> create_program_and_get_native_binary(
+      const std::string &source, const std::string &build_options,
+      const std::string &program_type,
+      const std::optional<std::string> &spirv_options, bool quiet) = 0;
+
+  /**
    * Set buffer as kernel argument.
    *
    * @param[in] kernel kernel to use.

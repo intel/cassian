@@ -78,5 +78,7 @@ OpenCLWrapper::OpenCLWrapper() {
       library_->get_function("clCompileProgram"));
   clLinkProgram = reinterpret_cast<cl_api_clLinkProgram>(
       library_->get_function("clLinkProgram"));
+  clGetProgramInfo = reinterpret_cast<cl_api_clGetProgramInfo>(
+      library_->get_function("clGetProgramInfo"));
 }
 } // namespace cassian

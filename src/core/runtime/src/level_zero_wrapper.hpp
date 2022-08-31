@@ -64,6 +64,7 @@ public:
   ze_pfnModuleBuildLogGetString_t zeModuleBuildLogGetString = nullptr;
   ze_pfnModuleBuildLogDestroy_t zeModuleBuildLogDestroy = nullptr;
   ze_pfnImageViewCreateExp_t zeImageViewCreateExp = nullptr;
+  ze_pfnModuleGetNativeBinary_t zeModuleGetNativeBinary = nullptr;
 
 private:
   std::unique_ptr<Library> library_;

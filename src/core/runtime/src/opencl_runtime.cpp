@@ -650,4 +650,99 @@ cl_program OpenCLRuntime::cl_create_program(const std::string &source,
   }
   return program;
 }
+
+std::vector<uint8_t> OpenCLRuntime::create_program_and_get_native_binary(
+    const std::string &source, const std::string &build_options,
+    const std::string &program_type,
+    const std::optional<std::string> &spirv_options, bool quiet) {
+  cl_int result = CL_SUCCESS;
+  cl_program program =
+      cl_create_program(source, build_options, program_type, quiet);
+  const char *c_source = source.c_str();
+  std::string final_build_options = build_options;
+
+  if (program_type == "spirv") {
+    if (spirv_options.has_value()) {
+      final_build_options += spirv_options.value();
+    } else if (build_options.find("-cmc") == 0) {
+      final_build_options = final_build_options + " -vc-codegen";
+    }
+  }
+  const char *options = final_build_options.c_str();
+  result =
+      wrapper_.clBuildProgram(program, 1, &device_, options, nullptr, nullptr);
+  if (result != CL_SUCCESS) {
+    if (!quiet) {
+      const auto build_log = cl_get_program_build_info(program);
+      logging::error() << "Build log:\n" << build_log << '\n';
+    }
+    throw RuntimeException("Failed to build OpenCL program");
+  }
+  cl_uint num_devices_associated_with_program = 0;
+  result = wrapper_.clGetProgramInfo(
+      program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint),
+      &num_devices_associated_with_program, nullptr);
+  if (CL_SUCCESS != result) {
+    throw RuntimeException(
+        "Failed to get CL_PROGRAM_NUM_DEVICES from clGetProgramInfo");
+  }
+  if (num_devices_associated_with_program <= 0) {
+    throw RuntimeException("Incorrect number of devices associated with "
+                           "program. Should be at least 1");
+  }
+
+  std::vector<cl_device_id> devices_associated_with_program(
+      num_devices_associated_with_program);
+  result = wrapper_.clGetProgramInfo(
+      program, CL_PROGRAM_DEVICES,
+      sizeof(cl_device_id) * num_devices_associated_with_program,
+      devices_associated_with_program.data(), nullptr);
+
+  if (CL_SUCCESS != result) {
+    throw RuntimeException(
+        "Failed to get CL_PROGRAM_DEVICES from clGetProgramInfo");
+  }
+
+  std::vector<cl_device_id>::iterator it;
+  it = std::find(devices_associated_with_program.begin(),
+                 devices_associated_with_program.end(), device_);
+  if (it == devices_associated_with_program.end()) {
+    throw RuntimeException(
+        "Given device not associated with compiled program.");
+  }
+  auto device_index = it - devices_associated_with_program.begin();
+
+  std::vector<size_t> binary_sizes(num_devices_associated_with_program, 0);
+  result = wrapper_.clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES,
+                                     sizeof(size_t) *
+                                         num_devices_associated_with_program,
+                                     binary_sizes.data(), nullptr);
+  if (CL_SUCCESS != result) {
+    throw RuntimeException(
+        "Failed to get CL_PROGRAM_BINARY_SIZES from clGetProgramInfo");
+  }
+
+  std::vector<std::vector<uint8_t>> all_programs_bytes;
+  size_t all_programs_sizes = 0;
+  for (auto &each_size : binary_sizes) {
+    all_programs_sizes += each_size;
+    std::vector<uint8_t> allocate_bytes;
+    allocate_bytes.resize(each_size);
+    all_programs_bytes.push_back(allocate_bytes);
+  }
+  result = wrapper_.clGetProgramInfo(program, CL_PROGRAM_BINARIES,
+                                     all_programs_sizes,
+                                     all_programs_bytes.data(), nullptr);
+
+  if (result != CL_SUCCESS) {
+    throw RuntimeException(
+        "Failed to get CL_PROGRAM_BINARIES from clGetProgramInfo");
+  }
+  result = wrapper_.clReleaseProgram(program);
+
+  if (result != CL_SUCCESS) {
+    throw RuntimeException("Failed to release OpenCL program");
+  }
+  return all_programs_bytes[device_index];
+}
 } // namespace cassian
