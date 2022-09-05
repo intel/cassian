@@ -86,22 +86,58 @@ std::vector<uint8_t>
 generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
                            const std::string &source,
                            const std::string &build_options, bool quiet) {
-  static Ocloc ocloc;
 
-  static const std::string src_file = "source.cl";
   static const std::string spv_file = "kernel";
+  static const std::string ocloc_cmd = "compile";
+  std::vector<uint8_t> source_bytes(source.begin(), source.end());
+  source_bytes.push_back(0);
+  std::vector<const char *> ocloc_options = {"-output", "kernel", "-spv_only",
+                                             "-output_no_suffix"};
+  std::vector<OclocProduct> ocloc_products = generate_offline_compiler_products(
+      device_id, device_revision, source_bytes, build_options, ocloc_cmd,
+      ocloc_options, "source", quiet);
+
+  auto it = std::find_if(std::begin(ocloc_products), std::end(ocloc_products),
+                         [](const auto &product) {
+                           return product.name.rfind(".spv") ==
+                                  product.name.length() - 4;
+                         });
+
+  if (it != std::end(ocloc_products)) {
+    return it->data;
+  }
+  return {};
+}
+
+std::vector<OclocProduct> generate_offline_compiler_products(
+    uint32_t device_id, int32_t device_revision,
+    const std::vector<uint8_t> &source_bytes, const std::string &build_options,
+    const std::string &ocloc_cmd,
+    const std::vector<const char *> &ocloc_options,
+    const std::string &program_type, bool quiet) {
+  static Ocloc ocloc;
+  static const std::string src_file = "program.bin";
   static const std::string log_file = "stdout.log";
 
+  std::vector<uint8_t> program_bytes;
   std::string device;
   std::string revision;
-
   std::vector<const char *> args = {
-      "ocloc",     "compile",
-      "-file",     src_file.c_str(),
-      "-options",  build_options.c_str(),
-      "-output",   spv_file.c_str(),
-      "-spv_only", "-output_no_suffix",
+      "ocloc",
+      ocloc_cmd.c_str(),
+      "-file",
+      src_file.c_str(),
   };
+  program_bytes = source_bytes;
+  if (ocloc_cmd == "compile") {
+    if (program_type == "spirv") {
+      args.push_back("-spirv_input");
+    }
+    if (!build_options.empty()) {
+      args.push_back("-options");
+      args.push_back(build_options.c_str());
+    }
+  }
 
   if (device_id != 0) {
     std::ostringstream out;
@@ -124,10 +160,13 @@ generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
     args.push_back("-q");
   }
 
+  std::copy_if(std::begin(ocloc_options), std::end(ocloc_options),
+               std::back_inserter(args),
+               [](const char *option) { return std::strlen(option) != 0; });
+
   const uint32_t num_sources = 1;
-  const uint8_t *data_sources[] = {
-      reinterpret_cast<const uint8_t *>(source.c_str())};
-  const uint64_t len_sources[] = {source.length() + 1};
+  const uint8_t *data_sources[] = {program_bytes.data()};
+  const uint64_t len_sources[] = {program_bytes.size() + 1};
   const char *name_sources[] = {src_file.c_str()};
 
   const uint32_t num_includes = 0;
@@ -139,7 +178,7 @@ generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
   uint8_t **data_outputs = nullptr;
   uint64_t *len_outputs = nullptr;
   char **name_outputs = nullptr;
-
+  std::vector<OclocProduct> ocloc_products;
   auto _ = finally([&]() mutable {
     ocloc.free(&num_outputs, &data_outputs, &len_outputs, &name_outputs);
   });
@@ -162,21 +201,19 @@ generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
                            len_outputs[log_index]);
 
       logging::error() << "Build log:\n" << log << '\n';
+
+      throw OfflineCompilerException("Offline compiler operation failed");
     }
-
-    throw OfflineCompilerException("Offline compiler failed");
+  } else {
+    for (uint32_t prod_id = 0; prod_id < num_outputs; prod_id++) {
+      OclocProduct new_product = {
+          /*.name =*/name_outputs[prod_id],
+          /*.data =*/{data_outputs[prod_id],
+                      data_outputs[prod_id] + len_outputs[prod_id]}};
+      ocloc_products.push_back(std::move(new_product));
+    }
   }
-
-  auto *spvp =
-      std::find_if(name_outputs, name_outputs + num_outputs,
-                   [&](const char *name) { return name == spv_file + ".spv"; });
-
-  assert(spvp != name_outputs + num_outputs);
-  const auto spv_index = spvp - name_outputs;
-  const uint8_t *spv = data_outputs[spv_index];
-  const auto spv_length = len_outputs[spv_index];
-
-  return {spv, spv + spv_length};
+  return ocloc_products;
 }
 
 } // namespace cassian
