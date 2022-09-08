@@ -201,6 +201,13 @@ template <typename T> std::string input_to_string(const std::vector<T> &input) {
   return ss.str();
 }
 
+template <typename T> bool powr_special_case(T input_a, T input_b) {
+  return (input_a == 0 && input_b == 0) ||
+         (std::isinf(input_a) && input_b == 0) ||
+         (input_a == 1 && std::isinf(input_b)) ||
+         (input_a == -1 && std::isinf(input_b));
+}
+
 template <typename T> T calculate_acos(const T &input) {
   if constexpr (cassian::is_vector_v<T>) {
     T result(0.0F);
@@ -414,7 +421,8 @@ template <typename T> T calculate_cospi(const T &input) {
   if constexpr (cassian::is_vector_v<T>) {
     T result(0.0F);
     for (auto i = 0; i < T::vector_size; i++) {
-      if (std::floor(input[i]) - input[i] == 0 && input[i] != INFINITY) {
+      if (std::floor(input[i]) - input[i] == 0 &&
+          input[i] != std::numeric_limits<typename T::value_type>::infinity()) {
         result[i] = 1;
       } else {
         result[i] = std::cos(pi_value * input[i]);
@@ -422,7 +430,8 @@ template <typename T> T calculate_cospi(const T &input) {
     }
     return result;
   } else {
-    if (std::floor(input) - input == 0 && input != INFINITY) {
+    if (std::floor(input) - input == 0 &&
+        input != std::numeric_limits<T>::infinity()) {
       return 1;
     } else {
       return std::cos(pi_value * input);
@@ -712,7 +721,9 @@ template <typename T> T calculate_sinpi(const T &input) {
     for (auto i = 0; i < T::vector_size; i++) {
       if (input[i] == 0) {
         result[i] = 0;
-      } else if (std::floor(input[i]) - input[i] == 0 && input[i] != INFINITY) {
+      } else if (std::floor(input[i]) - input[i] == 0 &&
+                 input[i] !=
+                     std::numeric_limits<typename T::value_type>::infinity()) {
         result[i] = 0;
       } else {
         result[i] = std::sin(pi_value * input[i]);
@@ -722,7 +733,8 @@ template <typename T> T calculate_sinpi(const T &input) {
   } else {
     if (input == 0) {
       return 0;
-    } else if (std::floor(input) - input == 0 && input != INFINITY) {
+    } else if (std::floor(input) - input == 0 &&
+               input != std::numeric_limits<T>::infinity()) {
       return 0;
     } else {
       return std::sin(pi_value * input);
@@ -979,11 +991,11 @@ template <typename T_1, typename T_2> T_1 calculate_nan(const T_2 &input_a) {
   if constexpr (cassian::is_vector_v<T_2>) {
     T_1 result(0.0F);
     for (auto i = 0; i < T_1::vector_size; i++) {
-      result[i] = input_a[i] | 0x7fc00000U;
+      result[i] = std::numeric_limits<typename T_1::value_type>::quiet_NaN();
     }
     return result;
   } else {
-    return input_a | 0x7fc00000U;
+    return std::numeric_limits<T_1>::quiet_NaN();
   }
 }
 
@@ -1004,11 +1016,19 @@ template <typename T> T calculate_powr(const T &input_a, const T &input_b) {
   if constexpr (cassian::is_vector_v<T>) {
     T result(0.0F);
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = std::pow(input_a[i], input_b[i]);
+      if (powr_special_case(input_a[i], input_b[i])) {
+        result[i] = std::numeric_limits<typename T::value_type>::quiet_NaN();
+      } else {
+        result[i] = std::pow(input_a[i], input_b[i]);
+      }
     }
     return result;
   } else {
-    return std::pow(input_a, input_b);
+    if (powr_special_case(input_a, input_b)) {
+      return std::numeric_limits<T>::quiet_NaN();
+    } else {
+      return std::pow(input_a, input_b);
+    }
   }
 }
 
@@ -1017,11 +1037,23 @@ T_1 calculate_rootn(const T_1 &input_a, const T_2 &input_b) {
   if constexpr (cassian::is_vector_v<T_1>) {
     T_1 result(0.0F);
     for (auto i = 0; i < T_1::vector_size; i++) {
-      result[i] = std::pow(input_a[i], 1.0F / input_b[i]);
+      if (input_b[i] == 0) {
+        result[i] = std::numeric_limits<typename T_1::value_type>::quiet_NaN();
+      } else if (input_a[i] == -0 && (input_b[i] % 2) == 1 && input_b[i] < 0) {
+        result[i] = -std::numeric_limits<typename T_1::value_type>::infinity();
+      } else {
+        result[i] = std::pow(input_a[i], 1.0F / input_b[i]);
+      }
     }
     return result;
   } else {
-    return std::pow(input_a, 1.0F / input_b);
+    if (input_b == 0) {
+      return std::numeric_limits<T_1>::quiet_NaN();
+    } else if (input_a == -0 && (input_b % 2) == 1 && input_b < 0) {
+      return -std::numeric_limits<T_1>::infinity();
+    } else {
+      return std::pow(input_a, 1.0F / input_b);
+    }
   }
 }
 
@@ -1030,7 +1062,7 @@ template <typename T> T calculate_fract(const T &input_a, T &input_b) {
     T result(0.0F);
     for (auto i = 0; i < T::vector_size; i++) {
       if (std::isnan(input_a[i])) {
-        result[i] = NAN;
+        result[i] = std::numeric_limits<typename T::value_type>::quiet_NaN();
       } else if (std::isinf(input_a[i])) {
         result[i] = 0;
       } else {

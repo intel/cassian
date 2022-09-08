@@ -254,6 +254,9 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(input_type_1(-0.0F), -infinity);
   } else if constexpr (T::function == Function::powr ||
                        T::function == Function::half_powr) {
+
+    const auto higher_equal_zero = generate_value<input_type_1>(
+        scalar_type_1(0), std::numeric_limits<scalar_type_1>::max());
     const auto higher_than_zero = generate_value<input_type_1>(
         scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
         {scalar_type_1(0)});
@@ -263,19 +266,18 @@ template <class T> constexpr auto get_gentype_values() {
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     const auto finite = generate_value<input_type_2>(
-        -std::numeric_limits<scalar_type_2>::max(),
+        std::numeric_limits<scalar_type_2>::min(),
         std::numeric_limits<scalar_type_2>::max(),
         {std::numeric_limits<scalar_type_2>::infinity()});
-    values.add_random_case(generate_value<input_type_1>(),
-                           generate_value<input_type_2>());
+    values.add_random_case(higher_equal_zero, generate_value<input_type_2>());
     values.add_edge_case(
         generate_value<input_type_1>(
-            scalar_type_1(0), std::numeric_limits<scalar_type_1>::infinity(),
+            scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
             {scalar_type_1(0), std::numeric_limits<scalar_type_1>::infinity()}),
         input_type_2(0.0F));
     values.add_edge_case(
         generate_value<input_type_1>(
-            scalar_type_1(0), std::numeric_limits<scalar_type_1>::infinity(),
+            scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
             {scalar_type_1(0), std::numeric_limits<scalar_type_1>::infinity()}),
         input_type_2(-0.0F));
     values.add_edge_case(input_type_1(0.0F),
@@ -302,6 +304,7 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(input_type_1(0.0F), input_type_2(0.0F));
     values.add_edge_case(infinity, input_type_2(0.0F));
     values.add_edge_case(infinity, input_type_2(-0.0F));
+    values.add_edge_case(input_type_1(1.0F), -infinity);
     values.add_edge_case(input_type_1(1.0F), infinity);
     values.add_edge_case(
         generate_value<input_type_1>(),
@@ -402,30 +405,12 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_random_case(higher_than_or_equal_zero,
                            generate_value<input_type_1>());
   } else if constexpr (T::function == Function::pown) {
-    const auto odd_number_higher_than_zero = input_type_2(
-        generate_value<scalar_type_2>(scalar_type_2(0),
-                                      std::numeric_limits<scalar_type_2>::max(),
-                                      {scalar_type_2(0)}) *
-            scalar_type_2(2) +
-        scalar_type_2(1));
-    const auto even_number_higher_than_zero =
-        input_type_2(generate_value<scalar_type_2>(
-            scalar_type_2(0), std::numeric_limits<scalar_type_2>::max(),
-            {scalar_type_2(0)})) *
-        scalar_type_2(2);
-    const auto odd_number_lower_than_zero =
-        input_type_2(generate_value<scalar_type_2>(
-                         -std::numeric_limits<scalar_type_2>::max(),
-                         scalar_type_2(0), {scalar_type_2(0)}) *
-                         scalar_type_2(2) +
-                     scalar_type_2(1));
-    const auto even_number_lower_than_zero =
-        input_type_2(generate_value<scalar_type_2>(
-            -std::numeric_limits<scalar_type_2>::max(), scalar_type_2(0),
-            {scalar_type_2(0)})) *
-        scalar_type_2(2);
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
+    const auto lower_than_zero = generate_value<input_type_2>(
+        -std::numeric_limits<scalar_type_2>::max(), 0, {0});
+    const auto higher_than_zero = generate_value<input_type_2>(
+        0, std::numeric_limits<scalar_type_2>::max(), {0});
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
     values.add_edge_case(generate_value<input_type_1>(), input_type_2(0.0F));
@@ -434,54 +419,62 @@ template <class T> constexpr auto get_gentype_values() {
         input_type_1(std::numeric_limits<scalar_type_1>::quiet_NaN()),
         input_type_2(0));
     values.add_edge_case(input_type_1(infinity), input_type_2(0));
-    values.add_edge_case(input_type_1(0.0F), odd_number_lower_than_zero);
-    values.add_edge_case(input_type_1(0.0F), even_number_lower_than_zero);
-    values.add_edge_case(input_type_1(0.0F), even_number_higher_than_zero);
-    values.add_edge_case(input_type_1(0.0F), odd_number_higher_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), odd_number_lower_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), even_number_lower_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), even_number_higher_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), odd_number_higher_than_zero);
+    values.add_edge_case(input_type_1(0.0F),
+                         (lower_than_zero - (lower_than_zero % 2)) +
+                             1); // odd number
+    values.add_edge_case(input_type_1(0.0F),
+                         lower_than_zero -
+                             (lower_than_zero % 2)); // even number
+    values.add_edge_case(input_type_1(0.0F),
+                         higher_than_zero -
+                             (higher_than_zero % 2)); // even number
+    values.add_edge_case(input_type_1(0.0F),
+                         (higher_than_zero - (higher_than_zero % 2)) +
+                             1); // odd number
+    values.add_edge_case(input_type_1(-0.0F),
+                         (lower_than_zero - (lower_than_zero % 2)) +
+                             1); // odd number
+    values.add_edge_case(input_type_1(-0.0F),
+                         lower_than_zero -
+                             (lower_than_zero % 2)); // even number
+    values.add_edge_case(input_type_1(-0.0F),
+                         higher_than_zero -
+                             (higher_than_zero % 2)); // even number
+    values.add_edge_case(input_type_1(-0.0F),
+                         (higher_than_zero - (higher_than_zero % 2)) +
+                             1); // odd number
   } else if constexpr (T::function == Function::rootn) {
-    const auto odd_number_higher_than_zero = input_type_2(
-        generate_value<scalar_type_2>(scalar_type_2(0),
-                                      std::numeric_limits<scalar_type_2>::max(),
-                                      {scalar_type_2(0)}) *
-            scalar_type_2(2) +
-        scalar_type_2(1));
-    const auto even_number_higher_than_zero =
-        input_type_2(generate_value<scalar_type_2>(
-            scalar_type_2(0), std::numeric_limits<scalar_type_2>::max(),
-            {scalar_type_2(0)})) *
-        scalar_type_2(2);
-    const auto odd_number_lower_than_zero =
-        input_type_2(generate_value<scalar_type_2>(
-                         -std::numeric_limits<scalar_type_2>::max(),
-                         scalar_type_2(0), {scalar_type_2(0)}) *
-                         scalar_type_2(2) +
-                     scalar_type_2(1));
-    const auto even_number_lower_than_zero =
-        input_type_2(generate_value<scalar_type_2>(
-            -std::numeric_limits<scalar_type_2>::max(), scalar_type_2(0),
-            {scalar_type_2(0)})) *
-        scalar_type_2(2);
-    const auto even_number =
-        input_type_2(generate_value<scalar_type_2>() * scalar_type_2(2));
-    const auto lower_than_zero =
-        generate_value<input_type_1>(-std::numeric_limits<scalar_type_1>::max(),
-                                     scalar_type_1(0), {scalar_type_1(0)});
-
+    const auto lower_than_zero = generate_value<input_type_2>(
+        -std::numeric_limits<scalar_type_2>::max(), 0, {0});
+    const auto lower_than_zero_1 = generate_value<input_type_1>(
+        -std::numeric_limits<scalar_type_1>::max(), 0, {0});
+    const auto higher_than_zero = generate_value<input_type_2>(
+        0, std::numeric_limits<scalar_type_2>::max(), {0});
+    const auto to_even = generate_value<input_type_2>();
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
-    values.add_edge_case(input_type_1(0.0F), odd_number_lower_than_zero);
-    values.add_edge_case(input_type_1(0.0F), even_number_lower_than_zero);
-    values.add_edge_case(input_type_1(0.0F), odd_number_higher_than_zero);
-    values.add_edge_case(input_type_1(0.0F), even_number_higher_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), odd_number_lower_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), even_number_lower_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), odd_number_higher_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), even_number_higher_than_zero);
-    values.add_edge_case(lower_than_zero, even_number);
+    values.add_edge_case(input_type_1(0.0F),
+                         lower_than_zero -
+                             (lower_than_zero % 2)); // even number v
+    values.add_edge_case(input_type_1(-0.0F),
+                         lower_than_zero -
+                             (lower_than_zero % 2)); // even number v
+    values.add_edge_case(input_type_1(0.0F),
+                         (lower_than_zero - (lower_than_zero % 2)) +
+                             1); // odd number v
+    values.add_edge_case(input_type_1(0.0F),
+                         higher_than_zero -
+                             (higher_than_zero % 2)); // even number v
+    values.add_edge_case(input_type_1(-0.0F),
+                         higher_than_zero -
+                             (higher_than_zero % 2)); // even number v
+    values.add_edge_case(input_type_1(0.0F),
+                         (higher_than_zero - (higher_than_zero % 2)) +
+                             1); // odd number v
+    values.add_edge_case(input_type_1(-0.0F),
+                         (higher_than_zero - (higher_than_zero % 2)) +
+                             1); // odd number v
+    values.add_edge_case(lower_than_zero_1, to_even - (to_even % 2));
     values.add_edge_case(generate_value<input_type_1>(), input_type_2(0.0F));
   } else {
     if constexpr (T::arg_num == 2) {
