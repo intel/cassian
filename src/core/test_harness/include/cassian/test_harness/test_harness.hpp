@@ -60,6 +60,20 @@ public:
    */
   template <typename T> void atomic_add() {}
 
+  /**
+   * Require atomic min_max on a type.
+   *
+   * @tparam T OpenCL C scalar type to be required.
+   */
+  template <typename T> void atomic_min_max() {}
+
+  /**
+   * Require atomic load_store on a type.
+   *
+   * @tparam T OpenCL C scalar type to be required.
+   */
+  template <typename T> void atomic_load_store() {}
+
 private:
   std::vector<Feature> features_;
 
@@ -127,6 +141,31 @@ template <> void Requirements::atomic_add<clc_float_t>();
  * Specialization for double.
  */
 template <> void Requirements::atomic_add<clc_double_t>();
+
+/**
+ * Specialization for half.
+ */
+template <> void Requirements::atomic_add<clc_half_t>();
+
+/**
+ * Specialization for float.
+ */
+template <> void Requirements::atomic_min_max<clc_float_t>();
+
+/**
+ * Specialization for double.
+ */
+template <> void Requirements::atomic_min_max<clc_double_t>();
+
+/**
+ * Specialization for half.
+ */
+template <> void Requirements::atomic_min_max<clc_half_t>();
+
+/**
+ * Specialization for half.
+ */
+template <> void Requirements::atomic_load_store<clc_half_t>();
 
 /**
  * Check if a test should be skipped based on given requirements and a runtime.

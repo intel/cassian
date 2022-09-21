@@ -58,6 +58,46 @@ template <> void Requirements::atomic_type<clc_double_t>() {
   features_.push_back(Feature::fp64);
 }
 
+template <> void Requirements::atomic_add<clc_half_t>() {
+  features_.push_back(Feature::fp16);
+  features_.push_back(Feature::fp16_atomics_global_add);
+  features_.push_back(Feature::fp16_atomics_local_add);
+}
+
+template <> void Requirements::atomic_add<clc_float_t>() {
+  features_.push_back(Feature::fp32_atomics_global_add);
+  features_.push_back(Feature::fp32_atomics_local_add);
+}
+
+template <> void Requirements::atomic_add<clc_double_t>() {
+  features_.push_back(Feature::fp64);
+  features_.push_back(Feature::fp64_atomics_global_add);
+  features_.push_back(Feature::fp64_atomics_local_add);
+}
+
+template <> void Requirements::atomic_min_max<clc_half_t>() {
+  features_.push_back(Feature::fp16);
+  features_.push_back(Feature::fp16_atomics_global_min_max);
+  features_.push_back(Feature::fp16_atomics_local_min_max);
+}
+
+template <> void Requirements::atomic_min_max<clc_float_t>() {
+  features_.push_back(Feature::fp32_atomics_global_min_max);
+  features_.push_back(Feature::fp32_atomics_local_min_max);
+}
+
+template <> void Requirements::atomic_min_max<clc_double_t>() {
+  features_.push_back(Feature::fp64);
+  features_.push_back(Feature::fp64_atomics_global_add);
+  features_.push_back(Feature::fp64_atomics_local_add);
+}
+
+template <> void Requirements::atomic_load_store<clc_half_t>() {
+  features_.push_back(Feature::fp16);
+  features_.push_back(Feature::fp16_atomics_global_load_store);
+  features_.push_back(Feature::fp16_atomics_local_load_store);
+}
+
 bool should_skip_test(const Requirements &requirements,
                       const Runtime &runtime) {
   // Catch2 requires at least one assertion to report test case result
