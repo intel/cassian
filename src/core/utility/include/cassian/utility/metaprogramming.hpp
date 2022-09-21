@@ -155,6 +155,12 @@ struct TupleConcat<std::tuple<T...>, std::tuple<U...>, Rest...> {
                                     typename TupleConcat<Rest...>::type>::type;
 };
 
+/**
+ * Convenience alias for TupleConcat::type.
+ */
+template <typename... T>
+using tuple_concat_t = typename TupleConcat<T...>::type;
+
 template <typename... T> struct CartesianProduct {};
 
 /**
@@ -181,6 +187,21 @@ struct CartesianProduct<std::tuple<T...>, std::tuple<U...>> {
   using type =
       typename TupleConcat<typename detail::ProductRow<T, U...>::type...>::type;
 };
+
+/**
+ * Convenience alias for CartesianProduct::type, std::tuple variant.
+ *
+ * Usage:
+ * @code{.cpp}
+ * using ScalarPairs = cartesian_product_t<
+ *   std::tuple<int, float>, std::tuple<int, float>>;
+ * // ScalarPairs = std::tuple<
+ * //   std::tuple<int, int>, std::tuple<int, float>,
+ * //   std::tuple<float, int>, std::tuple<float, float>>
+ * @endcode
+ */
+template <typename... T>
+using cartesian_product_t = typename CartesianProduct<T...>::type;
 
 /**
  * Creates an std::tuple containing dot product of types and integers, each
@@ -210,6 +231,26 @@ struct CartesianProduct<std::tuple<T...>, std::index_sequence<U...>> {
 };
 
 /**
+ * Convenience alias for CartesianProduct::type, container variant.
+ *
+ * Usage:
+ * @code{.cpp}
+ * using VectorTypes = container_cartesian_product_t<
+ *   Vector, std::tuple<int, float>, std::index_sequence<2, 4>>;
+ * // VectorTypes = std::tuple<
+ * //   Vector<int, 2>, Vector<int, 4>, Vector<float, 2>, Vector<float, 4>>
+ * @endcode
+ *
+ * @tparam T type of container (currently only compatible with Vector)
+ * @tparam U std::tuple of contained types
+ * @tparam V std::index_sequence of contained sizes
+ */
+template <template <typename, int N, int = N> typename T, typename U,
+          typename V>
+using container_cartesian_product_t =
+    typename CartesianProduct<U, V>::template type<T>;
+
+/**
  * Creates an std::tuple containing dot product of integers and OpenCL C type.
  *
  * Example usage:
@@ -230,6 +271,23 @@ template <size_t... U> struct CartesianProduct<std::index_sequence<U...>> {
   template <template <size_t> typename T>
   using type = typename detail::CLCTypeProductRow<T, U...>::type;
 };
+
+/**
+ * Convenience alias for CartesianProduct::type, CLCType variant.
+ *
+ * Usage:
+ * @code{.cpp}
+ * using TypesFloat =
+ *   clc_type_cartesian_product_t<OpenCLCFloat, std::index_sequence<2, 4>>;
+ * // TypesFloat = std::tuple<OpenCLCFloat<2>, OpenCLCFloat<4>>
+ * @endcode
+ *
+ * @tparam T type wrapper
+ * @tparam U std::index_sequence of vector sizes
+ */
+template <template <size_t> typename T, typename U>
+using clc_type_cartesian_product_t =
+    typename CartesianProduct<U>::template type<T>;
 
 template <typename... T> struct TupleZip {};
 
@@ -263,6 +321,11 @@ struct TupleZip<std::tuple<T...>, std::tuple<U...>, std::tuple<V...>> {
    */
   using type = std::tuple<std::tuple<T, U, V>...>;
 };
+
+/**
+ * Convenience alias for TupleZip::type.
+ */
+template <typename... T> using tuple_zip_t = typename TupleZip<T...>::type;
 
 } // namespace cassian
 
