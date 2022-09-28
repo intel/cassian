@@ -38,6 +38,8 @@ kernel void test_local_to_global(const global DATA_TYPE *input,
     temp[local_offset + i] = input[global_offset + i];
   }
 
+  barrier(CLK_LOCAL_MEM_FENCE);
+
   const size_t group_id = get_group_id(0);
   const size_t local_size = get_local_size(0);
   const size_t elements_per_work_group = local_size * elements_per_work_item;
