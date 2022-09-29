@@ -12,6 +12,17 @@ namespace ca = cassian;
 namespace {
 
 template <typename TEST_TYPE, size_t N>
+void recalculate_dimensions(std::array<size_t, N> &global_work_size,
+                            std::array<size_t, N> &local_work_size) {
+  using vector_type_check = typename TEST_TYPE::host_type;
+  if constexpr (ca::is_vector_v<vector_type_check> && N != 1) {
+    global_work_size[1] = global_work_size[1] / vector_type_check::vector_size;
+    if (local_work_size[1] > global_work_size[1]) {
+      local_work_size[1] = global_work_size[1];
+    }
+  }
+}
+template <typename TEST_TYPE, size_t N>
 void test_subgroup_block(const TestConfig &config,
                          const std::string &func_name) {
   ca::Runtime *runtime = config.runtime();
@@ -51,7 +62,7 @@ void test_subgroup_block(const TestConfig &config,
 
   test_description.test_args.push_back(arg1);
   test_description.test_args.push_back(arg2);
-
+  recalculate_dimensions<TEST_TYPE, N>(global_work_size, local_work_size);
   const std::vector<std::vector<scalar_type>> outputs =
       run_test<scalar_type, TEST_TYPE, N>(test_description, global_work_size,
                                           local_work_size, runtime,
@@ -104,13 +115,7 @@ void test_subgroup_block_image(const TestConfig &config,
   test_description.test_args.push_back(arg1);
   test_description.test_args.push_back(arg2);
 
-  using vector_type_check = typename TEST_TYPE::host_type;
-  // reduce global work size in case of data type is a vector - multiple data
-  // reading
-  if constexpr (ca::is_vector_v<vector_type_check>) {
-    global_work_size[1] = global_work_size[1] / vector_type_check::vector_size;
-  }
-
+  recalculate_dimensions<TEST_TYPE, N>(global_work_size, local_work_size);
   const std::vector<std::vector<scalar_type>> outputs =
       run_test<scalar_type, TEST_TYPE, N>(test_description, global_work_size,
                                           local_work_size, runtime,
@@ -165,13 +170,7 @@ void test_subgroup_block_image_write(const TestConfig &config,
   test_description.test_args.push_back(arg1);
   test_description.test_args.push_back(arg2);
 
-  using vector_type_check = typename TEST_TYPE::host_type;
-  // reduce global work size in case of data type is a vector - multiple data
-  // reading
-  if constexpr (ca::is_vector_v<vector_type_check>) {
-    global_work_size[1] = global_work_size[1] / vector_type_check::vector_size;
-  }
-
+  recalculate_dimensions<TEST_TYPE, N>(global_work_size, local_work_size);
   const std::vector<std::vector<scalar_type>> outputs =
       run_test<scalar_type, TEST_TYPE, N>(test_description, global_work_size,
                                           local_work_size, runtime,
@@ -220,12 +219,7 @@ void test_subgroup_block_image_read_write(const TestConfig &config,
 
   test_description.test_args.push_back(arg1);
 
-  using vector_type_check = typename TEST_TYPE::host_type;
-  // reduce global work size in case of data type is a vector - multiple data
-  // reading
-  if constexpr (ca::is_vector_v<vector_type_check>) {
-    global_work_size[1] = global_work_size[1] / vector_type_check::vector_size;
-  }
+  recalculate_dimensions<TEST_TYPE, N>(global_work_size, local_work_size);
   const std::vector<std::vector<scalar_type>> outputs =
       run_test<scalar_type, TEST_TYPE, N>(test_description, global_work_size,
                                           local_work_size, runtime,
