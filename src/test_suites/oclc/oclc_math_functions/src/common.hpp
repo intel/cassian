@@ -1042,7 +1042,7 @@ T_1 calculate_rootn(const T_1 &input_a, const T_2 &input_b) {
       } else if (input_a[i] == -0 && (input_b[i] % 2) == 1 && input_b[i] < 0) {
         result[i] = -std::numeric_limits<typename T_1::value_type>::infinity();
       } else {
-        result[i] = std::pow(input_a[i], 1.0F / input_b[i]);
+        result[i] = std::pow(input_a[i], 1.0 / input_b[i]);
       }
     }
     return result;
@@ -1052,7 +1052,7 @@ T_1 calculate_rootn(const T_1 &input_a, const T_2 &input_b) {
     } else if (input_a == -0 && (input_b % 2) == 1 && input_b < 0) {
       return -std::numeric_limits<T_1>::infinity();
     } else {
-      return std::pow(input_a, 1.0F / input_b);
+      return std::pow(input_a, 1.0 / input_b);
     }
   }
 }

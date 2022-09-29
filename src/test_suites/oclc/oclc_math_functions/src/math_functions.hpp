@@ -65,7 +65,7 @@ public:
     default:
       throw UnknownFunctionException(
           Catch::StringMaker<Function>::convert(function) +
-          "address space not uninitialized");
+          "address space uninitialized");
     }
   }
   auto get_function_string() const { return function_string_; }
@@ -518,7 +518,6 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::round:
   case Function::trunc:
   case Function::nan:
-  case Function::native_divide:
   case Function::native_recip:
   case Function::fract:
   case Function::frexp:
@@ -530,6 +529,11 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::rsqrt:
   case Function::native_rsqrt: {
     constexpr scalar_type ulp = 2.0F * epsilon;
+    std::vector<scalar_type> ulp_values(work_size, ulp);
+    return ulp_values;
+  }
+  case Function::native_divide: {
+    constexpr scalar_type ulp = 2.5F * epsilon;
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
