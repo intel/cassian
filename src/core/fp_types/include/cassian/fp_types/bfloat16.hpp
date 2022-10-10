@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef CASSIAN_FP_TYPES_BFLOAT_HPP
-#define CASSIAN_FP_TYPES_BFLOAT_HPP
+#ifndef CASSIAN_FP_TYPES_BFLOAT16_HPP
+#define CASSIAN_FP_TYPES_BFLOAT16_HPP
 
 #include <cmath>
 #include <cstdint>
@@ -21,23 +21,23 @@
 namespace cassian {
 
 /**
- * Bfloat class representing half precision floating point type
+ * Bfloat16 class representing half precision floating point type
  *
  * Data layout: 1 sign bit, 8 exponent bits, 7 mantissa bits
  */
-class Bfloat {
+class Bfloat16 {
 public:
   /**
    * Default constructor
    */
-  constexpr Bfloat() : data(0) {}
+  constexpr Bfloat16() : data(0) {}
 
   /**
    * Constructor from float
    *
-   * @param[in] v value to be converted to bfloat
+   * @param[in] v value to be converted to bfloat16
    */
-  explicit Bfloat(float v);
+  explicit Bfloat16(float v);
 
   /**
    * Metafunction to enable a constructor declaration if T is integral, double
@@ -54,11 +54,11 @@ public:
   /**
    * Constructor from integral types, double and long double
    *
-   * @param[in] v value to be converted to bfloat
+   * @param[in] v value to be converted to bfloat16
    */
   template <typename T>
-  explicit Bfloat(EnableConstructionFrom<T> v)
-      : Bfloat(static_cast<float>(v)) {}
+  explicit Bfloat16(EnableConstructionFrom<T> v)
+      : Bfloat16(static_cast<float>(v)) {}
 
   /**
    * Conversion operator to float
@@ -80,7 +80,7 @@ public:
    * @param[in] rhs Value to compare against.
    * @returns true if both values are equal.
    */
-  bool operator==(const Bfloat &rhs) const;
+  bool operator==(const Bfloat16 &rhs) const;
 
   /**
    * Not equal operator.
@@ -88,7 +88,7 @@ public:
    * @param[in] rhs Value to compare against.
    * @returns true if values are not equal bitwise.
    */
-  bool operator!=(const Bfloat &rhs) const;
+  bool operator!=(const Bfloat16 &rhs) const;
 
   /**
    * Less than operator.
@@ -96,7 +96,7 @@ public:
    * @param[in] rhs Value to compare.
    * @returns true if this is less than rhs.
    */
-  bool operator<(const Bfloat &rhs) const;
+  bool operator<(const Bfloat16 &rhs) const;
 
   /**
    * Greater than operator.
@@ -104,7 +104,7 @@ public:
    * @param[in] rhs Value to compare.
    * @returns true if this is greater than rhs.
    */
-  bool operator>(const Bfloat &rhs) const;
+  bool operator>(const Bfloat16 &rhs) const;
 
   /**
    * Less than or equal operator.
@@ -112,7 +112,7 @@ public:
    * @param[in] rhs Value to compare.
    * @returns true if this is less than or equal to rhs.
    */
-  bool operator<=(const Bfloat &rhs) const;
+  bool operator<=(const Bfloat16 &rhs) const;
 
   /**
    * Greater than or equal operator.
@@ -120,24 +120,24 @@ public:
    * @param[in] rhs Value to compare.
    * @returns true if this is greater than or equal to rhs.
    */
-  bool operator>=(const Bfloat &rhs) const;
+  bool operator>=(const Bfloat16 &rhs) const;
 
   /**
    * Unary plus operator.
    */
-  Bfloat operator+() const;
+  Bfloat16 operator+() const;
 
   /**
    * Unary minus operator.
    */
-  Bfloat operator-() const;
+  Bfloat16 operator-() const;
 
   /**
    * Nan sensitive equal
    *
    * @returns bool value - result of comparison
    */
-  bool nan_sensitive_eq(const Bfloat &rhs) const;
+  bool nan_sensitive_eq(const Bfloat16 &rhs) const;
 
   /**
    * Metadata needed to distinguish vector-like data types.
@@ -155,8 +155,8 @@ public:
    * @param[in] v binary representation to be converted to half
    * @returns half object
    */
-  static constexpr Bfloat encode(storage_t v) {
-    Bfloat r;
+  static constexpr Bfloat16 encode(storage_t v) {
+    Bfloat16 r;
     r.data = v;
     return r;
   }
@@ -199,20 +199,20 @@ private:
 /**
  * Alias for type name
  */
-using bfloat = Bfloat;
+using bfloat16 = Bfloat16;
 
-static_assert(sizeof(bfloat) == 2, "wrong size of bfloat type");
+static_assert(sizeof(bfloat16) == 2, "wrong size of bfloat16 type");
 
-template <> struct is_floating_point<Bfloat> : std::true_type {};
+template <> struct is_floating_point<Bfloat16> : std::true_type {};
 
-template <> struct is_custom_type<Bfloat> : std::true_type {};
-
-template <typename T>
-using EnableBfloatArithmeticIfIntegral =
-    std::enable_if_t<std::is_integral_v<T>, Bfloat>;
+template <> struct is_custom_type<Bfloat16> : std::true_type {};
 
 template <typename T>
-using EnableBfloatArithmeticIfFloatingPoint =
+using EnableBfloat16ArithmeticIfIntegral =
+    std::enable_if_t<std::is_integral_v<T>, Bfloat16>;
+
+template <typename T>
+using EnableBfloat16ArithmeticIfFloatingPoint =
     std::enable_if_t<std::is_floating_point_v<T>, T>;
 
 /**
@@ -222,29 +222,29 @@ using EnableBfloatArithmeticIfFloatingPoint =
  * @param[in] rhs right-hand side value
  * @returns sum of lhs and rhs
  */
-Bfloat operator+(Bfloat lhs, Bfloat rhs);
+Bfloat16 operator+(Bfloat16 lhs, Bfloat16 rhs);
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator+(T lhs, Bfloat rhs) {
-  return static_cast<Bfloat>(lhs) + rhs;
+EnableBfloat16ArithmeticIfIntegral<T> operator+(T lhs, Bfloat16 rhs) {
+  return static_cast<Bfloat16>(lhs) + rhs;
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator+(Bfloat lhs, T rhs) {
-  return lhs + static_cast<Bfloat>(rhs);
+EnableBfloat16ArithmeticIfIntegral<T> operator+(Bfloat16 lhs, T rhs) {
+  return lhs + static_cast<Bfloat16>(rhs);
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator+(T lhs, Bfloat rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator+(T lhs, Bfloat16 rhs) {
   return lhs + static_cast<T>(rhs);
 }
 
@@ -252,7 +252,7 @@ EnableBfloatArithmeticIfFloatingPoint<T> operator+(T lhs, Bfloat rhs) {
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator+(Bfloat lhs, T rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator+(Bfloat16 lhs, T rhs) {
   return static_cast<T>(lhs) + rhs;
 }
 
@@ -263,29 +263,29 @@ EnableBfloatArithmeticIfFloatingPoint<T> operator+(Bfloat lhs, T rhs) {
  * @param[in] rhs right-hand side value
  * @returns difference between lhs and rhs
  */
-Bfloat operator-(Bfloat lhs, Bfloat rhs);
+Bfloat16 operator-(Bfloat16 lhs, Bfloat16 rhs);
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator-(T lhs, Bfloat rhs) {
-  return static_cast<Bfloat>(lhs) - rhs;
+EnableBfloat16ArithmeticIfIntegral<T> operator-(T lhs, Bfloat16 rhs) {
+  return static_cast<Bfloat16>(lhs) - rhs;
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator-(Bfloat lhs, T rhs) {
-  return lhs - static_cast<Bfloat>(rhs);
+EnableBfloat16ArithmeticIfIntegral<T> operator-(Bfloat16 lhs, T rhs) {
+  return lhs - static_cast<Bfloat16>(rhs);
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator-(T lhs, Bfloat rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator-(T lhs, Bfloat16 rhs) {
   return lhs - static_cast<T>(rhs);
 }
 
@@ -293,7 +293,7 @@ EnableBfloatArithmeticIfFloatingPoint<T> operator-(T lhs, Bfloat rhs) {
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator-(Bfloat lhs, T rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator-(Bfloat16 lhs, T rhs) {
   return static_cast<T>(lhs) - rhs;
 }
 
@@ -304,29 +304,29 @@ EnableBfloatArithmeticIfFloatingPoint<T> operator-(Bfloat lhs, T rhs) {
  * @param[in] rhs right-hand side value
  * @returns product of lhs and rhs
  */
-Bfloat operator*(Bfloat lhs, Bfloat rhs);
+Bfloat16 operator*(Bfloat16 lhs, Bfloat16 rhs);
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator*(T lhs, Bfloat rhs) {
-  return static_cast<Bfloat>(lhs) * rhs;
+EnableBfloat16ArithmeticIfIntegral<T> operator*(T lhs, Bfloat16 rhs) {
+  return static_cast<Bfloat16>(lhs) * rhs;
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator*(Bfloat lhs, T rhs) {
-  return lhs * static_cast<Bfloat>(rhs);
+EnableBfloat16ArithmeticIfIntegral<T> operator*(Bfloat16 lhs, T rhs) {
+  return lhs * static_cast<Bfloat16>(rhs);
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator*(T lhs, Bfloat rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator*(T lhs, Bfloat16 rhs) {
   return lhs * static_cast<T>(rhs);
 }
 
@@ -334,7 +334,7 @@ EnableBfloatArithmeticIfFloatingPoint<T> operator*(T lhs, Bfloat rhs) {
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator*(Bfloat lhs, T rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator*(Bfloat16 lhs, T rhs) {
   return static_cast<T>(lhs) * rhs;
 }
 
@@ -345,29 +345,29 @@ EnableBfloatArithmeticIfFloatingPoint<T> operator*(Bfloat lhs, T rhs) {
  * @param[in] rhs right-hand side value
  * @returns quotient
  */
-Bfloat operator/(Bfloat lhs, Bfloat rhs);
+Bfloat16 operator/(Bfloat16 lhs, Bfloat16 rhs);
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator/(T lhs, Bfloat rhs) {
-  return static_cast<Bfloat>(lhs) / rhs;
+EnableBfloat16ArithmeticIfIntegral<T> operator/(T lhs, Bfloat16 rhs) {
+  return static_cast<Bfloat16>(lhs) / rhs;
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfIntegral<T> operator/(Bfloat lhs, T rhs) {
-  return lhs / static_cast<Bfloat>(rhs);
+EnableBfloat16ArithmeticIfIntegral<T> operator/(Bfloat16 lhs, T rhs) {
+  return lhs / static_cast<Bfloat16>(rhs);
 }
 
 /**
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator/(T lhs, Bfloat rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator/(T lhs, Bfloat16 rhs) {
   return lhs / static_cast<T>(rhs);
 }
 
@@ -375,48 +375,48 @@ EnableBfloatArithmeticIfFloatingPoint<T> operator/(T lhs, Bfloat rhs) {
  * @overload
  */
 template <typename T>
-EnableBfloatArithmeticIfFloatingPoint<T> operator/(Bfloat lhs, T rhs) {
+EnableBfloat16ArithmeticIfFloatingPoint<T> operator/(Bfloat16 lhs, T rhs) {
   return static_cast<T>(lhs) / rhs;
 }
 
 /**
- * Convert Bfloat to string representation.
+ * Convert Bfloat16 to string representation.
  *
  * @param[in] value object to convert.
  */
-std::string to_string(const Bfloat &value);
+std::string to_string(const Bfloat16 &value);
 
 /**
- * Append string representation of Bfloat object to a stream.
+ * Append string representation of Bfloat16 object to a stream.
  *
  * @param[in] os stream to use.
  * @param[in] value object to convert.
  * @returns used stream.
  */
-std::ostream &operator<<(std::ostream &os, const Bfloat &value);
+std::ostream &operator<<(std::ostream &os, const Bfloat16 &value);
 
 /**
  * Checks whether the value is NaN.
  *
  * @param[in] value object to use.
  */
-bool isnan(Bfloat value);
+bool isnan(Bfloat16 value);
 
 /**
- * Computes the absolute value of a Bfloat value arg.
+ * Computes the absolute value of a Bfloat16 value arg.
  *
  * @param[in] value object to use.
  * @returns absolute value.
  */
-Bfloat abs(Bfloat value);
+Bfloat16 abs(Bfloat16 value);
 
 /**
- * Computes the square root of a Bfloat value arg.
+ * Computes the square root of a Bfloat16 value arg.
  *
  * @param[in] value object to use.
  * @returns square root.
  */
-Bfloat sqrt(Bfloat value);
+Bfloat16 sqrt(Bfloat16 value);
 
 /**
  * Computes the next representable value of from in the direction of to.
@@ -425,7 +425,7 @@ Bfloat sqrt(Bfloat value);
  * @param[in] to value toward which the return value is approximated.
  * @returns the next representable value.
  */
-Bfloat nextafter(const Bfloat from, const Bfloat to);
+Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to);
 
 } // namespace cassian
 
@@ -436,7 +436,7 @@ namespace std {
 /**
  * numeric limits specializations
  */
-template <> class numeric_limits<cassian::Bfloat> {
+template <> class numeric_limits<cassian::Bfloat16> {
 public:
   /**
    * std::numeric_limits is specialized
@@ -444,62 +444,62 @@ public:
   static constexpr bool is_specialized = true;
 
   /**
-   * cassian::Bfloat is signed
+   * cassian::Bfloat16 is signed
    */
   static constexpr bool is_signed = true;
 
   /**
-   * cassian::Bfloat is not integer
+   * cassian::Bfloat16 is not integer
    */
   static constexpr bool is_integer = false;
 
   /**
-   * cassian::Bfloat is inexact
+   * cassian::Bfloat16 is inexact
    */
   static constexpr bool is_exact = false;
 
   /**
-   * cassian::Bfloat has inifinity
+   * cassian::Bfloat16 has inifinity
    */
   static constexpr bool has_infinity = true;
 
   /**
-   * cassian::Bfloat has quiet NaN
+   * cassian::Bfloat16 has quiet NaN
    */
   static constexpr bool has_quiet_NaN = true;
 
   /**
-   * cassian::Bfloat has signaling NaN
+   * cassian::Bfloat16 has signaling NaN
    */
   static constexpr bool has_signaling_NaN = true;
 
   /**
-   * cassian::Bfloat has denormals
+   * cassian::Bfloat16 has denormals
    */
   static constexpr bool has_denorm = true;
 
   /**
-   * cassian::Bfloat does not detect loss of precision as denormalization loss
+   * cassian::Bfloat16 does not detect loss of precision as denormalization loss
    */
   static constexpr bool has_denorm_loss = false;
 
   /**
-   * cassian::Bfloat uses rounding to nearest even
+   * cassian::Bfloat16 uses rounding to nearest even
    */
   static constexpr std::float_round_style round_style = std::round_to_nearest;
 
   /**
-   * cassian::Bfloat is IEC 559/IEEE 745 type
+   * cassian::Bfloat16 is IEC 559/IEEE 745 type
    */
   static constexpr bool is_iec559 = true;
 
   /**
-   * cassian::Bfloat is bounded
+   * cassian::Bfloat16 is bounded
    */
   static constexpr bool is_bounded = true;
 
   /**
-   * cassian::Bfloat does not handle overflows with modulo arithmetic
+   * cassian::Bfloat16 does not handle overflows with modulo arithmetic
    */
   static constexpr bool is_modulo = false;
 
@@ -559,48 +559,48 @@ public:
   /**
    * minimum value
    */
-  static constexpr cassian::Bfloat min() {
-    return cassian::Bfloat::encode(0x0080);
+  static constexpr cassian::Bfloat16 min() {
+    return cassian::Bfloat16::encode(0x0080);
   };
   /**
    * maximum value
    */
-  static constexpr cassian::Bfloat max() {
-    return cassian::Bfloat::encode(0x7f7f);
+  static constexpr cassian::Bfloat16 max() {
+    return cassian::Bfloat16::encode(0x7f7f);
   };
   /**
    * lowest value
    */
-  static constexpr cassian::Bfloat lowest() {
-    return cassian::Bfloat::encode(0xff7f);
+  static constexpr cassian::Bfloat16 lowest() {
+    return cassian::Bfloat16::encode(0xff7f);
   };
   /**
    * difference between 1.0 and the next representable value
    */
-  static cassian::Bfloat epsilon() {
-    return cassian::Bfloat(std::numeric_limits<float>::epsilon());
+  static cassian::Bfloat16 epsilon() {
+    return cassian::Bfloat16(std::numeric_limits<float>::epsilon());
   }
   /**
    * maximum rounding error
    */
-  static cassian::Bfloat round_error() { return cassian::Bfloat(0.5f); }
+  static cassian::Bfloat16 round_error() { return cassian::Bfloat16(0.5f); }
   /**
    * infinity value
    */
-  static constexpr cassian::Bfloat infinity() {
-    return cassian::Bfloat::encode(0x7f80);
+  static constexpr cassian::Bfloat16 infinity() {
+    return cassian::Bfloat16::encode(0x7f80);
   };
   /**
    * quiet nan value
    */
   // specific quiet and signaling NaN encoding is architecture dependent
-  static constexpr cassian::Bfloat quiet_NaN() {
-    return cassian::Bfloat::encode(0x7f81);
+  static constexpr cassian::Bfloat16 quiet_NaN() {
+    return cassian::Bfloat16::encode(0x7f81);
   };
   /**
    * signaling nan value
    */
-  static constexpr cassian::Bfloat signaling_NaN() {
+  static constexpr cassian::Bfloat16 signaling_NaN() {
     // in F16C x86 extension f32 sNaN is converted to f16 qNaN
     // ref: Intel 64 and IA-32 Architectures Software Developer's Manual
     // Volume 1, order number 325462-069US, table 14-9
@@ -609,8 +609,8 @@ public:
   /**
    * lowest denorm value
    */
-  static constexpr cassian::Bfloat denorm_min() {
-    return cassian::Bfloat::encode(0x0001);
+  static constexpr cassian::Bfloat16 denorm_min() {
+    return cassian::Bfloat16::encode(0x0001);
   };
 };
 

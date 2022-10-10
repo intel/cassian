@@ -8,7 +8,7 @@
 #ifndef CASSIAN_RUNTIME_OPENCLC_TYPES_HPP
 #define CASSIAN_RUNTIME_OPENCLC_TYPES_HPP
 
-#include <cassian/fp_types/bfloat.hpp>
+#include <cassian/fp_types/bfloat16.hpp>
 #include <cassian/fp_types/half.hpp>
 #include <cassian/fp_types/tfloat.hpp>
 #include <cassian/vector/vector.hpp>
@@ -833,7 +833,7 @@ template <> struct OpenCLCHalf<16> {
 };
 
 template <> struct OpenCLCBfloat16<1> {
-  using host_type = Bfloat;
+  using host_type = Bfloat16;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
   static constexpr char device_type[] = "ushort";
@@ -842,7 +842,7 @@ template <> struct OpenCLCBfloat16<1> {
 };
 
 template <> struct OpenCLCBfloat16<2> {
-  using host_type = Vector<Bfloat, 2>;
+  using host_type = Vector<Bfloat16, 2>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
   static constexpr char device_type[] = "ushort2";
@@ -851,7 +851,7 @@ template <> struct OpenCLCBfloat16<2> {
 };
 
 template <> struct OpenCLCBfloat16<3> {
-  using host_type = Vector<Bfloat, 3, 4>;
+  using host_type = Vector<Bfloat16, 3, 4>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
   static constexpr char device_type[] = "ushort3";
@@ -860,7 +860,7 @@ template <> struct OpenCLCBfloat16<3> {
 };
 
 template <> struct OpenCLCBfloat16<4> {
-  using host_type = Vector<Bfloat, 4>;
+  using host_type = Vector<Bfloat16, 4>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
   static constexpr char device_type[] = "ushort4";
@@ -869,7 +869,7 @@ template <> struct OpenCLCBfloat16<4> {
 };
 
 template <> struct OpenCLCBfloat16<8> {
-  using host_type = Vector<Bfloat, 8>;
+  using host_type = Vector<Bfloat16, 8>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
   static constexpr char device_type[] = "ushort8";
@@ -878,7 +878,7 @@ template <> struct OpenCLCBfloat16<8> {
 };
 
 template <> struct OpenCLCBfloat16<16> {
-  using host_type = Vector<Bfloat, 16>;
+  using host_type = Vector<Bfloat16, 16>;
   using scalar_type = OpenCLCBfloat16<1>;
   using underlying_type = float;
   static constexpr char device_type[] = "ushort16";
@@ -1265,19 +1265,23 @@ using clc_half16_t = detail::OpenCLCHalf<16>;
 /**
  * Wrapper for OpenCL C bfloat16 data type.
  */
-using clc_bfloat_t = detail::OpenCLCBfloat16<1>;
+using clc_bfloat16_t = detail::OpenCLCBfloat16<1>;
 /**
  * Wrapper for OpenCL C bfloat16_2 data type.
  */
-using clc_bfloat2_t = detail::OpenCLCBfloat16<2>;
+using clc_bfloat162_t = detail::OpenCLCBfloat16<2>;
 /**
  * Wrapper for OpenCL C bfloat16_4 data type.
  */
-using clc_bfloat4_t = detail::OpenCLCBfloat16<4>;
+using clc_bfloat164_t = detail::OpenCLCBfloat16<4>;
 /**
  * Wrapper for OpenCL C bfloat16_8 data type.
  */
-using clc_bfloat8_t = detail::OpenCLCBfloat16<8>;
+using clc_bfloat168_t = detail::OpenCLCBfloat16<8>;
+/**
+ * Wrapper for OpenCL C bfloat16_8 data type.
+ */
+using clc_bfloat1616_t = detail::OpenCLCBfloat16<16>;
 
 /**
  * Wrapper for OpenCL C tfloat data type.

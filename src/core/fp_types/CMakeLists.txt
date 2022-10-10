@@ -7,13 +7,13 @@
 list(
   APPEND
   PUBLIC_HEADERS
-  "include/cassian/fp_types/bfloat.hpp"
+  "include/cassian/fp_types/bfloat16.hpp"
   "include/cassian/fp_types/half.hpp"
   "include/cassian/fp_types/tfloat.hpp"
   "include/cassian/fp_types/type_traits.hpp"
   "include/cassian/fp_types/math.hpp")
 list(APPEND PRIVATE_HEADERS)
-list(APPEND SOURCES "src/bfloat.cpp" "src/half.cpp" "src/tfloat.cpp")
+list(APPEND SOURCES "src/bfloat16.cpp" "src/half.cpp" "src/tfloat.cpp")
 
 add_library(fp_types ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 add_library(cassian::fp_types ALIAS fp_types)

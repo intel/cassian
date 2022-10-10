@@ -7,14 +7,14 @@
 
 #include <catch2/catch.hpp>
 
-#include <cassian/fp_types/bfloat.hpp>
+#include <cassian/fp_types/bfloat16.hpp>
 #include <cassian/fp_types/half.hpp>
 #include <cassian/main/flags_builder.hpp>
 #include <cassian/main/test_helper.hpp>
 #include <cassian/utility/utility.hpp>
 
 namespace ca = cassian;
-using ca::bfloat;
+using ca::bfloat16;
 using ca::half;
 using ca::test::FlagsBuilder;
 using ca::test::Language;
@@ -26,7 +26,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
 
   SECTION("Vector") {
     auto in = ca::generate_vector<float>(simd, 0);
-    std::vector<bfloat> ref(std::begin(in), std::end(in));
+    std::vector<bfloat16> ref(std::begin(in), std::end(in));
 
     decltype(ref) out;
 
@@ -39,7 +39,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
                          .define("SRC_VECTOR")
                          .define("SIMD", std::to_string(simd))
                          .define("IN_TYPE", ca::to_cm_string<float>())
-                         // CM interprets half as bfloat in convert operations
+                         // CM interprets half as bfloat16 in convert operations
                          .define("OUT_TYPE", ca::to_cm_string<half>())
                          .str());
 
@@ -51,7 +51,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
     constexpr auto height = simd / width;
 
     auto in = ca::generate_vector<float>(simd, 0);
-    std::vector<bfloat> ref(std::begin(in), std::end(in));
+    std::vector<bfloat16> ref(std::begin(in), std::end(in));
 
     decltype(ref) out;
 
@@ -66,7 +66,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
                          .define("WIDTH", std::to_string(width))
                          .define("HEIGHT", std::to_string(height))
                          .define("IN_TYPE", ca::to_cm_string<float>())
-                         // CM interprets half as bfloat in convert operations
+                         // CM interprets half as bfloat16 in convert operations
                          .define("OUT_TYPE", ca::to_cm_string<half>())
                          .str());
 
@@ -75,7 +75,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
 
   SECTION("Scalar") {
     auto in = ca::generate_value<float>(0);
-    std::vector<bfloat> ref(simd, bfloat(in));
+    std::vector<bfloat16> ref(simd, bfloat16(in));
 
     decltype(ref) out;
 
@@ -88,7 +88,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
                          .define("SRC_SCALAR")
                          .define("SIMD", std::to_string(simd))
                          .define("IN_TYPE", ca::to_cm_string<float>())
-                         // CM interprets half as bfloat in convert operations
+                         // CM interprets half as bfloat16 in convert operations
                          .define("OUT_TYPE", ca::to_cm_string<half>())
                          .str());
 
@@ -97,7 +97,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
 
   SECTION("Constant") {
     auto in = ca::generate_value<float>(0);
-    std::vector<bfloat> ref(simd, bfloat(in));
+    std::vector<bfloat16> ref(simd, bfloat16(in));
 
     decltype(ref) out;
 
@@ -110,7 +110,7 @@ TEST_CASE("cm_convert_float_to_bfloat", "[cm][bfloat]") {
                          .define("SRC_VALUE", std::to_string(in))
                          .define("SIMD", std::to_string(simd))
                          .define("IN_TYPE", ca::to_cm_string<float>())
-                         // CM interprets half as bfloat in convert operations
+                         // CM interprets half as bfloat16 in convert operations
                          .define("OUT_TYPE", ca::to_cm_string<half>())
                          .str());
 
@@ -124,7 +124,7 @@ TEST_CASE("cm_convert_bfloat_to_float", "[cm][bfloat]") {
       cassian::get_asset("kernels/cm_convert/convert_genx.cpp"));
 
   SECTION("Vector") {
-    auto in = ca::generate_vector<bfloat>(simd, 0);
+    auto in = ca::generate_vector<bfloat16>(simd, 0);
     std::vector<float> ref(std::begin(in), std::end(in));
 
     decltype(ref) out;
@@ -137,7 +137,7 @@ TEST_CASE("cm_convert_bfloat_to_float", "[cm][bfloat]") {
                          .define("CONVERT", "cm_bf_cvt")
                          .define("SRC_VECTOR")
                          .define("SIMD", std::to_string(simd))
-                         // CM interprets half as bfloat in convert operations
+                         // CM interprets half as bfloat16 in convert operations
                          .define("IN_TYPE", ca::to_cm_string<half>())
                          .define("OUT_TYPE", ca::to_cm_string<float>())
                          .str());
@@ -149,7 +149,7 @@ TEST_CASE("cm_convert_bfloat_to_float", "[cm][bfloat]") {
     constexpr auto width = 8;
     constexpr auto height = simd / width;
 
-    auto in = ca::generate_vector<bfloat>(simd, 0);
+    auto in = ca::generate_vector<bfloat16>(simd, 0);
     std::vector<float> ref(std::begin(in), std::end(in));
 
     decltype(ref) out;
@@ -164,7 +164,7 @@ TEST_CASE("cm_convert_bfloat_to_float", "[cm][bfloat]") {
                          .define("SIMD", std::to_string(simd))
                          .define("WIDTH", std::to_string(width))
                          .define("HEIGHT", std::to_string(height))
-                         // CM interprets half as bfloat in convert operations
+                         // CM interprets half as bfloat16 in convert operations
                          .define("IN_TYPE", ca::to_cm_string<half>())
                          .define("OUT_TYPE", ca::to_cm_string<float>())
                          .str());
@@ -173,7 +173,7 @@ TEST_CASE("cm_convert_bfloat_to_float", "[cm][bfloat]") {
   }
 
   SECTION("Scalar") {
-    auto in = ca::generate_value<bfloat>(0);
+    auto in = ca::generate_value<bfloat16>(0);
     std::vector<float> ref(simd, float(in));
 
     decltype(ref) out;
@@ -186,7 +186,7 @@ TEST_CASE("cm_convert_bfloat_to_float", "[cm][bfloat]") {
                          .define("CONVERT", "cm_bf_cvt")
                          .define("SRC_SCALAR")
                          .define("SIMD", std::to_string(simd))
-                         // CM interprets half as bfloat in convert operations
+                         // CM interprets half as bfloat16 in convert operations
                          .define("IN_TYPE", ca::to_cm_string<half>())
                          .define("OUT_TYPE", ca::to_cm_string<float>())
                          .str());

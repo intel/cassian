@@ -9,11 +9,11 @@
 #include <iomanip>
 #include <sstream>
 
-#include <cassian/fp_types/bfloat.hpp>
+#include <cassian/fp_types/bfloat16.hpp>
 
 namespace cassian {
 
-Bfloat::Bfloat(float v) {
+Bfloat16::Bfloat16(float v) {
   constexpr int remainder_bits = 16;
   constexpr uint32_t remainder_mask = (1 << remainder_bits) - 1;
   constexpr uint32_t exponent_mask = 0x7f80;
@@ -45,7 +45,7 @@ Bfloat::Bfloat(float v) {
   data = static_cast<uint16_t>(tmp);
 }
 
-Bfloat::operator float() const {
+Bfloat16::operator float() const {
   float tmp_f = 0;
   uint32_t tmp_32 = data;
   const int remainder_bits = 16;
@@ -54,50 +54,52 @@ Bfloat::operator float() const {
   return tmp_f;
 }
 
-bool Bfloat::operator==(const Bfloat &rhs) const {
+bool Bfloat16::operator==(const Bfloat16 &rhs) const {
   const auto f_lhs = static_cast<float>(*this);
   const auto f_rhs = static_cast<float>(rhs);
   return f_lhs == f_rhs;
 }
 
-bool Bfloat::operator!=(const Bfloat &rhs) const { return !(*this == rhs); };
+bool Bfloat16::operator!=(const Bfloat16 &rhs) const {
+  return !(*this == rhs);
+};
 
-bool Bfloat::operator<(const Bfloat &rhs) const {
+bool Bfloat16::operator<(const Bfloat16 &rhs) const {
   const auto f_lhs = static_cast<float>(*this);
   const auto f_rhs = static_cast<float>(rhs);
   return f_lhs < f_rhs;
 }
 
-bool Bfloat::operator>(const Bfloat &rhs) const { return rhs < *this; };
+bool Bfloat16::operator>(const Bfloat16 &rhs) const { return rhs < *this; };
 
-bool Bfloat::operator<=(const Bfloat &rhs) const { return !(*this > rhs); };
+bool Bfloat16::operator<=(const Bfloat16 &rhs) const { return !(*this > rhs); };
 
-bool Bfloat::operator>=(const Bfloat &rhs) const { return !(*this < rhs); };
+bool Bfloat16::operator>=(const Bfloat16 &rhs) const { return !(*this < rhs); };
 
-Bfloat operator+(Bfloat lhs, Bfloat rhs) {
-  return Bfloat(static_cast<float>(lhs) + static_cast<float>(rhs));
+Bfloat16 operator+(Bfloat16 lhs, Bfloat16 rhs) {
+  return Bfloat16(static_cast<float>(lhs) + static_cast<float>(rhs));
 };
 
-Bfloat operator-(Bfloat lhs, Bfloat rhs) {
-  return Bfloat(static_cast<float>(lhs) - static_cast<float>(rhs));
+Bfloat16 operator-(Bfloat16 lhs, Bfloat16 rhs) {
+  return Bfloat16(static_cast<float>(lhs) - static_cast<float>(rhs));
 };
 
-Bfloat operator*(Bfloat lhs, Bfloat rhs) {
-  return Bfloat(static_cast<float>(lhs) * static_cast<float>(rhs));
+Bfloat16 operator*(Bfloat16 lhs, Bfloat16 rhs) {
+  return Bfloat16(static_cast<float>(lhs) * static_cast<float>(rhs));
 };
 
-Bfloat operator/(Bfloat lhs, Bfloat rhs) {
-  return Bfloat(static_cast<float>(lhs) / static_cast<float>(rhs));
+Bfloat16 operator/(Bfloat16 lhs, Bfloat16 rhs) {
+  return Bfloat16(static_cast<float>(lhs) / static_cast<float>(rhs));
 };
 
-Bfloat Bfloat::operator+() const { return Bfloat::encode(data); }
+Bfloat16 Bfloat16::operator+() const { return Bfloat16::encode(data); }
 
-Bfloat Bfloat::operator-() const {
+Bfloat16 Bfloat16::operator-() const {
   const uint16_t sign_mask = 0x8000;
-  return Bfloat::encode(data ^ sign_mask);
+  return Bfloat16::encode(data ^ sign_mask);
 }
 
-bool Bfloat::nan_sensitive_eq(const Bfloat &rhs) const {
+bool Bfloat16::nan_sensitive_eq(const Bfloat16 &rhs) const {
   const int16_t exponent_mask = 0x7f80;
   const int16_t mantissa_mask = 0x007f;
   const bool this_nan =
@@ -110,40 +112,40 @@ bool Bfloat::nan_sensitive_eq(const Bfloat &rhs) const {
   return data == rhs.data;
 }
 
-std::string to_string(const Bfloat &value) {
+std::string to_string(const Bfloat16 &value) {
   std::stringstream ss;
   ss << std::noshowbase << "0x" << std::setfill('0') << std::setw(4) << std::hex
      << +value.decode();
   return ss.str();
 }
 
-std::ostream &operator<<(std::ostream &os, const Bfloat &value) {
+std::ostream &operator<<(std::ostream &os, const Bfloat16 &value) {
   os << to_string(value);
   return os;
 }
 
-bool isnan(Bfloat value) {
+bool isnan(Bfloat16 value) {
   const int16_t exponent_mask = 0x7f80;
   const int16_t mantissa_mask = 0x007f;
   return (value.decode() & exponent_mask) == exponent_mask &&
          (value.decode() & mantissa_mask) != 0;
 }
 
-Bfloat abs(Bfloat value) {
+Bfloat16 abs(Bfloat16 value) {
   const uint16_t sign_mask = 0x8000;
-  return Bfloat::encode(value.decode() & ~sign_mask);
+  return Bfloat16::encode(value.decode() & ~sign_mask);
 }
 
-Bfloat sqrt(Bfloat value) {
-  return Bfloat(std::sqrt(static_cast<float>(value)));
+Bfloat16 sqrt(Bfloat16 value) {
+  return Bfloat16(std::sqrt(static_cast<float>(value)));
 }
 
-Bfloat nextafter(const Bfloat from, const Bfloat to) {
+Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to) {
   return (from < to)
-             ? Bfloat(from + std::numeric_limits<Bfloat>::epsilon())
+             ? Bfloat16(from + std::numeric_limits<Bfloat16>::epsilon())
              : (from > to
-                    ? Bfloat(from - std::numeric_limits<Bfloat>::epsilon())
-                    : Bfloat(to));
+                    ? Bfloat16(from - std::numeric_limits<Bfloat16>::epsilon())
+                    : Bfloat16(to));
 }
 
 } // namespace cassian

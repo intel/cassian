@@ -14,7 +14,7 @@
 #include <random>
 #include <vector>
 
-#include <cassian/fp_types/bfloat.hpp>
+#include <cassian/fp_types/bfloat16.hpp>
 #include <cassian/fp_types/half.hpp>
 #include <cassian/fp_types/tfloat.hpp>
 #include <cassian/vector/vector.hpp>
@@ -159,13 +159,13 @@ double generate_value<double>(const double min, const double max,
                               const std::vector<double> &except);
 
 /**
- * Specialization for bfloat.
+ * Specialization for bfloat16.
  *
  * @overload
  */
 template <>
-bfloat generate_value<bfloat>(const bfloat min, const bfloat max,
-                              const int seed);
+bfloat16 generate_value<bfloat16>(const bfloat16 min, const bfloat16 max,
+                                  const int seed);
 
 /**
  * Specialization for tfloat.
