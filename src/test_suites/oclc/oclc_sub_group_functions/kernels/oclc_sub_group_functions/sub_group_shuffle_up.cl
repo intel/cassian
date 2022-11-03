@@ -20,6 +20,7 @@ kernel void test_kernel_sub_group_shuffle_up(global uint *shuffle_results) {
   DATA_TYPE expected_value = (DATA_TYPE)0xDEADBEEF;
   bool passed = false;
   new_value = intel_sub_group_shuffle_up(prev, cur, DELTA_SIZE);
+  shuffle_results[tid] = 0;
 
   int SHUFFLE_INDEX = (sub_group_local_id - DELTA_SIZE);
   if (SHUFFLE_INDEX >= 0 && SHUFFLE_INDEX < sub_group_size) {
@@ -29,6 +30,10 @@ kernel void test_kernel_sub_group_shuffle_up(global uint *shuffle_results) {
 
   } else {
     // out of range results. skip
+    shuffle_results[tid] = 1;
+  }
+
+  if (sub_group_any(shuffle_results[tid] == 1)) {
     shuffle_results[tid] = 1;
     return;
   }
