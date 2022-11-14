@@ -12,7 +12,7 @@ extern "C" _GENX_MAIN_ void test(svmptr_t inp [[type("svmptr_t")]],
   vector<int, 8> v;
   cm_svm_block_read(inp, v);
 
-  auto pred = !(v % 2);
+  vector<int, 8> pred = (v % 2) != 0;
 
   asm("(%2) not (M1, %3) %0 %1"
       : "=r"(v)

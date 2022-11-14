@@ -478,15 +478,17 @@ TEST_CASE("cm_asm_cr_src") {
   auto inp = ca::generate_vector<int>(8, 0);
 
   std::vector<int> out;
-  std::vector<int> ref;
-
-  std::transform(std::begin(inp), std::end(inp), std::back_inserter(ref),
-                 [](auto v) { return v & 1 ? 0 : ~v; });
+  std::vector<int> ref(inp.size());
 
   ca::test::input(inp);
-  ca::test::output(out, ref.size());
+  ca::test::output(out, inp.size());
 
   ca::test::kernel("test", source, FlagsBuilder(Language::cm).str());
+
+  // when pred is zero, result is undefined, so copying output for false pred
+  std::transform(std::begin(inp), std::end(inp), std::begin(out),
+                 std::begin(ref),
+                 [](auto a, auto b) { return (a % 2) ? ~a : b; });
 
   REQUIRE_THAT(out, Catch::Equals(ref));
 }
@@ -597,17 +599,17 @@ TEST_CASE("cm_asm_matrix", "[cm][asm]") {
 
   auto inp = ca::generate_vector<uint16_t>(8 * 8, 0);
   std::vector<uint16_t> out;
-  std::vector<uint16_t> ref;
-
-  auto mid = std::begin(inp) + inp.size() / 2;
-  auto it = std::transform(std::begin(inp), mid, std::back_inserter(ref),
-                           [](auto v) { return -v; });
-  std::fill_n(it, inp.size() / 2, 0);
 
   ca::test::input(inp);
-  ca::test::output(out, ref.size());
+  ca::test::output(out, inp.size());
 
   ca::test::kernel("test", source, FlagsBuilder(Language::cm).str());
+
+  // only low half is defined, the other is undef
+  auto ref = out;
+  auto mid = std::begin(inp) + inp.size() / 2;
+  auto it = std::transform(std::begin(inp), mid, std::begin(ref),
+                           [](auto v) { return -v; });
 
   REQUIRE_THAT(out, Catch::Equals(ref));
 }
