@@ -9,6 +9,7 @@
 #define CASSIAN_RUNTIME_IMAGE_PROPERTIES_HPP
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 
 /**
