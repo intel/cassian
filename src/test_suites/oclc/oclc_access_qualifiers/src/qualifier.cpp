@@ -50,8 +50,10 @@ TEST_CASE("Oclc access qualifiers", "") {
                          config.runtime(), config.program_type()));
     REQUIRE_NOTHROW(test(ca::AccessQualifier::read_write, read_only_qualifier,
                          config.runtime(), config.program_type()));
-    REQUIRE_THROWS(test(ca::AccessQualifier::write_only, read_only_qualifier,
-                        config.runtime(), config.program_type()));
+    if (config.runtime()->name() == "OCL") {
+      REQUIRE_THROWS(test(ca::AccessQualifier::write_only, read_only_qualifier,
+                          config.runtime(), config.program_type()));
+    }
   }
   SECTION("read_write qualifier") {
     requirements.feature(ca::Feature::read_write_images);
@@ -73,7 +75,9 @@ TEST_CASE("Oclc access qualifiers", "") {
                          config.runtime(), config.program_type()));
     REQUIRE_NOTHROW(test(ca::AccessQualifier::read_write, write_only_qualifier,
                          config.runtime(), config.program_type()));
-    REQUIRE_THROWS(test(ca::AccessQualifier::read_only, write_only_qualifier,
-                        config.runtime(), config.program_type()));
+    if (config.runtime()->name() == "OCL") {
+      REQUIRE_THROWS(test(ca::AccessQualifier::read_only, write_only_qualifier,
+                          config.runtime(), config.program_type()));
+    }
   }
 }
