@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -28,8 +28,11 @@ public:
   ~LevelZeroRuntime();
 
   void initialize() override;
-
-  Buffer create_buffer(size_t size, AccessQualifier access) override;
+  void initialize_subdevices() override;
+  int get_subdevice(int root_device, int subdevice) override;
+  int get_subdevice_count(int root_device) override;
+  Buffer create_buffer(int device, size_t size,
+                       AccessQualifier access) override;
   Image create_image(const ImageDimensions dim, const ImageType type,
                      const ImageFormat format, const ImageChannelOrder order,
                      AccessQualifier access) override;
@@ -76,23 +79,26 @@ public:
 protected:
   void set_kernel_argument(const Kernel &kernel, int argument_index,
                            size_t argument_size, const void *argument) override;
-  void run_kernel_common(const Kernel &kernel,
+  void run_kernel_common(int device, const Kernel &kernel,
                          std::array<size_t, 3> global_work_size,
                          const std::array<size_t, 3> *local_work_size) override;
 
 private:
   LevelZeroWrapper wrapper_;
 
-  ze_driver_handle_t driver_ = nullptr;
-  ze_device_handle_t device_ = nullptr;
-  ze_context_handle_t context_ = nullptr;
-  ze_command_queue_handle_t queue_ = nullptr;
+  ze_driver_handle_t driver_;
+  std::vector<ze_device_handle_t> devices_;
+  std::vector<ze_context_handle_t> contexts_;
+  std::vector<ze_command_queue_handle_t> queues_;
 
   std::unordered_map<std::uintptr_t, void *> buffers_;
   std::unordered_map<std::uintptr_t, ze_image_handle_t> images_;
   std::unordered_multimap<std::uintptr_t, ze_module_handle_t> modules_;
   std::unordered_map<std::uintptr_t, ze_kernel_handle_t> kernels_;
   std::unordered_map<std::uintptr_t, ze_sampler_handle_t> samplers_;
+
+  std::vector<int> subdevice_offsets_;
+  int root_devices_count_ = 0;
 
   uint32_t ze_get_device_id() const;
 

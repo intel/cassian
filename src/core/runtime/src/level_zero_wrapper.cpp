@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -105,5 +105,7 @@ LevelZeroWrapper::LevelZeroWrapper() {
       library_->get_function("zeImageViewCreateExp"));
   zeModuleGetNativeBinary = reinterpret_cast<ze_pfnModuleGetNativeBinary_t>(
       library_->get_function("zeModuleGetNativeBinary"));
+  zeDeviceGetSubDevices = reinterpret_cast<ze_pfnDeviceGetSubDevices_t>(
+      library_->get_function("zeDeviceGetSubDevices"));
 }
 } // namespace cassian

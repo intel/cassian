@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -32,11 +32,15 @@
 
 namespace cassian {
 LevelZeroRuntime::~LevelZeroRuntime() {
-  if (queue_ != nullptr) {
-    wrapper_.zeCommandQueueDestroy(queue_);
+  for (ze_command_queue_handle_t queue : queues_) {
+    if (queue != nullptr) {
+      wrapper_.zeCommandQueueDestroy(queue);
+    }
   }
-  if (context_ != nullptr) {
-    wrapper_.zeContextDestroy(context_);
+  for (ze_context_handle_t context : contexts_) {
+    if (context != nullptr) {
+      wrapper_.zeContextDestroy(context);
+    }
   }
 }
 
@@ -57,7 +61,8 @@ void LevelZeroRuntime::initialize() {
   }
 
   uint32_t num_devices = 1;
-  result = wrapper_.zeDeviceGet(driver_, &num_devices, &device_);
+  devices_.resize(1);
+  result = wrapper_.zeDeviceGet(driver_, &num_devices, &devices_[0]);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to get Level Zero device");
   }
@@ -67,7 +72,9 @@ void LevelZeroRuntime::initialize() {
   context_description.pNext = nullptr;
   context_description.flags = 0;
 
-  result = wrapper_.zeContextCreate(driver_, &context_description, &context_);
+  contexts_.resize(1);
+  result =
+      wrapper_.zeContextCreate(driver_, &context_description, &contexts_[0]);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero context");
   }
@@ -81,15 +88,102 @@ void LevelZeroRuntime::initialize() {
   command_queue_description.mode = ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS;
   command_queue_description.priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL;
 
-  result = wrapper_.zeCommandQueueCreate(context_, device_,
-                                         &command_queue_description, &queue_);
+  queues_.resize(1);
+  result = wrapper_.zeCommandQueueCreate(
+      contexts_[0], devices_[0], &command_queue_description, &queues_[0]);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero command queue");
   }
+  root_devices_count_ = devices_.size();
 }
 
-Buffer LevelZeroRuntime::create_buffer(const size_t size,
+void LevelZeroRuntime::initialize_subdevices() {
+  subdevice_offsets_.resize(devices_.size());
+
+  for (int i = 0; i < root_devices_count_; i++) {
+    ze_result_t result = ZE_RESULT_SUCCESS;
+    uint32_t num_subdevices = 0;
+
+    result =
+        wrapper_.zeDeviceGetSubDevices(devices_[i], &num_subdevices, nullptr);
+    if (result != ZE_RESULT_SUCCESS) {
+      throw RuntimeException("Failed to get number of possible divisions of "
+                             "device to Level Zero subdevices");
+    }
+
+    subdevice_offsets_[i] = devices_.size();
+    devices_.resize(devices_.size() + num_subdevices);
+    result = wrapper_.zeDeviceGetSubDevices(devices_[i], &num_subdevices,
+                                            &devices_[subdevice_offsets_[i]]);
+    if (result != ZE_RESULT_SUCCESS) {
+      throw RuntimeException("Failed to create Level Zero subdevices");
+    }
+
+    contexts_.resize(contexts_.size() + num_subdevices);
+    queues_.resize(queues_.size() + num_subdevices);
+
+    ze_context_desc_t context_description = {};
+    context_description.stype = ZE_STRUCTURE_TYPE_CONTEXT_DESC;
+    context_description.pNext = nullptr;
+    context_description.flags = 0;
+
+    ze_command_queue_desc_t command_queue_description = {};
+    command_queue_description.stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC;
+    command_queue_description.pNext = nullptr;
+    command_queue_description.ordinal = 0;
+    command_queue_description.index = 0;
+    command_queue_description.flags = 0;
+    command_queue_description.mode = ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS;
+    command_queue_description.priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL;
+
+    for (int j = 0; j < num_subdevices; j++) {
+      result = wrapper_.zeContextCreate(driver_, &context_description,
+                                        &contexts_[subdevice_offsets_[i] + j]);
+      if (result != ZE_RESULT_SUCCESS) {
+        throw RuntimeException("Failed to create Level Zero context for tile "
+                               "number: " +
+                               (subdevice_offsets_[i] + j));
+      }
+
+      result = wrapper_.zeCommandQueueCreate(
+          contexts_[subdevice_offsets_[i] + j],
+          devices_[subdevice_offsets_[i] + j], &command_queue_description,
+          &queues_[subdevice_offsets_[i] + j]);
+      if (result != ZE_RESULT_SUCCESS) {
+        throw RuntimeException("Failed to create Level Zero command queue for "
+                               "tile number: " +
+                               (subdevice_offsets_[i] + j));
+      }
+    }
+  }
+}
+
+int LevelZeroRuntime::get_subdevice(int root_device, int subdevice) {
+  int return_subdevice = -1;
+  if (get_subdevice_count(root_device) > 0) {
+    return_subdevice = subdevice_offsets_[root_device] + subdevice;
+  }
+  return return_subdevice;
+}
+
+int LevelZeroRuntime::get_subdevice_count(int root_device) {
+  int subdevice_count = 0;
+  if (root_device < root_devices_count_ - 1) {
+    subdevice_count =
+        subdevice_offsets_[root_device + 1] - subdevice_offsets_[root_device];
+  } else if (root_device == root_devices_count_ - 1) {
+    subdevice_count =
+        static_cast<int>(devices_.size()) - subdevice_offsets_[root_device];
+  }
+  return subdevice_count;
+}
+
+Buffer LevelZeroRuntime::create_buffer(int device, const size_t size,
                                        AccessQualifier /*access*/) {
+  if (device < 0 || device >= devices_.size()) {
+    throw RuntimeException("Invalid device");
+  }
+
   ze_device_mem_alloc_desc_t device_memory_allocation_description = {};
   device_memory_allocation_description.stype =
       ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC;
@@ -104,9 +198,12 @@ Buffer LevelZeroRuntime::create_buffer(const size_t size,
   host_memory_allocation_description.flags = 0;
 
   void *buffer = nullptr;
-  ze_result_t result = wrapper_.zeMemAllocShared(
-      context_, &device_memory_allocation_description,
-      &host_memory_allocation_description, size, 1, device_, &buffer);
+  ze_result_t result = ZE_RESULT_SUCCESS;
+
+  result = wrapper_.zeMemAllocShared(
+      contexts_[device], &device_memory_allocation_description,
+      &host_memory_allocation_description, size, 1, devices_[device], &buffer);
+
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to allocate Level Zero memory");
   }
@@ -114,7 +211,7 @@ Buffer LevelZeroRuntime::create_buffer(const size_t size,
   auto id = reinterpret_cast<std::uintptr_t>(buffer);
   buffers_[id] = buffer;
 
-  return {id, size};
+  return {device, id, size};
 }
 
 Image LevelZeroRuntime::create_image(const ImageDimensions dim,
@@ -136,8 +233,8 @@ Image LevelZeroRuntime::create_image(const ImageDimensions dim,
   image_description.format = ze_create_image_format(format, order);
 
   ze_image_handle_t image = nullptr;
-  ze_result_t result =
-      wrapper_.zeImageCreate(context_, device_, &image_description, &image);
+  ze_result_t result = wrapper_.zeImageCreate(contexts_[0], devices_[0],
+                                              &image_description, &image);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to allocate Level Zero memory");
   }
@@ -184,7 +281,8 @@ Image LevelZeroRuntime::get_image_plane(Image image, ImagePlane plane,
 
   ze_image_handle_t image_view = nullptr;
   ze_result_t result = wrapper_.zeImageViewCreateExp(
-      context_, device_, &image_description, images_[image.id], &image_view);
+      contexts_[0], devices_[0], &image_description, images_[image.id],
+      &image_view);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero image view");
   }
@@ -237,7 +335,7 @@ Sampler LevelZeroRuntime::create_sampler(SamplerCoordinates coordinates,
   }
 
   ze_sampler_handle_t sampler = nullptr;
-  ze_result_t result = wrapper_.zeSamplerCreate(context_, device_,
+  ze_result_t result = wrapper_.zeSamplerCreate(contexts_[0], devices_[0],
                                                 &sampler_description, &sampler);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero sampler");
@@ -258,7 +356,8 @@ void LevelZeroRuntime::read_buffer(const Buffer &buffer, void *data) {
 
   ze_command_list_handle_t command_list = nullptr;
   ze_result_t result = wrapper_.zeCommandListCreate(
-      context_, device_, &command_list_description, &command_list);
+      contexts_[buffer.device], devices_[buffer.device],
+      &command_list_description, &command_list);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero command list");
   }
@@ -275,13 +374,14 @@ void LevelZeroRuntime::read_buffer(const Buffer &buffer, void *data) {
     throw RuntimeException("Failed to close Level Zero command list");
   }
 
-  result = wrapper_.zeCommandQueueExecuteCommandLists(queue_, 1, &command_list,
-                                                      nullptr);
+  result = wrapper_.zeCommandQueueExecuteCommandLists(queues_[buffer.device], 1,
+                                                      &command_list, nullptr);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to execute Level Zero command list");
   }
 
-  result = wrapper_.zeCommandQueueSynchronize(queue_, UINT64_MAX);
+  result =
+      wrapper_.zeCommandQueueSynchronize(queues_[buffer.device], UINT64_MAX);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to synchronize Level Zero command queue");
   }
@@ -303,7 +403,7 @@ void LevelZeroRuntime::read_image(const Image &image, void *data) {
 
   ze_command_list_handle_t command_list = nullptr;
   ze_result_t result = wrapper_.zeCommandListCreate(
-      context_, device_, &command_list_description, &command_list);
+      contexts_[0], devices_[0], &command_list_description, &command_list);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero command list");
   }
@@ -324,12 +424,12 @@ void LevelZeroRuntime::read_image(const Image &image, void *data) {
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to close Level Zero command list");
   }
-  result = wrapper_.zeCommandQueueExecuteCommandLists(queue_, 1, &command_list,
-                                                      nullptr);
+  result = wrapper_.zeCommandQueueExecuteCommandLists(queues_[0], 1,
+                                                      &command_list, nullptr);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to execute Level Zero command list");
   }
-  result = wrapper_.zeCommandQueueSynchronize(queue_, UINT64_MAX);
+  result = wrapper_.zeCommandQueueSynchronize(queues_[0], UINT64_MAX);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to synchronize Level Zero command queue");
   }
@@ -351,7 +451,7 @@ void LevelZeroRuntime::write_buffer(const Buffer &buffer, const void *data) {
 
   ze_command_list_handle_t command_list = nullptr;
   ze_result_t result = wrapper_.zeCommandListCreate(
-      context_, device_, &command_list_description, &command_list);
+      contexts_[0], devices_[0], &command_list_description, &command_list);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero command list");
   }
@@ -368,13 +468,13 @@ void LevelZeroRuntime::write_buffer(const Buffer &buffer, const void *data) {
     throw RuntimeException("Failed to close Level Zero command list");
   }
 
-  result = wrapper_.zeCommandQueueExecuteCommandLists(queue_, 1, &command_list,
-                                                      nullptr);
+  result = wrapper_.zeCommandQueueExecuteCommandLists(queues_[0], 1,
+                                                      &command_list, nullptr);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to execute Level Zero command list");
   }
 
-  result = wrapper_.zeCommandQueueSynchronize(queue_, UINT64_MAX);
+  result = wrapper_.zeCommandQueueSynchronize(queues_[0], UINT64_MAX);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to synchronize Level Zero command queue");
   }
@@ -396,7 +496,7 @@ void LevelZeroRuntime::write_image(const Image &image, const void *data) {
 
   ze_command_list_handle_t command_list = nullptr;
   ze_result_t result = wrapper_.zeCommandListCreate(
-      context_, device_, &command_list_description, &command_list);
+      contexts_[0], devices_[0], &command_list_description, &command_list);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero command list");
   }
@@ -417,12 +517,12 @@ void LevelZeroRuntime::write_image(const Image &image, const void *data) {
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to close Level Zero command list");
   }
-  result = wrapper_.zeCommandQueueExecuteCommandLists(queue_, 1, &command_list,
-                                                      nullptr);
+  result = wrapper_.zeCommandQueueExecuteCommandLists(queues_[0], 1,
+                                                      &command_list, nullptr);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to execute Level Zero command list");
   }
-  result = wrapper_.zeCommandQueueSynchronize(queue_, UINT64_MAX);
+  result = wrapper_.zeCommandQueueSynchronize(queues_[0], UINT64_MAX);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to synchronize Level Zero command queue");
   }
@@ -437,7 +537,7 @@ void LevelZeroRuntime::release_buffer(const Buffer &buffer) {
   void *b = buffers_.at(buffer.id);
   buffers_.erase(buffer.id);
 
-  ze_result_t result = wrapper_.zeMemFree(context_, b);
+  ze_result_t result = wrapper_.zeMemFree(contexts_[0], b);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to free Level Zero memory");
   }
@@ -505,8 +605,9 @@ ze_module_handle_t LevelZeroRuntime::ze_create_module(
 
     module_description.pConstants = nullptr;
 
-    result = wrapper_.zeModuleCreate(context_, device_, &module_description,
-                                     &module, &build_log_handle);
+    result =
+        wrapper_.zeModuleCreate(contexts_[0], devices_[0], &module_description,
+                                &module, &build_log_handle);
     if (result != ZE_RESULT_SUCCESS) {
       if (!quiet) {
         const auto build_log = ze_get_module_build_log(build_log_handle);
@@ -689,8 +790,13 @@ void LevelZeroRuntime::set_kernel_argument(const Kernel &kernel,
 }
 
 void LevelZeroRuntime::run_kernel_common(
-    const Kernel &kernel, const std::array<size_t, 3> global_work_size,
+    int device, const Kernel &kernel,
+    const std::array<size_t, 3> global_work_size,
     const std::array<size_t, 3> *local_work_size) {
+  if (device < 0 || device >= devices_.size()) {
+    throw RuntimeException("Invalid device");
+  }
+
   ze_kernel_handle_t k = kernels_.at(kernel.id);
 
   ze_command_list_desc_t command_list_description = {};
@@ -700,8 +806,9 @@ void LevelZeroRuntime::run_kernel_common(
   command_list_description.flags = 0;
 
   ze_command_list_handle_t command_list = nullptr;
-  ze_result_t result = wrapper_.zeCommandListCreate(
-      context_, device_, &command_list_description, &command_list);
+  ze_result_t result =
+      wrapper_.zeCommandListCreate(contexts_[device], devices_[device],
+                                   &command_list_description, &command_list);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to create Level Zero command list");
   }
@@ -761,13 +868,13 @@ void LevelZeroRuntime::run_kernel_common(
     throw RuntimeException("Failed to close Level Zero command list");
   }
 
-  result = wrapper_.zeCommandQueueExecuteCommandLists(queue_, 1, &command_list,
-                                                      nullptr);
+  result = wrapper_.zeCommandQueueExecuteCommandLists(queues_[device], 1,
+                                                      &command_list, nullptr);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to execute Level Zero command list");
   }
 
-  result = wrapper_.zeCommandQueueSynchronize(queue_, UINT64_MAX);
+  result = wrapper_.zeCommandQueueSynchronize(queues_[device], UINT64_MAX);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to synchronize Level Zero command queue");
   }
@@ -792,8 +899,8 @@ void LevelZeroRuntime::release_kernel(const Kernel &kernel) {
 
   auto is_module_in_use = [&](auto p) {
     return std::find_if(std::begin(modules_), std::end(modules_),
-                        [id = p.first, m = p.second](auto p) {
-                          return p.first != id && p.second == m;
+                        [device = p.first, m = p.second](auto p) {
+                          return p.first != device && p.second == m;
                         }) != std::end(modules_);
   };
 
@@ -815,15 +922,15 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
   device_module_properties.stype = ZE_STRUCTURE_TYPE_DEVICE_MODULE_PROPERTIES;
   device_module_properties.pNext = nullptr;
 
-  ze_result_t result =
-      wrapper_.zeDeviceGetModuleProperties(device_, &device_module_properties);
+  ze_result_t result = wrapper_.zeDeviceGetModuleProperties(
+      devices_[0], &device_module_properties);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to get Level Zero kernel properties");
   }
 
   ze_device_image_properties_t device_image_properties = {};
-  result =
-      wrapper_.zeDeviceGetImageProperties(device_, &device_image_properties);
+  result = wrapper_.zeDeviceGetImageProperties(devices_[0],
+                                               &device_image_properties);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to get Level Zero image properties");
   }
@@ -926,7 +1033,7 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
   device_properties.stype = ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES;
   device_properties.pNext = nullptr;
   ze_result_t result =
-      wrapper_.zeDeviceGetProperties(device_, &device_properties);
+      wrapper_.zeDeviceGetProperties(devices_[0], &device_properties);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to get Level Zero device properties");
   }
@@ -934,7 +1041,7 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
   ze_device_compute_properties_t device_compute_properties = {};
   device_compute_properties.stype = ZE_STRUCTURE_TYPE_DEVICE_COMPUTE_PROPERTIES;
   device_compute_properties.pNext = nullptr;
-  result = wrapper_.zeDeviceGetComputeProperties(device_,
+  result = wrapper_.zeDeviceGetComputeProperties(devices_[0],
                                                  &device_compute_properties);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException(
@@ -944,8 +1051,8 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
   ze_device_image_properties_t device_image_properties = {};
   device_image_properties.stype = ZE_STRUCTURE_TYPE_DEVICE_IMAGE_PROPERTIES;
   device_image_properties.pNext = nullptr;
-  result =
-      wrapper_.zeDeviceGetImageProperties(device_, &device_image_properties);
+  result = wrapper_.zeDeviceGetImageProperties(devices_[0],
+                                               &device_image_properties);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to get Level Zero device image properties");
   }
@@ -958,8 +1065,8 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
   ze_device_module_properties_t device_module_properties = {};
   device_module_properties.stype = ZE_STRUCTURE_TYPE_MODULE_PROPERTIES;
   device_module_properties.pNext = &float_atomic_ext_properties;
-  result =
-      wrapper_.zeDeviceGetModuleProperties(device_, &device_module_properties);
+  result = wrapper_.zeDeviceGetModuleProperties(devices_[0],
+                                                &device_module_properties);
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to get Level Zero device module properties");
   }

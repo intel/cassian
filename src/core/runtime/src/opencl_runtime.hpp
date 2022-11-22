@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -32,9 +32,13 @@ namespace cassian {
 class OpenCLRuntime : public Runtime {
 public:
   void initialize() override;
+  void initialize_subdevices() override;
   ~OpenCLRuntime();
 
-  Buffer create_buffer(size_t size, AccessQualifier access) override;
+  int get_subdevice(int root_device, int subdevice) override;
+  int get_subdevice_count(int root_device) override;
+  Buffer create_buffer(int device, size_t size,
+                       AccessQualifier access) override;
   Image create_image(const ImageDimensions dim, const ImageType type,
                      const ImageFormat format, const ImageChannelOrder order,
                      AccessQualifier access) override;
@@ -80,16 +84,16 @@ public:
 protected:
   void set_kernel_argument(const Kernel &kernel, int argument_index,
                            size_t argument_size, const void *argument) override;
-  void run_kernel_common(const Kernel &kernel,
+  void run_kernel_common(int device, const Kernel &kernel,
                          std::array<size_t, 3> global_work_size,
                          const std::array<size_t, 3> *local_work_size) override;
 
 private:
   OpenCLWrapper wrapper_;
 
-  cl_device_id device_ = nullptr;
-  cl_context context_ = nullptr;
-  cl_command_queue queue_ = nullptr;
+  std::vector<cl_device_id> devices_;
+  std::vector<cl_context> contexts_;
+  std::vector<cl_command_queue> queues_;
 
   std::unordered_map<std::uintptr_t, cl_mem> buffers_;
   std::unordered_map<std::uintptr_t, cl_mem> images_;
@@ -97,6 +101,9 @@ private:
   std::unordered_map<std::uintptr_t, cl_sampler> samplers_;
 
   std::unordered_set<std::string> extensions_;
+
+  std::vector<int> subdevice_offsets_;
+  int root_devices_count_ = 0;
 
   template <class T>
   std::vector<T> cl_get_device_property(cl_device_id device,

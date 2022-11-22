@@ -15,6 +15,9 @@
 
 namespace cassian {
 
+Buffer::Buffer(int device, std::uintptr_t id, size_t size)
+    : device(device), id(id), size(size) {}
+
 Buffer::Buffer(std::uintptr_t id, size_t size) : id(id), size(size) {}
 
 Image::Image(std::uintptr_t id, ImageDimensions dim) : id(id), dim(dim) {}

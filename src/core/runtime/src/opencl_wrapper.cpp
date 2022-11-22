@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -80,5 +80,7 @@ OpenCLWrapper::OpenCLWrapper() {
       library_->get_function("clLinkProgram"));
   clGetProgramInfo = reinterpret_cast<cl_api_clGetProgramInfo>(
       library_->get_function("clGetProgramInfo"));
+  clCreateSubDevices = reinterpret_cast<cl_api_clCreateSubDevices>(
+      library_->get_function("clCreateSubDevices"));
 }
 } // namespace cassian

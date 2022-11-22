@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -14,8 +14,13 @@
 namespace cassian {
 
 void DummyRuntime::initialize() {}
+void DummyRuntime::initialize_subdevices() {}
+int DummyRuntime::get_subdevice(int /*root_device*/, int /*subdevice*/) {
+  return 0;
+}
+int DummyRuntime::get_subdevice_count(int /*root_device*/) { return 0; }
 
-Buffer DummyRuntime::create_buffer(const size_t /*size*/,
+Buffer DummyRuntime::create_buffer(int /*device*/, const size_t /*size*/,
                                    AccessQualifier /*access*/) {
   return Buffer();
 }
@@ -99,7 +104,8 @@ int DummyRuntime::get_device_property(const DeviceProperty /*property*/) const {
 std::string DummyRuntime::name() const { return "Dummy"; }
 
 void DummyRuntime::run_kernel_common(
-    const Kernel & /*kernel*/, std::array<size_t, 3> /*global_work_size*/,
+    int /*device*/, const Kernel & /*kernel*/,
+    std::array<size_t, 3> /*global_work_size*/,
     const std::array<size_t, 3> * /*local_work_size*/) {}
 
 std::vector<uint8_t> DummyRuntime::create_program_and_get_native_binary(

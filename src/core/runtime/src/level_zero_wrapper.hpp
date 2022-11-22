@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -65,6 +65,7 @@ public:
   ze_pfnModuleBuildLogDestroy_t zeModuleBuildLogDestroy = nullptr;
   ze_pfnImageViewCreateExp_t zeImageViewCreateExp = nullptr;
   ze_pfnModuleGetNativeBinary_t zeModuleGetNativeBinary = nullptr;
+  ze_pfnDeviceGetSubDevices_t zeDeviceGetSubDevices = nullptr;
 
 private:
   std::unique_ptr<Library> library_;

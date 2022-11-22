@@ -1,5 +1,5 @@
-/*
- * Copyright (C) 2021-2022 Intel Corporation
+﻿/*
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -34,11 +34,15 @@
 
 namespace cassian {
 OpenCLRuntime::~OpenCLRuntime() {
-  if (queue_ != nullptr) {
-    wrapper_.clReleaseCommandQueue(queue_);
+  for (cl_command_queue queue : queues_) {
+    if (queue != nullptr) {
+      wrapper_.clReleaseCommandQueue(queue);
+    }
   }
-  if (context_ != nullptr) {
-    wrapper_.clReleaseContext(context_);
+  for (cl_context context : contexts_) {
+    if (context != nullptr) {
+      wrapper_.clReleaseContext(context);
+    }
   }
 }
 void OpenCLRuntime::initialize() {
@@ -76,16 +80,16 @@ void OpenCLRuntime::initialize() {
     throw RuntimeException("Failed to get OpenCL device ids");
   }
 
-  device_ = devices[0];
+  devices_.push_back(devices[0]);
 
-  context_ =
-      wrapper_.clCreateContext(nullptr, 1, &device_, nullptr, nullptr, &result);
+  contexts_.push_back(wrapper_.clCreateContext(nullptr, 1, &devices_[0],
+                                               nullptr, nullptr, &result));
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL context");
   }
 
-  queue_ = wrapper_.clCreateCommandQueueWithProperties(context_, device_,
-                                                       nullptr, &result);
+  queues_.push_back(wrapper_.clCreateCommandQueueWithProperties(
+      contexts_[0], devices_[0], nullptr, &result));
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL command queue");
   }
@@ -93,15 +97,15 @@ void OpenCLRuntime::initialize() {
   std::string extension_string;
 
   size_t size = 0;
-  result = wrapper_.clGetDeviceInfo(device_, CL_DEVICE_EXTENSIONS, 0, nullptr,
-                                    &size);
+  result = wrapper_.clGetDeviceInfo(devices_[0], CL_DEVICE_EXTENSIONS, 0,
+                                    nullptr, &size);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to get size of OpenCL device info");
   }
 
   if (size > 0) {
     extension_string = std::string(size - 1, 0);
-    result = wrapper_.clGetDeviceInfo(device_, CL_DEVICE_EXTENSIONS, size,
+    result = wrapper_.clGetDeviceInfo(devices_[0], CL_DEVICE_EXTENSIONS, size,
                                       &extension_string[0], nullptr);
     if (result != CL_SUCCESS) {
       throw RuntimeException("Failed to get OpenCL device info");
@@ -111,13 +115,94 @@ void OpenCLRuntime::initialize() {
   std::istringstream iss(extension_string);
   extensions_.insert(std::istream_iterator<std::string>(iss),
                      std::istream_iterator<std::string>());
+  root_devices_count_ = devices_.size();
 }
 
-Buffer OpenCLRuntime::create_buffer(const size_t size, AccessQualifier access) {
+void OpenCLRuntime::initialize_subdevices() {
+  const cl_device_partition_property partition_properties[] = {
+      CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN, CL_DEVICE_AFFINITY_DOMAIN_NUMA,
+      0};
+
+  subdevice_offsets_.resize(devices_.size());
+
+  for (int i = 0; i < root_devices_count_; i++) {
+    cl_int result = CL_SUCCESS;
+    cl_uint num_subdevices = 0;
+
+    result = wrapper_.clCreateSubDevices(devices_[i], partition_properties, 0,
+                                         nullptr, &num_subdevices);
+    if (result != CL_SUCCESS) {
+      throw RuntimeException("Failed to get number of OpenCL subdevices");
+    }
+
+    subdevice_offsets_[i] = devices_.size();
+    devices_.resize(devices_.size() + num_subdevices);
+    result = wrapper_.clCreateSubDevices(
+        devices_[i], partition_properties, num_subdevices,
+        &devices_[subdevice_offsets_[i]], nullptr);
+    if (result != CL_SUCCESS) {
+      throw RuntimeException("Failed to create OpenCL subdevices");
+    }
+
+    contexts_.resize(contexts_.size() + num_subdevices);
+    queues_.resize(queues_.size() + num_subdevices);
+
+    for (int j = 0; j < num_subdevices; j++) {
+      contexts_[subdevice_offsets_[i] + j] = wrapper_.clCreateContext(
+          nullptr, 1, &devices_[subdevice_offsets_[i] + j], nullptr, nullptr,
+          &result);
+      if (result != CL_SUCCESS) {
+        throw RuntimeException("Failed to create OpenCL context for device "
+                               "number: " +
+                               (subdevice_offsets_[i] + j));
+      }
+
+      queues_[subdevice_offsets_[i] + j] =
+          wrapper_.clCreateCommandQueueWithProperties(
+              contexts_[subdevice_offsets_[i] + j],
+              devices_[subdevice_offsets_[i] + j], nullptr, &result);
+      if (result != CL_SUCCESS) {
+        throw RuntimeException(
+            "Failed to create OpenCL command queue for device "
+            "number: " +
+            (subdevice_offsets_[i] + j));
+      }
+    }
+  }
+}
+
+int OpenCLRuntime::get_subdevice(int root_device, int subdevice) {
+  int return_subdevice = -1;
+  if (get_subdevice_count(root_device) > 0) {
+    return_subdevice = subdevice_offsets_[root_device] + subdevice;
+  }
+  return return_subdevice;
+}
+
+int OpenCLRuntime::get_subdevice_count(int root_device) {
+  int subdevice_count = 0;
+  if (root_device < root_devices_count_ - 1) {
+    subdevice_count =
+        subdevice_offsets_[root_device + 1] - subdevice_offsets_[root_device];
+  } else if (root_device == root_devices_count_ - 1) {
+    subdevice_count =
+        static_cast<int>(devices_.size()) - subdevice_offsets_[root_device];
+  }
+  return subdevice_count;
+}
+
+Buffer OpenCLRuntime::create_buffer(int device, const size_t size,
+                                    AccessQualifier access) {
+  if (device < 0 || device >= devices_.size()) {
+    throw RuntimeException("Invalid device");
+  }
+
   cl_int result = CL_SUCCESS;
   const cl_mem_flags flags = append_access_qualifier_flags(0, access);
+
   cl_mem buffer =
-      wrapper_.clCreateBuffer(context_, flags, size, nullptr, &result);
+      wrapper_.clCreateBuffer(contexts_[device], flags, size, nullptr, &result);
+
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL buffer");
   }
@@ -125,7 +210,7 @@ Buffer OpenCLRuntime::create_buffer(const size_t size, AccessQualifier access) {
   auto id = reinterpret_cast<std::uintptr_t>(buffer);
   buffers_[id] = buffer;
 
-  return {id, size};
+  return {device, id, size};
 }
 
 Image OpenCLRuntime::create_image(const ImageDimensions dim,
@@ -155,8 +240,8 @@ Image OpenCLRuntime::create_image(const ImageDimensions dim,
           : 0;
   flags = append_access_qualifier_flags(flags, access);
 
-  cl_mem image = wrapper_.clCreateImage(context_, flags, &image_format, &desc,
-                                        nullptr, &result);
+  cl_mem image = wrapper_.clCreateImage(contexts_[0], flags, &image_format,
+                                        &desc, nullptr, &result);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL image");
   }
@@ -199,7 +284,7 @@ Image OpenCLRuntime::get_image_plane(Image image, ImagePlane plane,
   }
 
   cl_mem_flags flags = append_access_qualifier_flags(0, access);
-  cl_mem image_view = wrapper_.clCreateImage(context_, flags, &image_format,
+  cl_mem image_view = wrapper_.clCreateImage(contexts_[0], flags, &image_format,
                                              &desc, nullptr, &result);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL image");
@@ -255,7 +340,7 @@ Sampler OpenCLRuntime::create_sampler(SamplerCoordinates coordinates,
   }
 
   cl_sampler sampler =
-      wrapper_.clCreateSampler(context_, coord, addr, filter, &result);
+      wrapper_.clCreateSampler(contexts_[0], coord, addr, filter, &result);
 
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to create OpenCL sampler");
@@ -268,8 +353,8 @@ Sampler OpenCLRuntime::create_sampler(SamplerCoordinates coordinates,
 
 void OpenCLRuntime::read_buffer(const Buffer &buffer, void *data) {
   cl_mem b = buffers_.at(buffer.id);
-  cl_int result = wrapper_.clEnqueueReadBuffer(queue_, b, 1, 0, buffer.size,
-                                               data, 0, nullptr, nullptr);
+  cl_int result = wrapper_.clEnqueueReadBuffer(
+      queues_[buffer.device], b, 1, 0, buffer.size, data, 0, nullptr, nullptr);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to read OpenCL buffer");
   }
@@ -279,8 +364,9 @@ void OpenCLRuntime::read_image(const Image &image, void *data) {
   cl_mem src_image = images_.at(image.id);
   const size_t region[] = {image.dim.width, image.dim.height, image.dim.depth};
   const size_t origin[] = {0, 0, 0};
-  cl_int result = wrapper_.clEnqueueReadImage(
-      queue_, src_image, 1, origin, region, 0, 0, data, 0, nullptr, nullptr);
+  cl_int result =
+      wrapper_.clEnqueueReadImage(queues_[0], src_image, 1, origin, region, 0,
+                                  0, data, 0, nullptr, nullptr);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to read OpenCL image");
   }
@@ -288,8 +374,8 @@ void OpenCLRuntime::read_image(const Image &image, void *data) {
 
 void OpenCLRuntime::write_buffer(const Buffer &buffer, const void *data) {
   cl_mem b = buffers_.at(buffer.id);
-  cl_int result = wrapper_.clEnqueueWriteBuffer(queue_, b, 1, 0, buffer.size,
-                                                data, 0, nullptr, nullptr);
+  cl_int result = wrapper_.clEnqueueWriteBuffer(
+      queues_[0], b, 1, 0, buffer.size, data, 0, nullptr, nullptr);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to write to OpenCL buffer");
   }
@@ -299,8 +385,8 @@ void OpenCLRuntime::write_image(const Image &image, const void *data) {
   cl_mem i = images_.at(image.id);
   const size_t region[] = {image.dim.width, image.dim.height, image.dim.depth};
   const size_t origin[] = {0, 0, 0};
-  cl_int result = wrapper_.clEnqueueWriteImage(queue_, i, 1, origin, region, 0,
-                                               0, data, 0, nullptr, nullptr);
+  cl_int result = wrapper_.clEnqueueWriteImage(queues_[0], i, 1, origin, region,
+                                               0, 0, data, 0, nullptr, nullptr);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to write to OpenCL image");
   }
@@ -352,8 +438,8 @@ Kernel OpenCLRuntime::create_kernel(
     }
   }
 
-  result =
-      wrapper_.clBuildProgram(program, 1, &device_, options, nullptr, nullptr);
+  result = wrapper_.clBuildProgram(program, 1, &devices_[0], options, nullptr,
+                                   nullptr);
   if (result != CL_SUCCESS) {
     if (!quiet) {
       const auto build_log = cl_get_program_build_info(program);
@@ -391,7 +477,7 @@ Kernel OpenCLRuntime::create_kernel_from_multiple_programs(
     const auto &compiler_options = program_desc.compiler_options;
     program = cl_create_program(program_desc.source, compiler_options,
                                 program_desc.program_type, quiet);
-    result = wrapper_.clCompileProgram(program, 1, &device_,
+    result = wrapper_.clCompileProgram(program, 1, &devices_[0],
                                        compiler_options.c_str(), 0, nullptr,
                                        nullptr, nullptr, nullptr);
     if (result != CL_SUCCESS) {
@@ -404,8 +490,9 @@ Kernel OpenCLRuntime::create_kernel_from_multiple_programs(
     compiled_programs.push_back(program);
   }
   program = wrapper_.clLinkProgram(
-      context_, 1, &device_, linker_options.c_str(), compiled_programs.size(),
-      compiled_programs.data(), nullptr, nullptr, &result);
+      contexts_[0], 1, &devices_[0], linker_options.c_str(),
+      compiled_programs.size(), compiled_programs.data(), nullptr, nullptr,
+      &result);
   if (result != CL_SUCCESS) {
     if (!quiet) {
       const auto build_log = cl_get_program_build_info(program);
@@ -468,14 +555,20 @@ void OpenCLRuntime::set_kernel_argument(const Kernel &kernel,
 }
 
 void OpenCLRuntime::run_kernel_common(
-    const Kernel &kernel, const std::array<size_t, 3> global_work_size,
+    int device, const Kernel &kernel,
+    const std::array<size_t, 3> global_work_size,
     const std::array<size_t, 3> *local_work_size) {
+  if (device < 0 || device >= devices_.size()) {
+    throw RuntimeException("Invalid device");
+  }
+
   cl_kernel k = kernels_.at(kernel.id);
   cl_uint work_dim = (global_work_size[1] > 1U) ? 2 : 1U;
   work_dim = (global_work_size[2] > 1U) ? 3 : work_dim;
 
   std::array<size_t, 3> global_work_offset = {0, 0, 0};
   std::array<size_t, 3> local_ws = {1, 1, 1};
+
   if (local_work_size != nullptr) {
     local_ws = *local_work_size;
   } else {
@@ -495,13 +588,13 @@ void OpenCLRuntime::run_kernel_common(
                    << to_string(global_work_size)
                    << " and local_work_size = " << to_string(local_ws) << '\n';
   cl_int result = wrapper_.clEnqueueNDRangeKernel(
-      queue_, k, work_dim, global_work_offset.data(), global_work_size.data(),
-      local_ws.data(), 0, nullptr, nullptr);
+      queues_[device], k, work_dim, global_work_offset.data(),
+      global_work_size.data(), local_ws.data(), 0, nullptr, nullptr);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to enqueue OpenCL ND range kernel");
   }
 
-  result = wrapper_.clFinish(queue_);
+  result = wrapper_.clFinish(queues_[device]);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to finish OpenCL queue");
   }
@@ -526,8 +619,8 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::read_write_images: {
     cl_uint read_write_image = 0;
     auto result = wrapper_.clGetDeviceInfo(
-        device_, CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS, sizeof(read_write_image),
-        &read_write_image, nullptr);
+        devices_[0], CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS,
+        sizeof(read_write_image), &read_write_image, nullptr);
     if (result != CL_SUCCESS) {
       throw RuntimeException("Failed to get OpenCL device info");
     }
@@ -623,32 +716,32 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
   switch (property) {
   case DeviceProperty::max_group_size_x:
     return static_cast<int>(cl_get_device_property_at_index<size_t>(
-        device_, CL_DEVICE_MAX_WORK_ITEM_SIZES, 0, 1));
+        devices_[0], CL_DEVICE_MAX_WORK_ITEM_SIZES, 0, 1));
   case DeviceProperty::max_group_size_y:
     return static_cast<int>(cl_get_device_property_at_index<size_t>(
-        device_, CL_DEVICE_MAX_WORK_ITEM_SIZES, 1, 1));
+        devices_[0], CL_DEVICE_MAX_WORK_ITEM_SIZES, 1, 1));
   case DeviceProperty::max_group_size_z:
     return static_cast<int>(cl_get_device_property_at_index<size_t>(
-        device_, CL_DEVICE_MAX_WORK_ITEM_SIZES, 2, 1));
+        devices_[0], CL_DEVICE_MAX_WORK_ITEM_SIZES, 2, 1));
   case DeviceProperty::max_total_group_size:
     return static_cast<int>(cl_get_device_property_at_index<size_t>(
-        device_, CL_DEVICE_MAX_WORK_GROUP_SIZE, 0));
+        devices_[0], CL_DEVICE_MAX_WORK_GROUP_SIZE, 0));
   case DeviceProperty::max_num_samplers:
     return static_cast<int>(cl_get_device_property_at_index<cl_uint>(
-        device_, CL_DEVICE_MAX_SAMPLERS, 0));
+        devices_[0], CL_DEVICE_MAX_SAMPLERS, 0));
   case DeviceProperty::image:
   case DeviceProperty::image2d:
     return static_cast<int>(cl_get_device_property_at_index<cl_bool>(
-        device_, CL_DEVICE_IMAGE_SUPPORT, 0));
+        devices_[0], CL_DEVICE_IMAGE_SUPPORT, 0));
   case DeviceProperty::max_local_memory_size:
     return static_cast<int>(cl_get_device_property_at_index<cl_ulong>(
-        device_, CL_DEVICE_LOCAL_MEM_SIZE, 0));
+        devices_[0], CL_DEVICE_LOCAL_MEM_SIZE, 0));
   case DeviceProperty::device_id:
     // No standard way to detect device ID. Using Intel extension
 #if defined(cl_intel_device_attribute_query)
     if (extensions_.count("cl_intel_device_attribute_query") != 0U) {
       return static_cast<int>(cl_get_device_property_at_index<cl_uint>(
-          device_, CL_DEVICE_ID_INTEL, 0));
+          devices_[0], CL_DEVICE_ID_INTEL, 0));
     }
 #endif // defined(cl_intel_device_attribute_query)
     return 0;
@@ -658,7 +751,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     // OpenCL has no way to detect SIMD width. Trying Intel extension
     if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
       auto sizes = cl_get_device_property<size_t>(
-          device_, CL_DEVICE_SUB_GROUP_SIZES_INTEL);
+          devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
       return static_cast<int>(
           *std::min_element(std::begin(sizes), std::end(sizes)));
     }
@@ -669,7 +762,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     if (extensions_.count("cl_ext_float_atomics") != 0U) {
       return static_cast<int>(
           cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
-              device_, CL_DEVICE_SINGLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
+              devices_[0], CL_DEVICE_SINGLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
     }
     return 0;
   }
@@ -677,7 +770,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     if (extensions_.count("cl_ext_float_atomics") != 0U) {
       return static_cast<int>(
           cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
-              device_, CL_DEVICE_DOUBLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
+              devices_[0], CL_DEVICE_DOUBLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
     }
     return 0;
   }
@@ -685,7 +778,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     if (extensions_.count("cl_ext_float_atomics") != 0U) {
       return static_cast<int>(
           cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
-              device_, CL_DEVICE_HALF_FP_ATOMIC_CAPABILITIES_EXT, 0));
+              devices_[0], CL_DEVICE_HALF_FP_ATOMIC_CAPABILITIES_EXT, 0));
     }
     return 0;
   }
@@ -700,13 +793,13 @@ std::string
 OpenCLRuntime::cl_get_program_build_info(const cl_program &program) const {
   size_t log_size = 0;
   cl_int result = wrapper_.clGetProgramBuildInfo(
-      program, device_, CL_PROGRAM_BUILD_LOG, 0, nullptr, &log_size);
+      program, devices_[0], CL_PROGRAM_BUILD_LOG, 0, nullptr, &log_size);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to get OpenCL build log size");
   }
   std::vector<char> log_vector(log_size);
   result = wrapper_.clGetProgramBuildInfo(
-      program, device_, CL_PROGRAM_BUILD_LOG, log_vector.size(),
+      program, devices_[0], CL_PROGRAM_BUILD_LOG, log_vector.size(),
       log_vector.data(), nullptr);
   if (result != CL_SUCCESS) {
     throw RuntimeException("Failed to get OpenCL build log");
@@ -723,7 +816,7 @@ cl_program OpenCLRuntime::cl_create_program(const std::string &source,
   cl_int result = CL_SUCCESS;
   if (program_type == "source") {
     const char *c_source = source.c_str();
-    program = wrapper_.clCreateProgramWithSource(context_, 1, &c_source,
+    program = wrapper_.clCreateProgramWithSource(contexts_[0], 1, &c_source,
                                                  nullptr, &result);
     if (result != CL_SUCCESS) {
       throw RuntimeException("Failed to create OpenCL program from source");
@@ -738,7 +831,7 @@ cl_program OpenCLRuntime::cl_create_program(const std::string &source,
         device_id, device_revision, source, compile_options, quiet);
 
     program = wrapper_.clCreateProgramWithIL(
-        context_, spv.data(), sizeof(uint8_t) * spv.size(), &result);
+        contexts_[0], spv.data(), sizeof(uint8_t) * spv.size(), &result);
     if (result != CL_SUCCESS) {
       throw RuntimeException("Failed to create OpenCL program from IL");
     }
@@ -766,8 +859,8 @@ std::vector<uint8_t> OpenCLRuntime::create_program_and_get_native_binary(
     }
   }
   const char *options = final_build_options.c_str();
-  result =
-      wrapper_.clBuildProgram(program, 1, &device_, options, nullptr, nullptr);
+  result = wrapper_.clBuildProgram(program, 1, &devices_[0], options, nullptr,
+                                   nullptr);
   if (result != CL_SUCCESS) {
     if (!quiet) {
       const auto build_log = cl_get_program_build_info(program);
@@ -802,7 +895,7 @@ std::vector<uint8_t> OpenCLRuntime::create_program_and_get_native_binary(
 
   std::vector<cl_device_id>::iterator it;
   it = std::find(devices_associated_with_program.begin(),
-                 devices_associated_with_program.end(), device_);
+                 devices_associated_with_program.end(), devices_[0]);
   if (it == devices_associated_with_program.end()) {
     throw RuntimeException(
         "Given device not associated with compiled program.");

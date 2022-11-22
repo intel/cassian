@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -44,6 +44,15 @@ struct Buffer {
   Buffer() = default;
 
   /**
+   * Construct a buffer with a given device, id and size.
+   *
+   * @param[in] device device.
+   * @param[in] id buffer id.
+   * @param[in] size buffer size.
+   */
+  Buffer(int device, std::uintptr_t id, size_t size);
+
+  /**
    * Construct a buffer with a given id and size.
    *
    * @param[in] id buffer id.
@@ -75,6 +84,11 @@ struct Buffer {
    * Move assignment operator.
    */
   Buffer &operator=(Buffer &&) = default;
+
+  /**
+   * Device on which the buffer resides
+   */
+  int device = 0;
 
   /**
    * API-specifc id for tracking purposes.
@@ -324,6 +338,29 @@ public:
   virtual void initialize() = 0;
 
   /**
+   * Initialize subdevices for all devices on runtime.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  virtual void initialize_subdevices() = 0;
+
+  /**
+   * Get subdevice.
+   * @returns subdevice or -1 if no such subdevice.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  virtual int get_subdevice(int root_device, int subdevice) = 0;
+
+  /**
+   * Get subdevice count.
+   * @returns subdevice count of a single device.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  virtual int get_subdevice_count(int root_device) = 0;
+
+  /**
    * Create buffer.
    *
    * @param[in] size size in bytes.
@@ -332,8 +369,23 @@ public:
    * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
    * error.
    */
+  Buffer create_buffer(size_t size,
+                       AccessQualifier access = AccessQualifier::read_write) {
+    return create_buffer(0, size, access);
+  }
+
+  /**
+   * Create buffer for subdevice context.
+   *
+   * @param[in] size size in bytes.
+   * @param[in] subdevice_index index of subdevice
+   * @param[in] access access qualifier
+   * @returns Buffer object.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
   virtual Buffer
-  create_buffer(size_t size,
+  create_buffer(int device, size_t size,
                 AccessQualifier access = AccessQualifier::read_write) = 0;
 
   /**
@@ -615,7 +667,7 @@ public:
    */
   void run_kernel(const Kernel &kernel,
                   const std::array<size_t, 3> global_work_size) {
-    run_kernel_common(kernel, global_work_size);
+    run_kernel_common(0, kernel, global_work_size);
   }
 
   /**
@@ -628,7 +680,7 @@ public:
    */
   void run_kernel(const Kernel &kernel,
                   const std::array<size_t, 2> global_work_size) {
-    run_kernel_common(kernel, {global_work_size[0], global_work_size[1], 1});
+    run_kernel_common(0, kernel, {global_work_size[0], global_work_size[1], 1});
   }
 
   /**
@@ -638,7 +690,7 @@ public:
    */
   void run_kernel(const Kernel &kernel,
                   const std::array<size_t, 1> global_work_size) {
-    run_kernel_common(kernel, {global_work_size[0], 1, 1});
+    run_kernel_common(0, kernel, {global_work_size[0], 1, 1});
   }
 
   /**
@@ -647,7 +699,7 @@ public:
    * @overload
    */
   void run_kernel(const Kernel &kernel, const size_t global_work_size) {
-    run_kernel_common(kernel, {global_work_size, 1, 1});
+    run_kernel_common(0, kernel, {global_work_size, 1, 1});
   }
 
   /**
@@ -661,7 +713,7 @@ public:
    */
   void run_kernel(const Kernel &kernel, std::array<size_t, 3> global_work_size,
                   std::array<size_t, 3> local_work_size) {
-    run_kernel_common(kernel, global_work_size, &local_work_size);
+    run_kernel_common(0, kernel, global_work_size, &local_work_size);
   };
 
   /**
@@ -677,7 +729,7 @@ public:
                   const std::array<size_t, 2> local_work_size) {
     std::array<size_t, 3> local_ws = {local_work_size[0], local_work_size[1],
                                       1};
-    run_kernel_common(kernel, {global_work_size[0], global_work_size[1], 1},
+    run_kernel_common(0, kernel, {global_work_size[0], global_work_size[1], 1},
                       &local_ws);
   };
 
@@ -690,7 +742,7 @@ public:
                   const std::array<size_t, 1> global_work_size,
                   const std::array<size_t, 1> local_work_size) {
     std::array<size_t, 3> local_ws = {local_work_size[0], 1, 1};
-    run_kernel_common(kernel, {global_work_size[0], 1, 1}, &local_ws);
+    run_kernel_common(0, kernel, {global_work_size[0], 1, 1}, &local_ws);
   }
 
   /**
@@ -701,7 +753,118 @@ public:
   void run_kernel(const Kernel &kernel, const size_t global_work_size,
                   const size_t local_work_size) {
     std::array<size_t, 3> local_ws = {local_work_size, 1, 1};
-    run_kernel_common(kernel, {global_work_size, 1, 1}, &local_ws);
+    run_kernel_common(0, kernel, {global_work_size, 1, 1}, &local_ws);
+  }
+
+  /**
+   * Run kernel with 3D global work size.
+   *
+   * @param[in] device device id.
+   * @param[in] kernel kernel to run.
+   * @param[in] global_work_size global work size.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  const std::array<size_t, 3> global_work_size) {
+    run_kernel_common(device, kernel, global_work_size,
+                      /*local_work_size=*/nullptr);
+  }
+
+  /**
+   * Run kernel with 2D global work size.
+   *
+   * @param[in] device device id.
+   * @param[in] kernel kernel to run.
+   * @param[in] global_work_size global work size.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  const std::array<size_t, 2> global_work_size) {
+    run_kernel_common(device, kernel,
+                      {global_work_size[0], global_work_size[1], 1},
+                      /*local_work_size=*/nullptr);
+  }
+
+  /**
+   * Run kernel with 1D global work size.
+   *
+   * @overload
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  const std::array<size_t, 1> global_work_size) {
+    run_kernel_common(device, kernel, {global_work_size[0], 1, 1},
+                      /*local_work_size=*/nullptr);
+  }
+
+  /**
+   * Run kernel with 1D global work size.
+   *
+   * @overload
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  const size_t global_work_size) {
+    run_kernel_common(device, kernel, {global_work_size, 1, 1},
+                      /*local_work_size=*/nullptr);
+  }
+
+  /**
+   * Run kernel with 3D global and local work size.
+   *
+   * @param[in] device device id.
+   * @param[in] kernel kernel to run.
+   * @param[in] global_work_size global work size.
+   * @param[in] local_work_size local work size.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  std::array<size_t, 3> global_work_size,
+                  std::array<size_t, 3> local_work_size) {
+    run_kernel_common(device, kernel, global_work_size, &local_work_size);
+  };
+
+  /**
+   * Run kernel with 2D global and local work size.
+   *
+   * @param[in] device device id.
+   * @param[in] kernel kernel to run.
+   * @param[in] global_work_size global work size.
+   * @param[in] local_work_size local work size.
+   * @throws cassian::RuntimeException Thrown if runtime encountered a fatal
+   * error.
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  std::array<size_t, 2> global_work_size,
+                  const std::array<size_t, 2> local_work_size) {
+    std::array<size_t, 3> local_ws = {local_work_size[0], local_work_size[1],
+                                      1};
+    run_kernel_common(device, kernel,
+                      {global_work_size[0], global_work_size[1], 1}, &local_ws);
+  };
+
+  /**
+   * Run kernel with 1D global and local work size.
+   *
+   * @overload
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  const std::array<size_t, 1> global_work_size,
+                  const std::array<size_t, 1> local_work_size) {
+    std::array<size_t, 3> local_ws = {local_work_size[0], 1, 1};
+    run_kernel_common(device, kernel, {global_work_size[0], 1, 1}, &local_ws);
+  }
+
+  /**
+   * Run kernel with 1D global and local work size.
+   *
+   * @overload
+   */
+  void run_kernel(int device, const Kernel &kernel,
+                  const size_t global_work_size, const size_t local_work_size) {
+    std::array<size_t, 3> local_ws = {local_work_size, 1, 1};
+    run_kernel_common(device, kernel, {global_work_size, 1, 1}, &local_ws);
   }
 
   /**
@@ -821,6 +984,7 @@ protected:
   /**
    * Run kernel with 3D global and local work size.
    *
+   * @param[in] device device id.
    * @param[in] kernel kernel to run.
    * @param[in] global_work_size global work size.
    * @param[in] local_work_size local work size.
@@ -828,7 +992,7 @@ protected:
    * error.
    */
   virtual void
-  run_kernel_common(const Kernel &kernel,
+  run_kernel_common(int device, const Kernel &kernel,
                     std::array<size_t, 3> global_work_size,
                     const std::array<size_t, 3> *local_work_size = nullptr) = 0;
 };
