@@ -705,10 +705,6 @@ void LevelZeroRuntime::run_kernel_common(
     throw RuntimeException("Failed to create Level Zero command list");
   }
 
-  if (result != ZE_RESULT_SUCCESS) {
-    throw RuntimeException("Failed to get suggested Level Zero gropu size");
-  }
-
   ze_group_count_t thread_group_dimensions = {};
   std::array<uint32_t, 3> local_ws = {1, 1, 1};
   if (local_work_size == nullptr) {
