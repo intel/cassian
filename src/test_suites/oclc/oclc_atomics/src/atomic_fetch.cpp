@@ -6,6 +6,8 @@
  */
 
 #include <algorithm>
+#include <cassian/fp_types/half.hpp>
+#include <cassian/fp_types/math.hpp>
 #include <cassian/logging/logging.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_types.hpp>
@@ -203,6 +205,18 @@ template <> struct OperandType<ca::clc_uintptr_t, Operation::subtraction> {
 template <typename T, Operation O>
 using operand_type_v = typename OperandType<T, O>::value;
 
+template <typename T,
+          typename std::enable_if_t<cassian::is_floating_point_v<T>, int> = 0>
+void compare(const std::vector<T> &output, const std::vector<T> &reference) {
+  for (auto i = 0; i < reference.size(); i++) {
+    if (cassian::isnan(reference[i])) {
+      REQUIRE(cassian::isnan(output[i]));
+    } else {
+      REQUIRE(output[i] == reference[i]);
+    }
+  }
+}
+
 template <typename T, typename cassian::EnableIfIsIntegral<T> = 0>
 void compare(const std::vector<T> &output, const std::vector<T> &reference) {
   REQUIRE_THAT(output, Catch::Equals(reference));
@@ -303,7 +317,8 @@ void test_signatures(TEST_CASE_TYPE test_case,
 TEMPLATE_TEST_CASE("atomic_fetch_add_signatures", "", ca::clc_int_t,
                    ca::clc_uint_t, ca::clc_long_t, ca::clc_ulong_t,
                    ca::clc_intptr_t, ca::clc_uintptr_t, ca::clc_size_t,
-                   ca::clc_ptrdiff_t) {
+                   ca::clc_ptrdiff_t, ca::clc_half_t, ca::clc_float_t,
+                   ca::clc_double_t) {
   const TestConfig &config = get_test_config();
   const Operation operation = Operation::addition;
   const auto reference_function = [](auto a, auto b) { return a + b; };
@@ -327,7 +342,8 @@ TEMPLATE_TEST_CASE("atomic_fetch_add_signatures", "", ca::clc_int_t,
 TEMPLATE_TEST_CASE("atomic_fetch_sub_signatures", "", ca::clc_int_t,
                    ca::clc_uint_t, ca::clc_long_t, ca::clc_ulong_t,
                    ca::clc_intptr_t, ca::clc_uintptr_t, ca::clc_size_t,
-                   ca::clc_ptrdiff_t) {
+                   ca::clc_ptrdiff_t, ca::clc_half_t, ca::clc_float_t,
+                   ca::clc_double_t) {
   const TestConfig &config = get_test_config();
   const Operation operation = Operation::subtraction;
   const auto reference_function = [](auto a, auto b) { return a - b; };
@@ -423,7 +439,8 @@ TEMPLATE_TEST_CASE("atomic_fetch_and_signatures", "", ca::clc_int_t,
 TEMPLATE_TEST_CASE("atomic_fetch_min_signatures", "", ca::clc_int_t,
                    ca::clc_uint_t, ca::clc_long_t, ca::clc_ulong_t,
                    ca::clc_intptr_t, ca::clc_uintptr_t, ca::clc_size_t,
-                   ca::clc_ptrdiff_t) {
+                   ca::clc_ptrdiff_t, ca::clc_half_t, ca::clc_float_t,
+                   ca::clc_double_t) {
   const TestConfig &config = get_test_config();
   const Operation operation = Operation::compute_min;
   const auto reference_function = [](auto a, auto b) { return std::min(a, b); };
@@ -447,7 +464,8 @@ TEMPLATE_TEST_CASE("atomic_fetch_min_signatures", "", ca::clc_int_t,
 TEMPLATE_TEST_CASE("atomic_fetch_max_signatures", "", ca::clc_int_t,
                    ca::clc_uint_t, ca::clc_long_t, ca::clc_ulong_t,
                    ca::clc_intptr_t, ca::clc_uintptr_t, ca::clc_size_t,
-                   ca::clc_ptrdiff_t) {
+                   ca::clc_ptrdiff_t, ca::clc_half_t, ca::clc_float_t,
+                   ca::clc_double_t) {
   const TestConfig &config = get_test_config();
   const Operation operation = Operation::compute_max;
   const auto reference_function = [](auto a, auto b) { return std::max(a, b); };
@@ -466,6 +484,225 @@ TEMPLATE_TEST_CASE("atomic_fetch_max_signatures", "", ca::clc_int_t,
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
                   memory_orders_all, memory_scopes_all);
+}
+
+TEMPLATE_TEST_CASE("atomic_fetch_add_special_values", "", ca::clc_float_t,
+                   ca::clc_double_t, ca::clc_half_t) {
+  const TestConfig &config = get_test_config();
+  const Operation operation = Operation::addition;
+  const auto reference_function = [](auto a, auto b) { return a + b; };
+
+  using test_case_type =
+      TestCase<TestType, operand_type_v<TestType, operation>>;
+  auto test_case =
+      create_test_case<test_case_type>(config, operation, reference_function);
+  if (should_skip(test_case)) {
+    return;
+  }
+
+  // TODO: Handle global/local and implicit/explicit scenarios
+  // Current approach does not work, because there is no way of selecting
+  // only global or local tests with -c command line option
+  test_case.memory_type = MemoryType::global;
+  test_case.function_type = FunctionType::implicit;
+  using test_host_type = typename test_case_type::test_host_type;
+  using operand_host_type = typename test_case_type::operand_host_type;
+
+  const float test_value_zero = 0.0F;
+  const float test_value_minus_zero = -0.0F;
+  const float test_value_without_fraction = 2.0F;
+  const float test_value_with_fraction = 2.2F;
+
+  std::vector<operand_host_type> operand_values = {
+      static_cast<operand_host_type>(test_value_minus_zero),
+      static_cast<operand_host_type>(test_value_zero),
+      static_cast<operand_host_type>(test_value_without_fraction),
+      static_cast<operand_host_type>(test_value_with_fraction),
+      std::numeric_limits<operand_host_type>::infinity(),
+      std::numeric_limits<operand_host_type>::quiet_NaN(),
+      std::numeric_limits<operand_host_type>::signaling_NaN(),
+      -std::numeric_limits<operand_host_type>::infinity(),
+      -std::numeric_limits<operand_host_type>::quiet_NaN(),
+      -std::numeric_limits<operand_host_type>::signaling_NaN(),
+      std::numeric_limits<operand_host_type>::lowest(),
+      std::numeric_limits<operand_host_type>::min(),
+      std::numeric_limits<operand_host_type>::max(),
+      std::numeric_limits<operand_host_type>::denorm_min()};
+
+  SECTION("zero") {
+    const auto value = static_cast<test_host_type>(0.0);
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("minus zero") {
+    const auto value = static_cast<test_host_type>(-0.0);
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("without fraction") {
+    const auto value = static_cast<test_host_type>(2.0);
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("with fraction") {
+    const auto value = static_cast<test_host_type>(2.2);
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("infinity") {
+    const test_host_type value =
+        std::numeric_limits<test_host_type>::infinity();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("minus infinity") {
+    const test_host_type value =
+        -std::numeric_limits<test_host_type>::infinity();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("quiet nan") {
+    const test_host_type value =
+        std::numeric_limits<test_host_type>::quiet_NaN();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("minus quiet nan") {
+    const test_host_type value =
+        -std::numeric_limits<test_host_type>::quiet_NaN();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("signaling nan") {
+    const test_host_type value =
+        std::numeric_limits<test_host_type>::signaling_NaN();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("minus signaling nan") {
+    const test_host_type value =
+        -std::numeric_limits<test_host_type>::signaling_NaN();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("lowest") {
+    const test_host_type value = std::numeric_limits<test_host_type>::lowest();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("min") {
+    const test_host_type value = std::numeric_limits<test_host_type>::min();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("max") {
+    const test_host_type value = std::numeric_limits<test_host_type>::max();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
+
+  SECTION("denorm min") {
+    const test_host_type value =
+        std::numeric_limits<test_host_type>::denorm_min();
+    test_case.input.value =
+        std::vector<test_host_type>(test_case.global_work_size, value);
+    test_case.compare_function = [](auto a, auto b) { compare(a, b); };
+    for (auto operand : operand_values) {
+      test_case.input.operand =
+          std::vector<operand_host_type>(test_case.global_work_size, operand);
+      run_test(test_case);
+    }
+  }
 }
 
 } // namespace

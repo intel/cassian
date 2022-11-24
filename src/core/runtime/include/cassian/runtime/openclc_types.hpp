@@ -780,6 +780,7 @@ template <> struct OpenCLCHalf<1> {
   static constexpr char device_type[] = "half";
   static constexpr char type_name[] = "half";
   static constexpr char type_abbr[] = "f16";
+  static constexpr char device_atomic_type[] = "atomic_half";
 };
 
 template <> struct OpenCLCHalf<2> {

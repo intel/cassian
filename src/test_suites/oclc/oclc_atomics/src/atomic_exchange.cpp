@@ -216,8 +216,9 @@ void test_signatures(TEST_CASE_TYPE test_case,
 
 TEMPLATE_TEST_CASE("atomic_exchange_signatures", "", ca::clc_int_t,
                    ca::clc_uint_t, ca::clc_long_t, ca::clc_ulong_t,
-                   ca::clc_float_t, ca::clc_double_t, ca::clc_intptr_t,
-                   ca::clc_uintptr_t, ca::clc_size_t, ca::clc_ptrdiff_t) {
+                   ca::clc_half_t, ca::clc_float_t, ca::clc_double_t,
+                   ca::clc_intptr_t, ca::clc_uintptr_t, ca::clc_size_t,
+                   ca::clc_ptrdiff_t) {
   const TestConfig &config = get_test_config();
 
   using test_case_type = TestCase<TestType>;
