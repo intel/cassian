@@ -8,32 +8,20 @@
 #ifndef CASSIAN_OCLC_MATH_FUNCTIONS_TEST_CONFIG_HPP
 #define CASSIAN_OCLC_MATH_FUNCTIONS_TEST_CONFIG_HPP
 
+#include <cassian/cli/cli.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/test_harness/test_config.hpp>
 #include <cstddef>
 #include <memory>
 #include <string>
 
-namespace cassian {
-class CommandLineParser;
-}
-
-class TestConfig {
+class TestConfig : public cassian::TestConfigBase {
 public:
-  TestConfig() = default;
   explicit TestConfig(const cassian::CommandLineParser &parser);
-  TestConfig(const TestConfig &) = delete;
-  TestConfig(TestConfig &&) = delete;
-  ~TestConfig() = default;
-  TestConfig &operator=(const TestConfig &) = delete;
-  TestConfig &operator=(TestConfig &&) = delete;
 
-  cassian::Runtime *runtime() const;
-  std::string program_type() const;
   size_t work_size() const;
 
 private:
-  std::unique_ptr<cassian::Runtime> runtime_ = nullptr;
-  std::string program_type_ = "";
   size_t work_size_ = 0;
 };
 

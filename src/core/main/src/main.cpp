@@ -11,13 +11,14 @@
 #include <cassian/cli/cli.hpp>
 #include <cassian/main/config.hpp>
 #include <cassian/runtime/factory.hpp>
+#include <cassian/test_harness/test_config.hpp>
 #include <cassian/utility/version.hpp>
 
 int main(int argc, char *argv[]) {
   cassian::print_version();
 
   cassian::CommandLineParser parser;
-  cassian::add_runtime_arguments(&parser);
+  cassian::add_harness_arguments(&parser);
   parser.parse(&argc, argv);
 
   const cassian::test::Config config(parser);

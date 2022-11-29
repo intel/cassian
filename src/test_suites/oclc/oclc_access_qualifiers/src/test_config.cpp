@@ -15,15 +15,8 @@
 
 namespace ca = cassian;
 
-TestConfig::TestConfig(const ca::CommandLineParser &parser) {
-  runtime_ = ca::create_runtime(parser.get<std::string>("--runtime"));
-  runtime_->initialize();
-
-  program_type_ = parser.get<std::string>("--program-type");
-}
-
-ca::Runtime *TestConfig::runtime() const { return runtime_.get(); }
-std::string TestConfig::program_type() const { return program_type_; }
+TestConfig::TestConfig(const ca::CommandLineParser &parser)
+    : TestConfigBase(parser) {}
 
 const TestConfig *config = nullptr;
 const TestConfig &get_test_config() { return *config; }

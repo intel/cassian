@@ -13,26 +13,14 @@
 
 #include <cassian/cli/cli.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/test_harness/test_config.hpp>
 
 namespace cassian {
 namespace test {
 
-class Config {
+class Config : public cassian::TestConfigBase {
 public:
-  Config() = default;
   explicit Config(const cassian::CommandLineParser &parser);
-  Config(const Config &) = delete;
-  Config(Config &&) = delete;
-  ~Config() = default;
-  Config &operator=(const Config &) = delete;
-  Config &operator=(Config &&) = delete;
-
-  cassian::Runtime *runtime() const;
-  std::string program_type() const;
-
-private:
-  std::unique_ptr<cassian::Runtime> runtime_ = nullptr;
-  std::string program_type_ = "";
 };
 
 const Config &get_config();

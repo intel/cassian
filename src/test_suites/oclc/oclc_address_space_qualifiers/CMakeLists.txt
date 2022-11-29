@@ -31,7 +31,7 @@ target_include_directories(
 target_link_libraries(
   oclc_address_space_qualifiers
   PRIVATE Catch2::Catch2 cassian::runtime cassian::cli cassian::logging
-          cassian::utility)
+          cassian::utility cassian::test_harness)
 
 set_target_properties(oclc_address_space_qualifiers PROPERTIES FOLDER
                                                                test_suites/oclc)

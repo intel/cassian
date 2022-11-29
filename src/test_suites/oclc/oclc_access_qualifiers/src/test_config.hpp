@@ -10,25 +10,13 @@
 
 #include <cassian/cli/cli.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/test_harness/test_config.hpp>
 #include <memory>
 #include <string>
 
-class TestConfig {
+class TestConfig : public cassian::TestConfigBase {
 public:
-  TestConfig() = default;
   explicit TestConfig(const cassian::CommandLineParser &parser);
-  TestConfig(const TestConfig &) = delete;
-  TestConfig(TestConfig &&) = delete;
-  ~TestConfig() = default;
-  TestConfig &operator=(const TestConfig &) = delete;
-  TestConfig &operator=(TestConfig &&) = delete;
-
-  cassian::Runtime *runtime() const;
-  std::string program_type() const;
-
-private:
-  std::unique_ptr<cassian::Runtime> runtime_ = nullptr;
-  std::string program_type_ = "";
 };
 
 const TestConfig &get_test_config();
