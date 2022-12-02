@@ -9,6 +9,7 @@
 #define CASSIAN_OCLC_SUB_GROUP_FUNCTIONS_COMMON_HPP
 
 #include <cassian/catch2_utils/catch2_utils.hpp>
+#include <cassian/logging/logging.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_type_tuples.hpp>
 #include <cassian/runtime/openclc_types.hpp>
@@ -146,6 +147,7 @@ private:
         std::string(" -D DELTA_SIZE=") + std::to_string(delta_size) +
         std::string(" -D MAX_VALUE=") + max_value +
         std::string(" -D MIN_VALUE=") + min_value;
+    ca::logging::debug() << "Build options: " << build_options << '\n';
     return build_options;
   };
 
@@ -210,7 +212,7 @@ private:
         std::string(" -D FUNC_NAME2=") + func_name2 +
         std::string(" -D VECTOR_SIZE=") + vec_size +
         std::string(" -D INPUT_DATA_TYPE=") + input_data_type;
-    printf("Build options: %s\n", build_options.c_str());
+    ca::logging::debug() << "Build options: " << build_options << '\n';
     return build_options;
   };
 };
