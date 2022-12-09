@@ -29,7 +29,7 @@ void test_printf(ca::Runtime *runtime, const size_t global_work_size,
   {
     CaptureOutput captured(CaptureOutput::Stdout);
     runtime->run_kernel(kernel, global_work_size);
-    std::string_view output = captured.GetOutput();
+    std::string output = captured.GetOutput();
     // FIXME: logging pollutes the stream so for now only check if there is
     // more than global_work_size of lines
     REQUIRE(std::count(output.begin(), output.end(), '\n') >= global_work_size);
