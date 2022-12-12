@@ -33,6 +33,8 @@ public:
       log_level_ = logging::LogLevel::debug;
     } else if (log_level == "trace") {
       log_level_ = logging::LogLevel::trace;
+    } else {
+      throw RuntimeException("Unknown logging level: " + log_level);
     }
   }
   explicit operator logging::LogLevel() const { return log_level_; }
