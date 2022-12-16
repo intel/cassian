@@ -101,7 +101,7 @@ def install_catch2(install_directory, tmp_directory, architecture, clear=False):
     cleanup_tmp_dir(catch2_tmp_directory)
 
     subprocess.run(
-        "git clone https://github.com/catchorg/Catch2.git --depth 1 --branch v2.12.2",
+        "git clone https://github.com/catchorg/Catch2.git --depth 1 --branch v2.13.5",
         cwd=tmp_directory,
         shell=True,
         check=True,
