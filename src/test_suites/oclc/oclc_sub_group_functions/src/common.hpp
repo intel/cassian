@@ -231,8 +231,23 @@ std::vector<std::vector<T>> run_kernel(
 
   uint32_t kernel_arg_id = 0;
 
+  using scalar_type_check = typename TEST_TYPE::scalar_type::host_type;
+  using vector_type_check = typename TEST_TYPE::host_type;
   for (auto test_arg : test_description.test_args) {
-    if (!test_arg.is_image) {
+    if (test_arg.is_local_memory) {
+      size_t local_mem_size = 1;
+      for (uint8_t i = 0; i < N; i++) {
+        local_mem_size *= local_work_size[i];
+      }
+      if constexpr (ca::is_vector_v<vector_type_check>) {
+        local_mem_size *=
+            sizeof(scalar_type_check) * vector_type_check::vector_size;
+      } else {
+        local_mem_size *= sizeof(scalar_type_check);
+      }
+      const ca::LocalMemory local_memory(local_mem_size);
+      runtime->set_kernel_argument(kernel, kernel_arg_id, local_memory);
+    } else if (!test_arg.is_image) {
       ca::Buffer buffer = runtime->create_buffer(test_arg.data_size);
       buffers.push_back(buffer);
       runtime->write_buffer(buffer, test_arg.data);
@@ -243,7 +258,6 @@ std::vector<std::vector<T>> run_kernel(
       int elements_per_pixel = 1;
       // needed to handle all image bytes because no image format for u64
       // data type
-      using scalar_type_check = typename TEST_TYPE::scalar_type::host_type;
       size_t var_size = sizeof(scalar_type_check);
 
       if (var_size == 8) {
