@@ -12,17 +12,6 @@ namespace ca = cassian;
 namespace {
 
 template <typename TEST_TYPE, size_t N>
-void recalculate_dimensions(std::array<size_t, N> &global_work_size,
-                            std::array<size_t, N> &local_work_size) {
-  using vector_type_check = typename TEST_TYPE::host_type;
-  if constexpr (ca::is_vector_v<vector_type_check> && N != 1) {
-    global_work_size[1] = global_work_size[1] / vector_type_check::vector_size;
-    if (local_work_size[1] > global_work_size[1]) {
-      local_work_size[1] = global_work_size[1];
-    }
-  }
-}
-template <typename TEST_TYPE, size_t N>
 void test_subgroup_block(const TestConfig &config,
                          const std::string &func_name) {
   ca::Runtime *runtime = config.runtime();
