@@ -101,7 +101,7 @@ def install_catch2(install_directory, tmp_directory, architecture, clear=False):
     cleanup_tmp_dir(catch2_tmp_directory)
 
     subprocess.run(
-        "git clone https://github.com/catchorg/Catch2.git --depth 1 --branch v2.13.5",
+        "git clone https://github.com/catchorg/Catch2.git --depth 1 --branch v2.13.10",
         cwd=tmp_directory,
         shell=True,
         check=True,
@@ -135,7 +135,7 @@ def install_opencl(install_directory, tmp_directory, architecture, clear=False):
     opencl_headers_install_directory = opencl_install_directory / "include"
 
     subprocess.run(
-        "git clone https://github.com/KhronosGroup/OpenCL-Headers.git && cd OpenCL-Headers && git checkout e3cd57376dada061bc6d5f9edfce2ea631b81214",
+        "git clone https://github.com/KhronosGroup/OpenCL-Headers.git --depth 1 --branch v2022.09.30",
         cwd=tmp_directory,
         shell=True,
         check=True,
@@ -159,7 +159,7 @@ def install_level_zero(install_directory, tmp_directory, architecture, clear=Fal
     level_zero_headers_install_directory = level_zero_install_directory / "include"
 
     subprocess.run(
-        "git clone https://github.com/oneapi-src/level-zero.git --depth 1 --branch v1.6.2",
+        "git clone https://github.com/oneapi-src/level-zero.git --depth 1 --branch v1.8.8",
         cwd=tmp_directory,
         shell=True,
         check=True,
