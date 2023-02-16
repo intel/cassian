@@ -30,8 +30,16 @@ std::string to_string(const Feature feature) {
     return "global_offsets";
   case Feature::fp16_atomics_global_load_store:
     return "fp16_atomics_global_load_store";
+  case Feature::fp32_atomics_global_load_store:
+    return "fp32_atomics_global_load_store";
+  case Feature::fp64_atomics_global_load_store:
+    return "fp64_atomics_global_load_store";
   case Feature::fp16_atomics_local_load_store:
     return "fp16_atomics_local_load_store";
+  case Feature::fp32_atomics_local_load_store:
+    return "fp32_atomics_local_load_store";
+  case Feature::fp64_atomics_local_load_store:
+    return "fp64_atomics_local_load_store";
   case Feature::fp16_atomics_global_add:
     return "fp16_atomics_global_add";
   case Feature::fp32_atomics_global_add:

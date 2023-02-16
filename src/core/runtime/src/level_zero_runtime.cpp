@@ -872,6 +872,14 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
     return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
             ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_ADD) != 0;
   }
+  case Feature::fp32_atomics_global_load_store: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_LOAD_STORE) != 0;
+  }
+  case Feature::fp32_atomics_local_load_store: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_LOAD_STORE) != 0;
+  }
   case Feature::fp32_atomics_global_min_max: {
     return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
             ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_MIN_MAX) != 0;
@@ -883,6 +891,14 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
   case Feature::fp32_atomics_local_min_max: {
     return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
             ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_MIN_MAX) != 0;
+  }
+  case Feature::fp64_atomics_global_load_store: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_GLOBAL_LOAD_STORE) != 0;
+  }
+  case Feature::fp64_atomics_local_load_store: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_LOAD_STORE) != 0;
   }
   case Feature::fp64_atomics_global_add: {
     return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &

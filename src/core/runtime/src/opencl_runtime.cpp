@@ -566,6 +566,14 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
             CL_DEVICE_LOCAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
   }
+  case Feature::fp32_atomics_global_load_store: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_LOAD_STORE_EXT) != 0;
+  }
+  case Feature::fp32_atomics_local_load_store: {
+    return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_LOAD_STORE_EXT) != 0;
+  }
   case Feature::fp32_atomics_global_add: {
     return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
             CL_DEVICE_GLOBAL_FP_ATOMIC_ADD_EXT) != 0;
@@ -581,6 +589,14 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::fp32_atomics_local_min_max: {
     return (get_device_property(DeviceProperty::fp32_atomics_capabilities) &
             CL_DEVICE_LOCAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
+  }
+  case Feature::fp64_atomics_global_load_store: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            CL_DEVICE_GLOBAL_FP_ATOMIC_LOAD_STORE_EXT) != 0;
+  }
+  case Feature::fp64_atomics_local_load_store: {
+    return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
+            CL_DEVICE_LOCAL_FP_ATOMIC_LOAD_STORE_EXT) != 0;
   }
   case Feature::fp64_atomics_global_add: {
     return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &

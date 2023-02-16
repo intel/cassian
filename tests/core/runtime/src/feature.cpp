@@ -64,10 +64,34 @@ TEST_CASE("to_string") {
     const std::string expected = "fp16_atomics_global_load_store";
     REQUIRE(output == expected);
   }
+  SECTION("ext_fp32_global_atomic_load_store") {
+    const ca::Feature input = ca::Feature::fp32_atomics_global_load_store;
+    const std::string output = cassian::to_string(input);
+    const std::string expected = "fp32_atomics_global_load_store";
+    REQUIRE(output == expected);
+  }
+  SECTION("ext_fp64_global_atomic_load_store") {
+    const ca::Feature input = ca::Feature::fp64_atomics_global_load_store;
+    const std::string output = cassian::to_string(input);
+    const std::string expected = "fp64_atomics_global_load_store";
+    REQUIRE(output == expected);
+  }
   SECTION("ext_fp16_local_atomic_load_store") {
     const ca::Feature input = ca::Feature::fp16_atomics_local_load_store;
     const std::string output = cassian::to_string(input);
     const std::string expected = "fp16_atomics_local_load_store";
+    REQUIRE(output == expected);
+  }
+  SECTION("ext_fp32_local_atomic_load_store") {
+    const ca::Feature input = ca::Feature::fp32_atomics_local_load_store;
+    const std::string output = cassian::to_string(input);
+    const std::string expected = "fp32_atomics_local_load_store";
+    REQUIRE(output == expected);
+  }
+  SECTION("ext_fp64_local_atomic_load_store") {
+    const ca::Feature input = ca::Feature::fp64_atomics_local_load_store;
+    const std::string output = cassian::to_string(input);
+    const std::string expected = "fp64_atomics_local_load_store";
     REQUIRE(output == expected);
   }
   SECTION("ext_fp16_global_atomic_add") {
