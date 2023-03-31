@@ -182,6 +182,10 @@ void run_specific_section(const T &oclc_function,
         input_b = randomize_input(input_b);
         input_c = randomize_input(input_c);
       }
+      ca::logging::debug() << "Build options: " << build_options << '\n';
+      ca::logging::debug() << "Input A: " << ca::to_string(input_a) << '\n';
+      ca::logging::debug() << "Input B: " << ca::to_string(input_b) << '\n';
+      ca::logging::debug() << "Input C: " << ca::to_string(input_c) << '\n';
       auto input = Input(input_a, input_b, input_c);
       run_section(oclc_function, input, config);
     }

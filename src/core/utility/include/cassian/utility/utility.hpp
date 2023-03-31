@@ -317,6 +317,23 @@ std::string to_string(const std::array<T, N> &arr) {
 }
 
 /**
+ * Convert vector<T> to string.
+ *
+ * @tparam T the type of std::vector message to log.
+ * @param[in] vec vector to convert.
+ * @returns vector converted string.
+ */
+template <typename T> std::string to_string(const std::vector<T> &vec) {
+  std::stringstream ss;
+  ss << '{';
+  for (size_t i = 0; i < vec.size(); i++) {
+    ss << vec.at(i) << (i + 1 >= vec.size() ? "" : ", ");
+  }
+  ss << '}';
+  return ss.str();
+}
+
+/**
  * Convert back slashes to forward slashes in a string.
  *
  * @param[in] str string to convert.
