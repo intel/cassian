@@ -30,6 +30,37 @@ ca::Kernel create_kernel(const std::string &path,
                                 program_type);
 }
 
+std::string function_type(const TestFunctionType &test_function_type) {
+  switch (test_function_type) {
+  case read_ft:
+    return "read";
+  case write_ft:
+    return "write";
+  case read_write_ft:
+    return "read_write";
+  default:
+    return "";
+  }
+}
+std::string create_func_name(TestFunctionType test_function_type,
+                             TestExtensionType test_extension_type) {
+  std::string func_name = "sub_group";
+  switch (test_extension_type) {
+  case block:
+  case block_image:
+    func_name = func_name + "_block_" + function_type(test_function_type);
+    printf("fucn_name: %s\n", func_name.c_str());
+    break;
+  case media_block_image:
+    func_name += "_media_block_" + function_type(test_function_type);
+    break;
+  default:
+    func_name += "";
+    break;
+  }
+  return func_name;
+}
+
 std::string get_kernel_name(const std::string &name) {
   return "test_kernel_" + name;
 }

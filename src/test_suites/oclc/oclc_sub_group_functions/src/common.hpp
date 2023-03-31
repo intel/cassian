@@ -24,6 +24,10 @@
 
 namespace ca = cassian;
 
+enum TestExtensionType { generic, block, block_image, media_block_image };
+enum TestFunctionType { read_ft, write_ft, read_write_ft };
+std::string create_func_name(TestFunctionType test_function_type,
+                             TestExtensionType test_extension_type);
 ca::Kernel create_kernel(const std::string &path,
                          const std::string &kernel_name,
                          const std::string &build_options, ca::Runtime *runtime,
@@ -61,10 +65,18 @@ template <typename T> struct TestCaseDescriptor {
       : local_mem_size(0), kernel_name(""), kernel_file_name(""),
         kernel_func_name(""), kernel_build_options(""),
         change_prefix_for_types(false), change_prefix_for_all_types(false),
-        delta_size(0), block_test_type(false) {}
+        delta_size(0), test_extension_type(generic),
+        test_function_type(read_ft) {}
+
   std::string get_build_options(std::string func_name) {
-    return block_test_type ? get_build_options_block(func_name)
-                           : get_build_options_generic(func_name);
+    switch (test_extension_type) {
+    case block:
+    case block_image:
+    case media_block_image:
+      return get_build_options_block(func_name);
+    default:
+      return get_build_options_generic(func_name);
+    }
   };
 
   std::vector<TestArguments> test_args;
@@ -77,7 +89,12 @@ template <typename T> struct TestCaseDescriptor {
   std::string kernel_build_options;
   bool change_prefix_for_types;
   bool change_prefix_for_all_types;
-  bool block_test_type;
+  TestExtensionType test_extension_type;
+  TestFunctionType test_function_type;
+  std::vector<size_t> block_width;
+  std::vector<size_t> block_height;
+  std::vector<size_t> sub_group_size;
+  std::vector<ca::ImageFormat> image_format;
 
 private:
   std::string get_build_options_generic(std::string func_name) {
@@ -157,13 +174,7 @@ private:
     std::string func_name1;
     std::string func_name2;
 
-    std::size_t image_pos = func_name.find("_image");
-    if (image_pos != std::string::npos) {
-      part_func_name = func_name.substr(0, image_pos);
-      func_name = part_func_name;
-    }
     std::size_t pos = func_name.find("read_write");
-
     if (pos != std::string::npos) {
       part_func_name = func_name.substr(0, pos);
       func_name1 = "intel_" + part_func_name + "read";
@@ -451,6 +462,12 @@ using BlockFunctionTestTypes = std::tuple<
     ca::clc_uchar_t, ca::clc_uchar2_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
     ca::clc_ushort_t, ca::clc_ushort2_t, ca::clc_ushort4_t, ca::clc_ushort8_t,
     ca::clc_ulong_t, ca::clc_ulong2_t, ca::clc_ulong4_t, ca::clc_ulong8_t>;
+using MediaBlockFunctionTestTypes =
+    std::tuple<ca::clc_uint_t, ca::clc_uint2_t, ca::clc_uint4_t,
+               ca::clc_uint8_t, ca::clc_uchar_t, ca::clc_uchar2_t,
+               ca::clc_uchar4_t, ca::clc_uchar8_t, ca::clc_uchar16_t,
+               ca::clc_ushort_t, ca::clc_ushort2_t, ca::clc_ushort4_t,
+               ca::clc_ushort8_t, ca::clc_ushort16_t>;
 template <typename TestType> auto test_name() {
   return std::string(TestType::type_name);
 }
