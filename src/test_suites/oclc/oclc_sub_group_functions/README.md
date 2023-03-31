@@ -315,3 +315,30 @@ OpenCL C functionality and specializations for specific data types:
   * Read and Write operations in one kernel from/to buffer object.
   * Read and Write operations in one kernel from/to image object.
 
+### `sub_group_media_block_read`
+* Status: Done
+* Goal: Verify that `sub_group_media_block_read` function works as expected.
+* Description:
+  * Run OpenCL C kernel that calls `sub_group_media_block_read` in multiple work-groups, sub-groups, media blocks width and heights
+  * Output is compared against reference values computed on the host.
+* Expectations: Blocks of data are read correctly from buffer data types. Results match expected values
+* Parameters:
+  * Data types: uint, uint2, uint4, uint8, uchar, uchar2, uchar4, uchar8, uchar16, ushort, ushort2, ushort4, ushort8, ushort16
+  * Dimensions: 2D
+  * Object Types: images.
+* Test case
+  * Only read operation in kernel from image object.
+
+### `sub_group_media_block_write`
+* Status: Done
+* Goal: Verify that `sub_group_media_block_write` function works as expected.
+* Description:
+  * Run OpenCL C kernel that calls `sub_group_media_block_write` in multiple work-groups, sub-groups, media blocks width and heights
+  * Output is compared against reference values computed on the host.
+* Expectations: Blocks of data are written correctly to image data types. Results match expected values
+* Parameters:
+  * Data types: uint, uint2, uint4, uint8, uchar, uchar2, uchar4, uchar8, uchar16, ushort, ushort2, ushort4, ushort8, ushort16
+  * Dimensions: 2D
+  * Object Types: images.
+* Test case
+  * Only write operation in kernel to image object.

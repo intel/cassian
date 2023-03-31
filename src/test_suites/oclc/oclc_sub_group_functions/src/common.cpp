@@ -49,13 +49,11 @@ std::string create_func_name(TestFunctionType test_function_type,
   case block:
   case block_image:
     func_name = func_name + "_block_" + function_type(test_function_type);
-    printf("fucn_name: %s\n", func_name.c_str());
     break;
   case media_block_image:
     func_name += "_media_block_" + function_type(test_function_type);
     break;
   default:
-    func_name += "";
     break;
   }
   return func_name;
@@ -63,4 +61,70 @@ std::string create_func_name(TestFunctionType test_function_type,
 
 std::string get_kernel_name(const std::string &name) {
   return "test_kernel_" + name;
+}
+
+std::string to_string(ca::ImageChannelOrder channel_order) {
+  switch (channel_order) {
+  case ca::ImageChannelOrder::r:
+    return "r";
+  case ca::ImageChannelOrder::a:
+    return "a";
+  case ca::ImageChannelOrder::rg:
+    return "rg";
+  case ca::ImageChannelOrder::ra:
+    return "ra";
+  case ca::ImageChannelOrder::rgb:
+    return "rgb";
+  case ca::ImageChannelOrder::rgba:
+    return "rgba";
+  case ca::ImageChannelOrder::bgra:
+    return "bgra";
+  case ca::ImageChannelOrder::argb:
+    return "argb";
+  case ca::ImageChannelOrder::abgr:
+    return "abgr";
+  case ca::ImageChannelOrder::nv12:
+    return "nv12";
+  default:
+    return "unknown";
+  }
+}
+
+std::string to_string(ca::ImageFormat image_format) {
+  switch (image_format) {
+  case ca::ImageFormat::snorm_int8:
+    return "snorm_int8";
+  case ca::ImageFormat::snorm_int16:
+    return "snorm_int16";
+  case ca::ImageFormat::unorm_int8:
+    return "unorm_int8";
+  case ca::ImageFormat::unorm_int16:
+    return "unorm_int16";
+  case ca::ImageFormat::unorm_short_565:
+    return "unorm_short_565";
+  case ca::ImageFormat::unorm_short_555:
+    return "unorm_short_555";
+  case ca::ImageFormat::unorm_int_101010:
+    return "unorm_int_101010";
+  case ca::ImageFormat::unorm_int_101010_2:
+    return "unorm_int_101010_2";
+  case ca::ImageFormat::signed_int8:
+    return "signed_int8";
+  case ca::ImageFormat::signed_int16:
+    return "signed_int16";
+  case ca::ImageFormat::signed_int32:
+    return "signed_int32";
+  case ca::ImageFormat::unsigned_int8:
+    return "unsigned_int8";
+  case ca::ImageFormat::unsigned_int16:
+    return "unsigned_int16";
+  case ca::ImageFormat::unsigned_int32:
+    return "unsigned_int32";
+  case ca::ImageFormat::float16:
+    return "float16";
+  case ca::ImageFormat::float32:
+    return "float32";
+  default:
+    return "unknown";
+  }
 }

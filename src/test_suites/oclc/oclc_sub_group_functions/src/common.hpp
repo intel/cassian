@@ -33,7 +33,8 @@ ca::Kernel create_kernel(const std::string &path,
                          const std::string &build_options, ca::Runtime *runtime,
                          const std::string &program_type);
 std::string get_kernel_name(const std::string &name);
-
+std::string to_string(ca::ImageFormat image_format);
+std::string to_string(ca::ImageChannelOrder channel_order);
 struct ImageConfig {
   ca::ImageType type;
   ca::ImageDimensions dim;
@@ -49,8 +50,7 @@ struct TestArguments {
   size_t data_count;
 
   bool is_image;
-  // image_descriptor
-  ImageConfig image_config;
+
   // memory flags
   bool is_local_memory;
   TestArguments(void *data = nullptr, size_t data_size = 0,
@@ -68,19 +68,7 @@ template <typename T> struct TestCaseDescriptor {
         delta_size(0), test_extension_type(generic),
         test_function_type(read_ft) {}
 
-  std::string get_build_options(std::string func_name) {
-    switch (test_extension_type) {
-    case block:
-    case block_image:
-    case media_block_image:
-      return get_build_options_block(func_name);
-    default:
-      return get_build_options_generic(func_name);
-    }
-  };
-
   std::vector<TestArguments> test_args;
-
   size_t local_mem_size;
   uint32_t delta_size;
   std::string kernel_name;
@@ -91,10 +79,22 @@ template <typename T> struct TestCaseDescriptor {
   bool change_prefix_for_all_types;
   TestExtensionType test_extension_type;
   TestFunctionType test_function_type;
-  std::vector<size_t> block_width;
-  std::vector<size_t> block_height;
-  std::vector<size_t> sub_group_size;
-  std::vector<ca::ImageFormat> image_format;
+  size_t block_width;
+  size_t block_height;
+  size_t sub_group_size;
+  // image_descriptor common for all kernel args
+  ImageConfig image_config;
+
+  std::string get_build_options(std::string func_name) {
+    switch (test_extension_type) {
+    case block:
+    case block_image:
+    case media_block_image:
+      return get_build_options_block(func_name);
+    default:
+      return get_build_options_generic(func_name);
+    }
+  };
 
 private:
   std::string get_build_options_generic(std::string func_name) {
@@ -164,7 +164,6 @@ private:
         std::string(" -D DELTA_SIZE=") + std::to_string(delta_size) +
         std::string(" -D MAX_VALUE=") + max_value +
         std::string(" -D MIN_VALUE=") + min_value;
-    ca::logging::debug() << "Build options: " << build_options << '\n';
     return build_options;
   };
 
@@ -223,7 +222,18 @@ private:
         std::string(" -D FUNC_NAME2=") + func_name2 +
         std::string(" -D VECTOR_SIZE=") + vec_size +
         std::string(" -D INPUT_DATA_TYPE=") + input_data_type;
-    ca::logging::debug() << "Build options: " << build_options << '\n';
+    if (test_extension_type == media_block_image) {
+      build_options +=
+          std::string(" -D BLOCK_WIDTH=") + std::to_string(block_width);
+      build_options +=
+          std::string(" -D BLOCK_HEIGHT=") + std::to_string(block_height);
+      build_options +=
+          std::string(" -D SUB_GROUP_SIZE=") + std::to_string(sub_group_size);
+      build_options += std::string(" -D IMAGE_WIDTH=") +
+                       std::to_string(image_config.dim.width);
+      build_options += std::string(" -D IMAGE_HEIGHT=") +
+                       std::to_string(image_config.dim.height);
+    }
     return build_options;
   };
 };
@@ -264,26 +274,19 @@ std::vector<std::vector<T>> run_kernel(
       runtime->write_buffer(buffer, test_arg.data);
       runtime->set_kernel_argument(kernel, kernel_arg_id, buffer);
     } else {
-      img_data_count.push_back(test_arg.data_count);
-      ca::ImageFormat format = ca::ImageFormat::unsigned_int32;
-      int elements_per_pixel = 1;
-      // needed to handle all image bytes because no image format for u64
-      // data type
-      size_t var_size = sizeof(scalar_type_check);
 
+      img_data_count.push_back(test_arg.data_count);
+      ca::ImageFormat format = test_description.image_config.format;
+      int elements_per_pixel = 1;
+      size_t var_size = sizeof(scalar_type_check);
       if (var_size == 8) {
         elements_per_pixel = 2;
       }
+
       ca::ImageDimensions dims(test_arg.image_dim_0 * elements_per_pixel,
                                test_arg.image_dim_1);
 
-      if (var_size == 2) {
-        format = ca::ImageFormat::unsigned_int16;
-      } else if (var_size == 1) {
-        format = ca::ImageFormat::unsigned_int8;
-      }
-      constexpr ca::ImageChannelOrder channels = ca::ImageChannelOrder::r;
-
+      ca::ImageChannelOrder channels = test_description.image_config.order;
       auto image =
           runtime->create_image(dims, ca::ImageType::t_2d, format, channels);
       runtime->write_image(image, test_arg.data);
@@ -321,6 +324,8 @@ run_test(TestCaseDescriptor<TEST_TYPE> test_description,
          const std::string program_type) {
   std::string build_options =
       test_description.get_build_options(test_description.kernel_func_name);
+  ca::logging::debug() << "Running test with build options: " << build_options
+                       << "\n";
   const ca::Kernel kernel = create_kernel(test_description.kernel_file_name,
                                           test_description.kernel_name,
                                           build_options, runtime, program_type);

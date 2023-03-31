@@ -54,8 +54,11 @@ list(
   "kernels/oclc_sub_group_functions/sub_group_block_write.cl"
   "kernels/oclc_sub_group_functions/sub_group_block_read_write.cl"
   "kernels/oclc_sub_group_functions/sub_group_block_read_image.cl"
+  "kernels/oclc_sub_group_functions/sub_group_media_block_read_image.cl"
   "kernels/oclc_sub_group_functions/sub_group_block_write_image.cl"
-  "kernels/oclc_sub_group_functions/sub_group_block_read_write_image.cl")
+  "kernels/oclc_sub_group_functions/sub_group_media_block_write_image.cl"
+  "kernels/oclc_sub_group_functions/sub_group_block_read_write_image.cl"
+  "kernels/oclc_sub_group_functions/sub_group_media_block_read_write_image.cl")
 
 add_executable(oclc_sub_group_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                         ${SOURCES})
