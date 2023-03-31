@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2021-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -56,6 +56,7 @@ target_link_libraries(
   oclc_operators
   PRIVATE Catch2::Catch2
           cassian::runtime
+          cassian::catch2_utils
           cassian::cli
           cassian::utility
           cassian::logging

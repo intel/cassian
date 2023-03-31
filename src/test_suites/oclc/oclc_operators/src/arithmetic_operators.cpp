@@ -1,13 +1,15 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
 #include <algorithm>
+#include <cassian/catch2_utils/catch2_utils.hpp>
 #include <cassian/cli/cli.hpp>
 #include <cassian/random/random.hpp>
+#include <cassian/runtime/openclc_type_tuples.hpp>
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
@@ -33,7 +35,7 @@ enum class ArithmeticOperator {
   subtraction,
   multiplication,
   division,
-  reminder
+  remainder
 };
 
 std::string to_clc_operator(const ArithmeticOperator op) {
@@ -46,7 +48,7 @@ std::string to_clc_operator(const ArithmeticOperator op) {
     return "*";
   case ArithmeticOperator::division:
     return "/";
-  case ArithmeticOperator::reminder:
+  case ArithmeticOperator::remainder:
     return "%";
   default:
     throw UnknownOperatorException("Unknown operator: " +
@@ -73,7 +75,7 @@ to_function(const ArithmeticOperator op) {
   case ArithmeticOperator::division:
     return [](A_TYPE a, B_TYPE b) { return a / b; };
     break;
-  case ArithmeticOperator::reminder:
+  case ArithmeticOperator::remainder:
     return [](A_TYPE a, B_TYPE b) { return a % b; };
     break;
   default:
@@ -350,42 +352,52 @@ void test_addition_vector(const TestConfig &config) {
   }
 }
 
-TEMPLATE_TEST_CASE("arithmetic operators - addition - signed integer - scalar",
-                   "", ca::clc_char_t, ca::clc_short_t, ca::clc_int_t,
-                   ca::clc_long_t) {
+template <typename TestType> auto test_name() {
+  return std::string(TestType::type_name);
+}
+
+using float_types = ca::TupleConcat<ca::TypesFloat, ca::TypesDouble>::type;
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - addition", "",
+                                    ca::SignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_addition_common<TestType>(config);
   test_addition_signed<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_addition_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - addition - unsigned integer - scalar", "",
-    ca::clc_uchar_t, ca::clc_ushort_t, ca::clc_uint_t, ca::clc_ulong_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - addition", "",
+                                    ca::UnsignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_addition_common<TestType>(config);
   test_addition_unsigned<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_addition_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE("arithmetic operators - addition - float - scalar", "",
-                   ca::clc_float_t, ca::clc_double_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - addition", "",
+                                    float_types, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
@@ -393,69 +405,9 @@ TEMPLATE_TEST_CASE("arithmetic operators - addition - float - scalar", "",
   test_addition_common<TestType>(config);
   test_addition_signed<TestType>(config);
   test_addition_float<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("arithmetic operators - addition - signed integer - vector",
-                   "", ca::clc_char2_t, ca::clc_char3_t, ca::clc_char4_t,
-                   ca::clc_char8_t, ca::clc_char16_t, ca::clc_short2_t,
-                   ca::clc_short3_t, ca::clc_short4_t, ca::clc_short8_t,
-                   ca::clc_short16_t, ca::clc_int2_t, ca::clc_int3_t,
-                   ca::clc_int4_t, ca::clc_int8_t, ca::clc_int16_t,
-                   ca::clc_long2_t, ca::clc_long3_t, ca::clc_long4_t,
-                   ca::clc_long8_t, ca::clc_long16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_addition_vector<TestType>(config);
   }
-
-  test_addition_common<TestType>(config);
-  test_addition_signed<TestType>(config);
-  test_addition_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - addition - unsigned integer - vector", "",
-    ca::clc_uchar2_t, ca::clc_uchar3_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
-    ca::clc_uchar16_t, ca::clc_ushort2_t, ca::clc_ushort3_t, ca::clc_ushort4_t,
-    ca::clc_ushort8_t, ca::clc_ushort16_t, ca::clc_uint2_t, ca::clc_uint3_t,
-    ca::clc_uint4_t, ca::clc_uint8_t, ca::clc_uint16_t, ca::clc_ulong2_t,
-    ca::clc_ulong3_t, ca::clc_ulong4_t, ca::clc_ulong8_t, ca::clc_ulong16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_addition_common<TestType>(config);
-  test_addition_unsigned<TestType>(config);
-  test_addition_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("arithmetic operators - addition - float - vector", "",
-                   ca::clc_float2_t, ca::clc_float3_t, ca::clc_float4_t,
-                   ca::clc_float8_t, ca::clc_float16_t, ca::clc_double2_t,
-                   ca::clc_double3_t, ca::clc_double4_t, ca::clc_double8_t,
-                   ca::clc_double16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_addition_common<TestType>(config);
-  test_addition_signed<TestType>(config);
-  test_addition_float<TestType>(config);
-  test_addition_vector<TestType>(config);
 }
 
 template <typename TEST_TYPE>
@@ -608,42 +560,46 @@ void test_subtraction_vector(const TestConfig &config) {
   }
 }
 
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - subtraction - signed integer - scalar", "",
-    ca::clc_char_t, ca::clc_short_t, ca::clc_int_t, ca::clc_long_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - subtraction", "",
+                                    ca::SignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_subtraction_common<TestType>(config);
   test_subtraction_signed<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_subtraction_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - subtraction - unsigned integer - scalar", "",
-    ca::clc_uchar_t, ca::clc_ushort_t, ca::clc_uint_t, ca::clc_ulong_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - subtraction", "",
+                                    ca::UnsignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_subtraction_common<TestType>(config);
   test_subtraction_unsigned<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_subtraction_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE("arithmetic operators - subtraction - float - scalar", "",
-                   ca::clc_float_t, ca::clc_double_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - subtraction", "",
+                                    float_types, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
@@ -651,68 +607,9 @@ TEMPLATE_TEST_CASE("arithmetic operators - subtraction - float - scalar", "",
   test_subtraction_common<TestType>(config);
   test_subtraction_signed<TestType>(config);
   test_subtraction_float<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - subtraction - signed integer - vector", "",
-    ca::clc_char2_t, ca::clc_char3_t, ca::clc_char4_t, ca::clc_char8_t,
-    ca::clc_char16_t, ca::clc_short2_t, ca::clc_short3_t, ca::clc_short4_t,
-    ca::clc_short8_t, ca::clc_short16_t, ca::clc_int2_t, ca::clc_int3_t,
-    ca::clc_int4_t, ca::clc_int8_t, ca::clc_int16_t, ca::clc_long2_t,
-    ca::clc_long3_t, ca::clc_long4_t, ca::clc_long8_t, ca::clc_long16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_subtraction_vector<TestType>(config);
   }
-
-  test_subtraction_common<TestType>(config);
-  test_subtraction_signed<TestType>(config);
-  test_subtraction_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - subtraction - unsigned integer - vector", "",
-    ca::clc_uchar2_t, ca::clc_uchar3_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
-    ca::clc_uchar16_t, ca::clc_ushort2_t, ca::clc_ushort3_t, ca::clc_ushort4_t,
-    ca::clc_ushort8_t, ca::clc_ushort16_t, ca::clc_uint2_t, ca::clc_uint3_t,
-    ca::clc_uint4_t, ca::clc_uint8_t, ca::clc_uint16_t, ca::clc_ulong2_t,
-    ca::clc_ulong3_t, ca::clc_ulong4_t, ca::clc_ulong8_t, ca::clc_ulong16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_subtraction_common<TestType>(config);
-  test_subtraction_unsigned<TestType>(config);
-  test_subtraction_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("arithmetic operators - subtraction - float - vector", "",
-                   ca::clc_float2_t, ca::clc_float3_t, ca::clc_float4_t,
-                   ca::clc_float8_t, ca::clc_float16_t, ca::clc_double2_t,
-                   ca::clc_double3_t, ca::clc_double4_t, ca::clc_double8_t,
-                   ca::clc_double16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_subtraction_common<TestType>(config);
-  test_subtraction_signed<TestType>(config);
-  test_subtraction_float<TestType>(config);
-  test_subtraction_vector<TestType>(config);
 }
 
 template <typename TEST_TYPE>
@@ -886,42 +783,45 @@ void test_multiplication_vector(const TestConfig &config) {
   }
 }
 
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - multiplication - signed integer - scalar", "",
-    ca::clc_char_t, ca::clc_short_t, ca::clc_int_t, ca::clc_long_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - multiplication", "",
+                                    ca::SignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
-
   test_multiplication_common<TestType>(config);
   test_multiplication_signed<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_multiplication_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - multiplication - unsigned integer - scalar", "",
-    ca::clc_uchar_t, ca::clc_ushort_t, ca::clc_uint_t, ca::clc_ulong_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - multiplication", "",
+                                    ca::UnsignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_multiplication_common<TestType>(config);
   test_multiplication_unsigned<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_multiplication_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE("arithmetic operators - multiplication - float - scalar", "",
-                   ca::clc_float_t, ca::clc_double_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - multiplication", "",
+                                    float_types, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
@@ -929,68 +829,9 @@ TEMPLATE_TEST_CASE("arithmetic operators - multiplication - float - scalar", "",
   test_multiplication_common<TestType>(config);
   test_multiplication_signed<TestType>(config);
   test_multiplication_float<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - multiplication - signed integer - vector", "",
-    ca::clc_char2_t, ca::clc_char3_t, ca::clc_char4_t, ca::clc_char8_t,
-    ca::clc_char16_t, ca::clc_short2_t, ca::clc_short3_t, ca::clc_short4_t,
-    ca::clc_short8_t, ca::clc_short16_t, ca::clc_int2_t, ca::clc_int3_t,
-    ca::clc_int4_t, ca::clc_int8_t, ca::clc_int16_t, ca::clc_long2_t,
-    ca::clc_long3_t, ca::clc_long4_t, ca::clc_long8_t, ca::clc_long16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_multiplication_vector<TestType>(config);
   }
-
-  test_multiplication_common<TestType>(config);
-  test_multiplication_signed<TestType>(config);
-  test_multiplication_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - multiplication - unsigned integer - vector", "",
-    ca::clc_uchar2_t, ca::clc_uchar3_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
-    ca::clc_uchar16_t, ca::clc_ushort2_t, ca::clc_ushort3_t, ca::clc_ushort4_t,
-    ca::clc_ushort8_t, ca::clc_ushort16_t, ca::clc_uint2_t, ca::clc_uint3_t,
-    ca::clc_uint4_t, ca::clc_uint8_t, ca::clc_uint16_t, ca::clc_ulong2_t,
-    ca::clc_ulong3_t, ca::clc_ulong4_t, ca::clc_ulong8_t, ca::clc_ulong16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_multiplication_common<TestType>(config);
-  test_multiplication_unsigned<TestType>(config);
-  test_multiplication_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("arithmetic operators - multiplication - float - vector", "",
-                   ca::clc_float2_t, ca::clc_float3_t, ca::clc_float4_t,
-                   ca::clc_float8_t, ca::clc_float16_t, ca::clc_double2_t,
-                   ca::clc_double3_t, ca::clc_double4_t, ca::clc_double8_t,
-                   ca::clc_double16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_multiplication_common<TestType>(config);
-  test_multiplication_signed<TestType>(config);
-  test_multiplication_float<TestType>(config);
-  test_multiplication_vector<TestType>(config);
 }
 
 template <typename TEST_TYPE>
@@ -1028,7 +869,7 @@ void test_division_common(const TestConfig &config) {
     compare(output, reference);
   }
 
-  SECTION("divide with reminder") {
+  SECTION("divide with remainder") {
     const std::vector<host_type> input_a(config.work_size(), host_type(5));
     const std::vector<host_type> input_b(config.work_size(), host_type(2));
     const std::vector<host_type> output = test<TEST_TYPE, TEST_TYPE, TEST_TYPE>(
@@ -1146,102 +987,45 @@ void test_division_vector(const TestConfig &config) {
   }
 }
 
-TEMPLATE_TEST_CASE("arithmetic operators - division - signed integer - scalar",
-                   "", ca::clc_char_t, ca::clc_short_t, ca::clc_int_t,
-                   ca::clc_long_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - division", "",
+                                    ca::SignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_division_common<TestType>(config);
   test_division_signed<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_division_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - division - unsigned integer - scalar", "",
-    ca::clc_uchar_t, ca::clc_ushort_t, ca::clc_uint_t, ca::clc_ulong_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - division", "",
+                                    ca::UnsignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_division_common<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("arithmetic operators - division - float - scalar", "",
-                   ca::clc_float_t, ca::clc_double_t) {
-  const TestConfig &config = get_test_config();
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_division_vector<TestType>(config);
   }
-
-  test_division_common<TestType>(config);
-  test_division_signed<TestType>(config);
-  test_division_float<TestType>(config);
 }
 
-TEMPLATE_TEST_CASE("arithmetic operators - division - signed integer - vector",
-                   "", ca::clc_char2_t, ca::clc_char3_t, ca::clc_char4_t,
-                   ca::clc_char8_t, ca::clc_char16_t, ca::clc_short2_t,
-                   ca::clc_short3_t, ca::clc_short4_t, ca::clc_short8_t,
-                   ca::clc_short16_t, ca::clc_int2_t, ca::clc_int3_t,
-                   ca::clc_int4_t, ca::clc_int8_t, ca::clc_int16_t,
-                   ca::clc_long2_t, ca::clc_long3_t, ca::clc_long4_t,
-                   ca::clc_long8_t, ca::clc_long16_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - division", "",
+                                    float_types, test_name<TestType>) {
   const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_division_common<TestType>(config);
-  test_division_signed<TestType>(config);
-  test_division_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - division - unsigned integer - vector", "",
-    ca::clc_uchar2_t, ca::clc_uchar3_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
-    ca::clc_uchar16_t, ca::clc_ushort2_t, ca::clc_ushort3_t, ca::clc_ushort4_t,
-    ca::clc_ushort8_t, ca::clc_ushort16_t, ca::clc_uint2_t, ca::clc_uint3_t,
-    ca::clc_uint4_t, ca::clc_uint8_t, ca::clc_uint16_t, ca::clc_ulong2_t,
-    ca::clc_ulong3_t, ca::clc_ulong4_t, ca::clc_ulong8_t, ca::clc_ulong16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_division_common<TestType>(config);
-  test_division_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("arithmetic operators - division - float - vector", "",
-                   ca::clc_float2_t, ca::clc_float3_t, ca::clc_float4_t,
-                   ca::clc_float8_t, ca::clc_float16_t, ca::clc_double2_t,
-                   ca::clc_double3_t, ca::clc_double4_t, ca::clc_double8_t,
-                   ca::clc_double16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
@@ -1249,12 +1033,14 @@ TEMPLATE_TEST_CASE("arithmetic operators - division - float - vector", "",
   test_division_common<TestType>(config);
   test_division_signed<TestType>(config);
   test_division_float<TestType>(config);
-  test_division_vector<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_division_vector<TestType>(config);
+  }
 }
 
 template <typename TEST_TYPE>
-void test_reminder_common(const TestConfig &config) {
-  const ArithmeticOperator op = ArithmeticOperator::reminder;
+void test_remainder_common(const TestConfig &config) {
+  const ArithmeticOperator op = ArithmeticOperator::remainder;
   using host_type = typename TEST_TYPE::host_type;
 
   SECTION("divide by itself") {
@@ -1313,8 +1099,8 @@ void test_reminder_common(const TestConfig &config) {
 }
 
 template <typename TEST_TYPE>
-void test_reminder_signed(const TestConfig &config) {
-  const ArithmeticOperator op = ArithmeticOperator::reminder;
+void test_remainder_signed(const TestConfig &config) {
+  const ArithmeticOperator op = ArithmeticOperator::remainder;
   using host_type = typename TEST_TYPE::host_type;
 
   SECTION("divide by negative") {
@@ -1329,8 +1115,8 @@ void test_reminder_signed(const TestConfig &config) {
 }
 
 template <typename TEST_TYPE>
-void test_reminder_float(const TestConfig &config) {
-  const ArithmeticOperator op = ArithmeticOperator::reminder;
+void test_remainder_float(const TestConfig &config) {
+  const ArithmeticOperator op = ArithmeticOperator::remainder;
   using host_type = typename TEST_TYPE::host_type;
 
   SECTION("divide by float") {
@@ -1348,8 +1134,8 @@ void test_reminder_float(const TestConfig &config) {
 }
 
 template <typename TEST_TYPE>
-void test_reminder_vector(const TestConfig &config) {
-  const ArithmeticOperator op = ArithmeticOperator::reminder;
+void test_remainder_vector(const TestConfig &config) {
+  const ArithmeticOperator op = ArithmeticOperator::remainder;
   using host_type = typename TEST_TYPE::host_type;
   using scalar_type = typename TEST_TYPE::scalar_type;
   using host_scalar_type = typename scalar_type::host_type;
@@ -1395,75 +1181,37 @@ void test_reminder_vector(const TestConfig &config) {
   }
 }
 
-TEMPLATE_TEST_CASE("arithmetic operators - reminder - signed integer - scalar",
-                   "", ca::clc_char_t, ca::clc_short_t, ca::clc_int_t,
-                   ca::clc_long_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - remainder", "",
+                                    ca::SignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
-  test_reminder_common<TestType>(config);
-  test_reminder_signed<TestType>(config);
+  test_remainder_common<TestType>(config);
+  test_remainder_signed<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_remainder_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - reminder - unsigned integer - scalar", "",
-    ca::clc_uchar_t, ca::clc_ushort_t, ca::clc_uint_t, ca::clc_ulong_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - remainder", "",
+                                    ca::UnsignedTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
-  test_reminder_common<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("arithmetic operators - reminder - signed integer - vector",
-                   "", ca::clc_char2_t, ca::clc_char3_t, ca::clc_char4_t,
-                   ca::clc_char8_t, ca::clc_char16_t, ca::clc_short2_t,
-                   ca::clc_short3_t, ca::clc_short4_t, ca::clc_short8_t,
-                   ca::clc_short16_t, ca::clc_int2_t, ca::clc_int3_t,
-                   ca::clc_int4_t, ca::clc_int8_t, ca::clc_int16_t,
-                   ca::clc_long2_t, ca::clc_long3_t, ca::clc_long4_t,
-                   ca::clc_long8_t, ca::clc_long16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
+  test_remainder_common<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_remainder_vector<TestType>(config);
   }
-
-  test_reminder_common<TestType>(config);
-  test_reminder_signed<TestType>(config);
-  test_reminder_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "arithmetic operators - reminder - unsigned integer - vector", "",
-    ca::clc_uchar2_t, ca::clc_uchar3_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
-    ca::clc_uchar16_t, ca::clc_ushort2_t, ca::clc_ushort3_t, ca::clc_ushort4_t,
-    ca::clc_ushort8_t, ca::clc_ushort16_t, ca::clc_uint2_t, ca::clc_uint3_t,
-    ca::clc_uint4_t, ca::clc_uint8_t, ca::clc_uint16_t, ca::clc_ulong2_t,
-    ca::clc_ulong3_t, ca::clc_ulong4_t, ca::clc_ulong8_t, ca::clc_ulong16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_reminder_common<TestType>(config);
-  test_reminder_vector<TestType>(config);
 }
 
 } // namespace
