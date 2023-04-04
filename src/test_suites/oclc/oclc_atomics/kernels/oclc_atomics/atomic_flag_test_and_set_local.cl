@@ -16,6 +16,7 @@ test_kernel(global DATA_TYPE *value, global bool *fetched) {
   const size_t local_id = get_local_id(0);
 
   local atomic_flag local_flag[WORK_GROUP_SIZE];
+  atomic_flag_clear(&local_flag[local_id]);
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
   fetched[global_id] = atomic_flag_test_and_set_explicit(
