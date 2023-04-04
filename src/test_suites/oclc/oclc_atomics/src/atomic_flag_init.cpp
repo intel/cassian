@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_types.hpp>
+#include <cassian/runtime/openclc_utils.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
@@ -81,7 +82,11 @@ TEST_CASE("ATOMIC_FLAG_INIT", "") {
 
   using test_case_type = TestCase<ca::clc_int_t>;
   auto test_case = create_test_case<test_case_type>(config);
-
+  if (!ca::check_optional_openclc_feature_support(
+          test_case.runtime, test_case.program_type,
+          "__opencl_c_program_scope_global_variables")) {
+    return;
+  }
   run_test(test_case);
 }
 
