@@ -32,7 +32,7 @@ Tests are done using specific value. TODO: multiple patterns.
 
 #### Rounding and saturation modes
 
-* Status: TODO
+* Status: DONE
 * Goal: Verify that explicit conversion with rounding and/or saturation produces correct values.
 * Description: Run OpenCL C kernel that assigns a value, converts it explicitly to scalar and vector types using convert_* function and then returns that value or values in output. For vectors all elements should be converted. Values are then returned in output.
 * Expectations: Returned values are correct.

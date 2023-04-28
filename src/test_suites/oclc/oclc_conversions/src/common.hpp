@@ -8,8 +8,10 @@
 #ifndef CASSIAN_OCLC_CONVERSIONS_COMMON_HPP
 #define CASSIAN_OCLC_CONVERSIONS_COMMON_HPP
 
+#include <algorithm>
 #include <cassert>
 #include <cassian/logging/logging.hpp>
+#include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
@@ -17,7 +19,11 @@
 #include <cassian/utility/utility.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
+#include <cfenv>
+#include <cmath>
 #include <common.hpp>
+#include <limits>
+#include <stdexcept>
 #include <test_config.hpp>
 #include <tuple>
 #include <type_traits>
@@ -25,6 +31,41 @@
 #include <vector>
 
 namespace ca = cassian;
+
+enum class RoundingMode {
+  round_default,
+  round_to_nearest_even,
+  round_toward_zero,
+  round_toward_positive_infinity,
+  round_toward_negative_infinity
+};
+
+std::string to_string(RoundingMode rounding_mode);
+std::string function_suffix(RoundingMode rounding_mode);
+void set_rounding_mode(RoundingMode rounding_mode);
+
+enum class OverflowHandling { overflow_default, overflow_saturation };
+
+std::string to_string(OverflowHandling overflow_handling);
+std::string function_suffix(OverflowHandling overflow_handling);
+
+class UnknownRoundingModeException : public std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
+class UnknownOverflowHandlingException : public std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
+template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default>
+struct TestCase {
+  using from_type = FROM;
+  using to_type = TO;
+  constexpr static RoundingMode rounding_mode = RND;
+  constexpr static OverflowHandling overflow_handling = SAT;
+};
 
 template <typename FROM, typename TO,
           typename T = typename FROM::scalar_type::host_type,
@@ -83,47 +124,54 @@ using EnableIfBothBuiltinTypes =
                      int>;
 
 template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type,
           EnableIfBothBuiltinTypes<T, U> = 0>
-std::string convert_function(const std::string &rounding_mode = "") {
-  return std::string("convert_") + TO::device_type +
-         (rounding_mode != "" ? "_" + rounding_mode : "");
+std::string convert_function() {
+  return std::string("convert_") + TO::device_type + function_suffix(SAT) +
+         function_suffix(RND);
+}
+
+template <typename FROM, typename TO, RoundingMode RND, OverflowHandling SAT>
+std::string build_options(const int work_size) {
+  return "-DDATA_TYPE_OUT=" + std::string(TO::device_type) +
+         " -DDATA_TYPE_IN=" + std::string(FROM::device_type) +
+         " -DCONVERT_FUNC=" + convert_function<FROM, TO, RND, SAT>() +
+         " -DWORK_GROUP_SIZE=" + std::to_string(work_size);
 }
 
 template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type>
 void test_in_out(std::vector<T> &values, std::vector<U> &output,
                  const std::string &program, ca::Runtime *runtime,
                  const std::string &program_type) {
   const std::string source = ca::load_text_file(ca::get_asset(program));
-  const std::string build_options =
-      "-DDATA_TYPE_OUT=" + std::string(TO::device_type) +
-      " -DDATA_TYPE_IN=" + std::string(FROM::device_type) +
-      " -DCONVERT_FUNC=" + convert_function<FROM, TO>();
-  ca::Kernel kernel = runtime->create_kernel("test_kernel", source,
-                                             build_options, program_type);
+  const int work_size = values.size();
+  const std::string options = build_options<FROM, TO, RND, SAT>(work_size);
+
+  ca::Kernel kernel =
+      runtime->create_kernel("test_kernel", source, options, program_type);
   run_kernel<FROM, TO>(kernel, values, output, runtime);
   runtime->release_kernel(kernel);
 }
 
-template <typename TestType> auto test_name() {
-  using from = std::tuple_element_t<0, TestType>;
-  using to = std::tuple_element_t<1, TestType>;
-  return std::string(from::type_name) + "->" + std::string(to::type_name);
-}
-
 template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type>
-std::vector<T> test_values() {
-  return std::vector<T>{{T(static_cast<typename FROM::underlying_type>(1))}};
+std::vector<T> test_values(int vector_size) {
+  return ca::generate_vector<T>(vector_size, 0);
 }
 
-template <> std::vector<float> test_values<ca::clc_float_t, ca::clc_half_t>();
-
 template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type>
 std::vector<T> test_random_values() {
@@ -134,6 +182,8 @@ template <>
 std::vector<float> test_random_values<ca::clc_float_t, ca::clc_half_t>();
 
 template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type>
 std::vector<U> test_references() {
@@ -141,6 +191,85 @@ std::vector<U> test_references() {
 }
 
 template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
+          typename T = typename FROM::scalar_type::host_type,
+          typename U = typename TO::scalar_type::host_type,
+          std::enable_if_t<SAT == OverflowHandling::overflow_default, int> = 0>
+std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  set_rounding_mode(RND);
+  std::vector<U> ret(values.size());
+  auto cast_to_output_type = [](const T val) {
+    return U(static_cast<typename TO::underlying_type>(val));
+  };
+  std::transform(std::begin(values), std::end(values), begin(ret),
+                 cast_to_output_type);
+
+  return ret;
+}
+
+template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_saturation,
+          typename T = typename FROM::scalar_type::host_type,
+          typename U = typename TO::scalar_type::host_type,
+          std::enable_if_t<SAT == OverflowHandling::overflow_saturation &&
+                               ca::is_floating_point_v<T>,
+                           int> = 0>
+std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  set_rounding_mode(RND);
+  auto tmp = values;
+  std::vector<U> ret(tmp.size());
+  auto convert_to_output_type = [](const T val) {
+    if (std::isnan(val)) {
+      return U(0);
+    }
+    if (val > T(std::numeric_limits<U>::max())) {
+      return std::numeric_limits<U>::max();
+    }
+    if (val < T(std::numeric_limits<U>::lowest())) {
+      return std::numeric_limits<U>::lowest();
+    }
+    return U(static_cast<typename TO::underlying_type>(val));
+  };
+  std::transform(std::begin(values), std::end(values), begin(ret),
+                 convert_to_output_type);
+  return ret;
+}
+
+template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_saturation,
+          typename T = typename FROM::scalar_type::host_type,
+          typename U = typename TO::scalar_type::host_type,
+          std::enable_if_t<SAT == OverflowHandling::overflow_saturation &&
+                               std::is_integral_v<T>,
+                           int> = 0>
+std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  set_rounding_mode(RND);
+  auto tmp = values;
+  std::vector<U> ret(tmp.size());
+  auto convert_to_output_type = [](const T val) {
+    if (val > std::numeric_limits<U>::max()) {
+      return std::numeric_limits<U>::max();
+    }
+    if ((val < std::numeric_limits<U>::min()) &&
+            (std::numeric_limits<T>::is_signed ==
+             std::numeric_limits<U>::is_signed) ||
+        (val < 0 && std::numeric_limits<T>::is_signed &&
+         !std::numeric_limits<U>::is_signed)) {
+      return std::numeric_limits<U>::min();
+    }
+    return U(static_cast<typename TO::underlying_type>(val));
+  };
+  std::transform(std::begin(values), std::end(values), begin(ret),
+                 convert_to_output_type);
+  return ret;
+}
+
+template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type>
 std::vector<U> test_references(const T random) {
@@ -164,13 +293,18 @@ template <>
 void compare(const std::vector<ca::Half> &output,
              const std::vector<ca::Half> &reference);
 
-template <typename TestType>
-void scalar_to_scalar(const std::string &program,
-                      const std::string &rounding_mode = "") {
-  using from = std::tuple_element_t<0, TestType>;
-  using to = std::tuple_element_t<1, TestType>;
+template <>
+void compare(const std::vector<double> &output,
+             const std::vector<double> &reference);
+
+template <typename TestType> void scalar_to_scalar(const std::string &program) {
+  using from = typename TestType::from_type;
+  using to = typename TestType::to_type;
   using type_from = typename from::host_type;
   using type_to = typename to::host_type;
+
+  const RoundingMode rounding_mode = TestType::rounding_mode;
+  const OverflowHandling overflow_handling = TestType::overflow_handling;
 
   const TestConfig &config = get_test_config();
 
@@ -181,29 +315,29 @@ void scalar_to_scalar(const std::string &program,
     return;
   }
 
-  const auto values = test_values<from, to>();
-  auto index = GENERATE_COPY(range(size_t{0}, values.size()));
-
-  std::vector<type_from> value(1, values[index]);
+  auto values = test_values<from, to>(1);
   std::vector<type_to> output(
       1, type_to(static_cast<typename to::underlying_type>(0)));
-  const auto references = test_references<from, to>();
-  assert(values.size() == references.size());
+  const auto references =
+      test_references<from, to, rounding_mode, overflow_handling>(values, 1);
+  assert(output.size() == references.size());
 
-  test_in_out<from, to>(value, output, program, config.runtime(),
-                        config.program_type());
+  test_in_out<from, to, rounding_mode, overflow_handling>(
+      values, output, program, config.runtime(), config.program_type());
 
-  compare(output, std::vector<type_to>(1, references[index]));
+  compare(output, references);
 }
 
-template <typename TestType>
-void scalar_to_vector(const std::string &program,
-                      const std::string &rounding_mode = "") {
-  using from = std::tuple_element_t<0, TestType>;
-  using to = std::tuple_element_t<1, TestType>;
+template <typename TestType> void scalar_to_vector(const std::string &program) {
+  using from = typename TestType::from_type;
+  using to = typename TestType::to_type;
   using type_from = typename from::host_type;
   using type_to = typename to::host_type;
   using value_type_to = typename type_to::value_type;
+  using underlying_type_to = typename to::underlying_type;
+
+  const RoundingMode rounding_mode = TestType::rounding_mode;
+  const OverflowHandling overflow_handling = TestType::overflow_handling;
 
   const TestConfig &config = get_test_config();
 
@@ -214,33 +348,35 @@ void scalar_to_vector(const std::string &program,
     return;
   }
 
-  const auto values = test_values<from, typename to::scalar_type>();
-  auto index = GENERATE_COPY(range(size_t{0}, values.size()));
+  auto values = test_values<from, typename to::scalar_type>(1);
 
-  std::vector<type_from> value(1, values[index]);
   std::vector<value_type_to> output(
       type_to::vector_size,
       value_type_to(static_cast<typename to::underlying_type>(0)));
-  const auto references = test_references<from, typename to::scalar_type>();
-  assert(values.size() == references.size());
+  auto references =
+      test_references<from, typename to::scalar_type, rounding_mode,
+                      overflow_handling>(values, type_to::vector_size);
+  references.resize(output.size(), references[0]);
+  assert(output.size() == references.size());
 
-  test_in_out<from, to>(value, output, program, config.runtime(),
+  test_in_out<from, to>(values, output, program, config.runtime(),
                         config.program_type());
 
-  compare(output,
-          std::vector<value_type_to>(type_to::vector_size, references[index]));
+  compare(output, references);
 }
 
-template <typename TestType>
-void vector_to_vector(const std::string &program,
-                      const std::string &rounding_mode = "") {
-  using from = std::tuple_element_t<0, TestType>;
-  using to = std::tuple_element_t<1, TestType>;
+template <typename TestType> void vector_to_vector(const std::string &program) {
+  using from = typename TestType::from_type;
+  using to = typename TestType::to_type;
   using type_from = typename from::host_type;
   using value_type_from = typename type_from::value_type;
   using type_to = typename to::host_type;
   using value_type_to = typename type_to::value_type;
+  using underlying_type_from = typename from::underlying_type;
+  using underlying_type_to = typename to::underlying_type;
 
+  const RoundingMode rounding_mode = TestType::rounding_mode;
+  const OverflowHandling overflow_handling = TestType::overflow_handling;
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
@@ -250,24 +386,22 @@ void vector_to_vector(const std::string &program,
     return;
   }
 
-  const auto values =
-      test_values<typename from::scalar_type, typename to::scalar_type>();
-  auto index = GENERATE_COPY(range(size_t{0}, values.size()));
+  auto values =
+      test_values<typename from::scalar_type, typename to::scalar_type>(
+          type_from::vector_size);
 
-  std::vector<value_type_from> value(size_t{type_from::vector_size},
-                                     values[index]);
   std::vector<value_type_to> output(
       type_to::vector_size,
       value_type_to(static_cast<typename to::underlying_type>(0)));
-  const auto references =
-      test_references<typename from::scalar_type, typename to::scalar_type>();
-  assert(values.size() == references.size());
+  auto references =
+      test_references<typename from::scalar_type, typename to::scalar_type,
+                      rounding_mode, overflow_handling>(values,
+                                                        type_to::vector_size);
 
-  test_in_out<from, to>(value, output, program, config.runtime(),
-                        config.program_type());
+  test_in_out<from, to, rounding_mode, overflow_handling>(
+      values, output, program, config.runtime(), config.program_type());
 
-  compare(output,
-          std::vector<value_type_to>(type_to::vector_size, references[index]));
+  compare(output, references);
 }
 
 #endif
