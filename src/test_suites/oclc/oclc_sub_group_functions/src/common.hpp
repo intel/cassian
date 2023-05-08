@@ -66,7 +66,8 @@ template <typename T> struct TestCaseDescriptor {
         kernel_func_name(""), kernel_build_options(""),
         change_prefix_for_types(false), change_prefix_for_all_types(false),
         delta_size(0), test_extension_type(generic),
-        test_function_type(read_ft) {}
+        test_function_type(read_ft), block_width(1), block_height(1),
+        sub_group_size(8), elements_per_pixel(1) {}
 
   std::vector<TestArguments> test_args;
   size_t local_mem_size;
@@ -82,6 +83,7 @@ template <typename T> struct TestCaseDescriptor {
   size_t block_width;
   size_t block_height;
   size_t sub_group_size;
+  uint32_t elements_per_pixel;
   // image_descriptor common for all kernel args
   ImageConfig image_config;
 
@@ -221,7 +223,9 @@ private:
         T::device_type + std::string(" -D FUNC_NAME1=") + func_name1 +
         std::string(" -D FUNC_NAME2=") + func_name2 +
         std::string(" -D VECTOR_SIZE=") + vec_size +
-        std::string(" -D INPUT_DATA_TYPE=") + input_data_type;
+        std::string(" -D INPUT_DATA_TYPE=") + input_data_type +
+        std::string(" -D ELEMENTS_PER_PIXEL=") +
+        std::to_string(elements_per_pixel);
     if (test_extension_type == media_block_image) {
       build_options +=
           std::string(" -D BLOCK_WIDTH=") + std::to_string(block_width);
@@ -277,13 +281,8 @@ std::vector<std::vector<T>> run_kernel(
 
       img_data_count.push_back(test_arg.data_count);
       ca::ImageFormat format = test_description.image_config.format;
-      int elements_per_pixel = 1;
-      size_t var_size = sizeof(scalar_type_check);
-      if (var_size == 8) {
-        elements_per_pixel = 2;
-      }
-
-      ca::ImageDimensions dims(test_arg.image_dim_0 * elements_per_pixel,
+      ca::ImageDimensions dims(test_arg.image_dim_0 *
+                                   test_description.elements_per_pixel,
                                test_arg.image_dim_1);
 
       ca::ImageChannelOrder channels = test_description.image_config.order;

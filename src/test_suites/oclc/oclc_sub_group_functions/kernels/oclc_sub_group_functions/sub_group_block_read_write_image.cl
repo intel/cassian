@@ -25,11 +25,7 @@ test_kernel_sub_group_block_read_write_image(read_write image2d_t image) {
   size_t yc = get_global_id(1) * VECTOR_SIZE;
   size_t tidg = get_global_linear_id();
   int2 pos = (int2)(offset_for_subgroup, yc);
-  int elements_per_pixel = 1;
-  int ulong_size = sizeof(ulong);
-  if (size_of_scalar == ulong_size)
-    elements_per_pixel = 2;
-
+  int elements_per_pixel = ELEMENTS_PER_PIXEL;
   size_t img_pixel_width = get_image_width(image) / elements_per_pixel;
   size_t img_byte_offset = x + img_pixel_width * yc;
 

@@ -48,9 +48,7 @@ std::vector<std::tuple<ca::ImageChannelOrder, ca::ImageFormat>> image_formats{
     {ca::ImageChannelOrder::rgba, ca::ImageFormat::unsigned_int32},
     {ca::ImageChannelOrder::rgba, ca::ImageFormat::float16},
     {ca::ImageChannelOrder::rgba, ca::ImageFormat::float32},
-    {ca::ImageChannelOrder::bgra, ca::ImageFormat::unorm_int8},
-    {ca::ImageChannelOrder::rgb, ca::ImageFormat::unorm_short_565},
-    {ca::ImageChannelOrder::rgb, ca::ImageFormat::unorm_int_101010}};
+    {ca::ImageChannelOrder::bgra, ca::ImageFormat::unorm_int8}};
 
 template <typename TEST_TYPE>
 void print_test_info(TestExtensionType test_extension_type,
@@ -256,14 +254,19 @@ void test_subgroup_block(const TestConfig &config,
             img_config.order = std::get<0>(each_image_format);
             uint32_t pixel_size =
                 ca::get_pixel_size(img_config.format, img_config.order);
-            if (scalar_size != pixel_size ||
-                (scalar_size == 8 && pixel_size == 8)) {
+            if (test_extension_type == block_image && scalar_size == 8 &&
+                pixel_size == scalar_size) {
               continue;
             }
             img_config.dim.width = image_width;
             img_config.dim.height = image_height;
             img_config.type = ca::ImageType::t_2d;
             test_description.image_config = img_config;
+            size_t var_size = sizeof(scalar_type);
+            test_description.elements_per_pixel = var_size / pixel_size;
+            if (test_description.elements_per_pixel == 0) {
+              continue;
+            }
             print_test_info<TEST_TYPE>(test_extension_type, test_description);
             const std::vector<std::vector<scalar_type>> outputs =
                 run_test<scalar_type, TEST_TYPE, N>(

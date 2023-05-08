@@ -47,7 +47,7 @@ test_kernel_sub_group_media_block_write_image(
   DATA_TYPE write_data = 0;
   for (size_t i = 0; i < VECTOR_SIZE; i++) {
 #if VECTOR_SIZE > 1
-    write_result[i] = input_data[indexes[i]];
+    write_data[i] = input_data[indexes[i]];
 #else
     write_data = input_data[indexes[i]];
 #endif
