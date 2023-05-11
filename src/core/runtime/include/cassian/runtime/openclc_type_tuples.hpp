@@ -32,6 +32,9 @@ using IntegerTypes =
     std::tuple<OpenCLCChar<N>, OpenCLCShort<N>, OpenCLCInt<N>, OpenCLCLong<N>,
                OpenCLCUchar<N>, OpenCLCUshort<N>, OpenCLCUint<N>,
                OpenCLCUlong<N>>;
+
+template <size_t N>
+using FloatingPointTypes = std::tuple<OpenCLCFloat<N>, OpenCLCDouble<N>>;
 } // namespace detail
 
 /**
@@ -45,9 +48,24 @@ using ScalarTypes = detail::BasicTypes<1>;
 using IntegerScalarTypes = detail::IntegerTypes<1>;
 
 /**
+ * Tuple containing OpenCL C floating point scalar types.
+ */
+using FloatingPointScalarTypes = detail::FloatingPointTypes<1>;
+
+/**
  * Tuple containing OpenCL C 2-element vector types.
  */
 using Vector2Types = detail::BasicTypes<2>;
+
+/**
+ * Tuple containing OpenCL C 2-element vector integer types.
+ */
+using Vector2IntegerTypes = detail::IntegerTypes<2>;
+
+/**
+ * Tuple containing OpenCL C 2-element vector floating point types.
+ */
+using Vector2FloatingPointTypes = detail::FloatingPointTypes<2>;
 
 /**
  * Tuple containing OpenCL C 3-element vector types.
@@ -55,9 +73,29 @@ using Vector2Types = detail::BasicTypes<2>;
 using Vector3Types = detail::BasicTypes<3>;
 
 /**
+ * Tuple containing OpenCL C 3-element vector integer types.
+ */
+using Vector3IntegerTypes = detail::IntegerTypes<3>;
+
+/**
+ * Tuple containing OpenCL C 3-element vector floating point types.
+ */
+using Vector3FloatingPointTypes = detail::FloatingPointTypes<3>;
+
+/**
  * Tuple containing OpenCL C 4-element vector types.
  */
 using Vector4Types = detail::BasicTypes<4>;
+
+/**
+ * Tuple containing OpenCL C 4-element vector integer types.
+ */
+using Vector4IntegerTypes = detail::IntegerTypes<4>;
+
+/**
+ * Tuple containing OpenCL C 4-element vector floating point types.
+ */
+using Vector4FloatingPointTypes = detail::FloatingPointTypes<4>;
 
 /**
  * Tuple containing OpenCL C 8-element vector types.
@@ -65,9 +103,29 @@ using Vector4Types = detail::BasicTypes<4>;
 using Vector8Types = detail::BasicTypes<8>;
 
 /**
+ * Tuple containing OpenCL C 8-element vector integer types.
+ */
+using Vector8IntegerTypes = detail::IntegerTypes<8>;
+
+/**
+ * Tuple containing OpenCL C 8-element vector floating point types.
+ */
+using Vector8FloatingPointTypes = detail::FloatingPointTypes<8>;
+
+/**
  * Tuple containing OpenCL C 16-element vector types.
  */
 using Vector16Types = detail::BasicTypes<16>;
+
+/**
+ * Tuple containing OpenCL C 16-element vector integer types.
+ */
+using Vector16IntegerTypes = detail::IntegerTypes<16>;
+
+/**
+ * Tuple containing OpenCL C 16-element vector floating point types.
+ */
+using Vector16FloatingPointTypes = detail::FloatingPointTypes<16>;
 
 /**
  * Tuple containing OpenCL C vector types.
@@ -144,6 +202,18 @@ using TypesDouble =
 using ScalarToScalar = CartesianProduct<ScalarTypes, ScalarTypes>::type;
 
 /**
+ * Tuple containing 2-element tuples of OpenCL C integer scalar types.
+ */
+using IntegerScalarToIntegerScalar =
+    CartesianProduct<IntegerScalarTypes, IntegerScalarTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C floating point scalar types.
+ */
+using FloatingPointScalarToFloatingPointScalar =
+    CartesianProduct<FloatingPointScalarTypes, FloatingPointScalarTypes>::type;
+
+/**
  * Tuple containing 2-element tuples of OpenCL C scalar and 2-element vector
  * types.
  */
@@ -179,9 +249,37 @@ using ScalarToVector16 = CartesianProduct<ScalarTypes, Vector16Types>::type;
 using Vector2ToVector2 = CartesianProduct<Vector2Types, Vector2Types>::type;
 
 /**
+ * Tuple containing 2-element tuples of OpenCL C 2-element integer vector types.
+ */
+using Vector2IntegerToVector2Integer =
+    CartesianProduct<Vector2IntegerTypes, Vector2IntegerTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 2-element floating point vector
+ * types.
+ */
+using Vector2FloatingPointToVector2FloatingPoint =
+    CartesianProduct<Vector2FloatingPointTypes,
+                     Vector2FloatingPointTypes>::type;
+
+/**
  * Tuple containing 2-element tuples of OpenCL C 3-element vector types.
  */
 using Vector3ToVector3 = CartesianProduct<Vector3Types, Vector3Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 3-element integer vector types.
+ */
+using Vector3IntegerToVector3Integer =
+    CartesianProduct<Vector3IntegerTypes, Vector3IntegerTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 3-element floating point vector
+ * types.
+ */
+using Vector3FloatingPointToVector3FloatingPoint =
+    CartesianProduct<Vector3FloatingPointTypes,
+                     Vector3FloatingPointTypes>::type;
 
 /**
  * Tuple containing 2-element tuples of OpenCL C 4-element vector types.
@@ -189,14 +287,57 @@ using Vector3ToVector3 = CartesianProduct<Vector3Types, Vector3Types>::type;
 using Vector4ToVector4 = CartesianProduct<Vector4Types, Vector4Types>::type;
 
 /**
+ * Tuple containing 2-element tuples of OpenCL C 4-element integer vector types.
+ */
+using Vector4IntegerToVector4Integer =
+    CartesianProduct<Vector4IntegerTypes, Vector4IntegerTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 4-element floating point vector
+ * types.
+ */
+using Vector4FloatingPointToVector4FloatingPoint =
+    CartesianProduct<Vector4FloatingPointTypes,
+                     Vector4FloatingPointTypes>::type;
+
+/**
  * Tuple containing 2-element tuples of OpenCL C 8-element vector types.
  */
 using Vector8ToVector8 = CartesianProduct<Vector8Types, Vector8Types>::type;
 
 /**
+ * Tuple containing 2-element tuples of OpenCL C 8-element integer vector types.
+ */
+using Vector8IntegerToVector8Integer =
+    CartesianProduct<Vector8IntegerTypes, Vector8IntegerTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 8-element floating point vector
+ * types.
+ */
+using Vector8FloatingPointToVector8FloatingPoint =
+    CartesianProduct<Vector8FloatingPointTypes,
+                     Vector8FloatingPointTypes>::type;
+
+/**
  * Tuple containing 2-element tuples of OpenCL C 16-element vector types.
  */
 using Vector16ToVector16 = CartesianProduct<Vector16Types, Vector16Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 16-element integer vector
+ * types.
+ */
+using Vector16IntegerToVector16Integer =
+    CartesianProduct<Vector16IntegerTypes, Vector16IntegerTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 16-element floating point
+ * vector types.
+ */
+using Vector16FloatingPointToVector16FloatingPoint =
+    CartesianProduct<Vector16FloatingPointTypes,
+                     Vector16FloatingPointTypes>::type;
 
 /**
  * Tuple containing OpenCL C unsigned integer scalar and vector types.
