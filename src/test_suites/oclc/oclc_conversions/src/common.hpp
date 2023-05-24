@@ -164,9 +164,29 @@ template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
           OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
-          typename U = typename TO::scalar_type::host_type>
+          typename U = typename TO::scalar_type::host_type,
+          std::enable_if_t<SAT == OverflowHandling::overflow_saturation ||
+                               (SAT == OverflowHandling::overflow_default &&
+                                std::is_integral_v<T>),
+                           int> = 0>
 std::vector<T> test_values(int vector_size) {
   return ca::generate_vector<T>(vector_size, 0);
+}
+
+template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
+          typename T = typename FROM::scalar_type::host_type,
+          typename U = typename TO::scalar_type::host_type,
+          std::enable_if_t<SAT == OverflowHandling::overflow_default &&
+                               ca::is_floating_point_v<T>,
+                           int> = 0>
+std::vector<T> test_values(int vector_size) {
+  return ca::generate_vector<T>(
+      vector_size,
+      std::max(std::numeric_limits<T>::min(), T(std::numeric_limits<U>::min())),
+      std::min(std::numeric_limits<T>::max(), T(std::numeric_limits<U>::max())),
+      0);
 }
 
 template <typename FROM, typename TO,
@@ -190,12 +210,14 @@ std::vector<U> test_references() {
   return std::vector<U>{{U(static_cast<typename TO::underlying_type>(1))}};
 }
 
-template <typename FROM, typename TO,
-          RoundingMode RND = RoundingMode::round_default,
-          OverflowHandling SAT = OverflowHandling::overflow_default,
-          typename T = typename FROM::scalar_type::host_type,
-          typename U = typename TO::scalar_type::host_type,
-          std::enable_if_t<SAT == OverflowHandling::overflow_default, int> = 0>
+template <
+    typename FROM, typename TO, RoundingMode RND = RoundingMode::round_default,
+    OverflowHandling SAT = OverflowHandling::overflow_default,
+    typename T = typename FROM::scalar_type::host_type,
+    typename U = typename TO::scalar_type::host_type,
+    std::enable_if_t<SAT == OverflowHandling::overflow_default &&
+                         (std::is_integral_v<T> || ca::is_floating_point_v<U>),
+                     int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
   set_rounding_mode(RND);
   std::vector<U> ret(values.size());
@@ -208,6 +230,46 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
   return ret;
 }
 
+template <
+    typename FROM, typename TO, RoundingMode RND = RoundingMode::round_default,
+    OverflowHandling SAT = OverflowHandling::overflow_default,
+    typename T = typename FROM::scalar_type::host_type,
+    typename U = typename TO::scalar_type::host_type,
+    std::enable_if_t<SAT == OverflowHandling::overflow_default &&
+                         ca::is_floating_point_v<T> && std::is_integral_v<U>,
+                     int> = 0>
+std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  std::vector<U> ret(values.size());
+  for (size_t i = 0; i < values.size(); i++) {
+    switch (RND) {
+    case RoundingMode::round_default:
+    case RoundingMode::round_toward_zero: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::trunc(values[i])));
+      continue;
+    }
+    case RoundingMode::round_to_nearest_even: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::round(values[i])));
+      continue;
+    }
+    case RoundingMode::round_toward_negative_infinity: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::floor(values[i])));
+      continue;
+    }
+    case RoundingMode::round_toward_positive_infinity: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::ceil(values[i])));
+      continue;
+    }
+    default:
+      throw UnknownRoundingModeException("Unknown rounding mode");
+    }
+  }
+  return ret;
+}
+
 template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
           OverflowHandling SAT = OverflowHandling::overflow_saturation,
@@ -217,23 +279,46 @@ template <typename FROM, typename TO,
                                ca::is_floating_point_v<T>,
                            int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
-  set_rounding_mode(RND);
-  auto tmp = values;
-  std::vector<U> ret(tmp.size());
-  auto convert_to_output_type = [](const T val) {
-    if (std::isnan(val)) {
-      return U(0);
+  std::vector<U> ret(values.size());
+  for (size_t i = 0; i < values.size(); i++) {
+    if (std::isnan(values[i])) {
+      ret[i] = U(0);
+      continue;
     }
-    if (val > T(std::numeric_limits<U>::max())) {
-      return std::numeric_limits<U>::max();
+    if (values[i] > T(std::numeric_limits<U>::max())) {
+      ret[i] = std::numeric_limits<U>::max();
+      continue;
     }
-    if (val < T(std::numeric_limits<U>::lowest())) {
-      return std::numeric_limits<U>::lowest();
+    if (values[i] < T(std::numeric_limits<U>::lowest())) {
+      ret[i] = std::numeric_limits<U>::lowest();
+      continue;
     }
-    return U(static_cast<typename TO::underlying_type>(val));
-  };
-  std::transform(std::begin(values), std::end(values), begin(ret),
-                 convert_to_output_type);
+    switch (RND) {
+    case RoundingMode::round_default:
+    case RoundingMode::round_toward_zero: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::trunc(values[i])));
+      continue;
+    }
+    case RoundingMode::round_to_nearest_even: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::round(values[i])));
+      continue;
+    }
+    case RoundingMode::round_toward_negative_infinity: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::floor(values[i])));
+      continue;
+    }
+    case RoundingMode::round_toward_positive_infinity: {
+      ret[i] =
+          U(static_cast<typename TO::underlying_type>(std::ceil(values[i])));
+      continue;
+    }
+    default:
+      throw UnknownRoundingModeException("Unknown rounding mode");
+    }
+  }
   return ret;
 }
 
@@ -315,7 +400,7 @@ template <typename TestType> void scalar_to_scalar(const std::string &program) {
     return;
   }
 
-  auto values = test_values<from, to>(1);
+  auto values = test_values<from, to, rounding_mode, overflow_handling>(1);
   std::vector<type_to> output(
       1, type_to(static_cast<typename to::underlying_type>(0)));
   const auto references =
@@ -348,7 +433,8 @@ template <typename TestType> void scalar_to_vector(const std::string &program) {
     return;
   }
 
-  auto values = test_values<from, typename to::scalar_type>(1);
+  auto values = test_values<from, typename to::scalar_type, rounding_mode,
+                            overflow_handling>(1);
 
   std::vector<value_type_to> output(
       type_to::vector_size,
@@ -387,8 +473,8 @@ template <typename TestType> void vector_to_vector(const std::string &program) {
   }
 
   auto values =
-      test_values<typename from::scalar_type, typename to::scalar_type>(
-          type_from::vector_size);
+      test_values<typename from::scalar_type, typename to::scalar_type,
+                  rounding_mode, overflow_handling>(type_from::vector_size);
 
   std::vector<value_type_to> output(
       type_to::vector_size,
