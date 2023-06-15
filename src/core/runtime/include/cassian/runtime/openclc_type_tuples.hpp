@@ -244,9 +244,38 @@ using ScalarToVector8 = CartesianProduct<ScalarTypes, Vector8Types>::type;
 using ScalarToVector16 = CartesianProduct<ScalarTypes, Vector16Types>::type;
 
 /**
+ * Tuple containing 2-element tuples of OpenCL C 2-element vector and scalar
+ * types.
+ */
+using Vector2ToScalar = CartesianProduct<Vector2Types, ScalarTypes>::type;
+
+/**
  * Tuple containing 2-element tuples of OpenCL C 2-element vector types.
  */
 using Vector2ToVector2 = CartesianProduct<Vector2Types, Vector2Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 3-element vector types.
+ */
+using Vector2ToVector3 = CartesianProduct<Vector2Types, Vector3Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 2-element vector and 4-element
+ * vector types.
+ */
+using Vector2ToVector4 = CartesianProduct<Vector2Types, Vector4Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 2-element vector and 8-element
+ * vector types.
+ */
+using Vector2ToVector8 = CartesianProduct<Vector2Types, Vector8Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 2-element vector and 16-element
+ * vector types.
+ */
+using Vector2ToVector16 = CartesianProduct<Vector2Types, Vector16Types>::type;
 
 /**
  * Tuple containing 2-element tuples of OpenCL C 2-element integer vector types.
@@ -263,9 +292,39 @@ using Vector2FloatingPointToVector2FloatingPoint =
                      Vector2FloatingPointTypes>::type;
 
 /**
+ * Tuple containing 2-element tuples of OpenCL C 3-element vector and scalar
+ * types.
+ */
+using Vector3ToScalar = CartesianProduct<Vector3Types, ScalarTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 3-element vector and 2-element
+ * vector types.
+ */
+using Vector3ToVector2 = CartesianProduct<Vector3Types, Vector2Types>::type;
+
+/**
  * Tuple containing 2-element tuples of OpenCL C 3-element vector types.
  */
 using Vector3ToVector3 = CartesianProduct<Vector3Types, Vector3Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 3-element vector and 4-element
+ * vector types.
+ */
+using Vector3ToVector4 = CartesianProduct<Vector3Types, Vector4Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 3-element vector and 8-element
+ * vector types.
+ */
+using Vector3ToVector8 = CartesianProduct<Vector3Types, Vector8Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 3-element vector and 16-element
+ * vector types.
+ */
+using Vector3ToVector16 = CartesianProduct<Vector3Types, Vector16Types>::type;
 
 /**
  * Tuple containing 2-element tuples of OpenCL C 3-element integer vector types.
@@ -282,9 +341,39 @@ using Vector3FloatingPointToVector3FloatingPoint =
                      Vector3FloatingPointTypes>::type;
 
 /**
+ * Tuple containing 2-element tuples of OpenCL C 4-element vector and scalar
+ * types.
+ */
+using Vector4ToScalar = CartesianProduct<Vector4Types, ScalarTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 4-element vector and 2-element
+ * vector types.
+ */
+using Vector4ToVector2 = CartesianProduct<Vector4Types, Vector2Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 4-element vector and 3-element
+ * vector types.
+ */
+using Vector4ToVector3 = CartesianProduct<Vector4Types, Vector3Types>::type;
+
+/**
  * Tuple containing 2-element tuples of OpenCL C 4-element vector types.
  */
 using Vector4ToVector4 = CartesianProduct<Vector4Types, Vector4Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 4-element vector and 8-element
+ * vector types.
+ */
+using Vector4ToVector8 = CartesianProduct<Vector4Types, Vector8Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 4-element vector and 16-element
+ * vector types.
+ */
+using Vector4ToVector16 = CartesianProduct<Vector4Types, Vector16Types>::type;
 
 /**
  * Tuple containing 2-element tuples of OpenCL C 4-element integer vector types.
@@ -299,11 +388,40 @@ using Vector4IntegerToVector4Integer =
 using Vector4FloatingPointToVector4FloatingPoint =
     CartesianProduct<Vector4FloatingPointTypes,
                      Vector4FloatingPointTypes>::type;
+/**
+ * Tuple containing 2-element tuples of OpenCL C 8-element vector and scalar
+ * types.
+ */
+using Vector8ToScalar = CartesianProduct<Vector8Types, ScalarTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 8-element vector and 2-element
+ * vector types.
+ */
+using Vector8ToVector2 = CartesianProduct<Vector8Types, Vector2Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 8-element vector and 3-element
+ * vector types.
+ */
+using Vector8ToVector3 = CartesianProduct<Vector8Types, Vector3Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 8-element vector and 4-element
+ * vector types.
+ */
+using Vector8ToVector4 = CartesianProduct<Vector8Types, Vector4Types>::type;
 
 /**
  * Tuple containing 2-element tuples of OpenCL C 8-element vector types.
  */
 using Vector8ToVector8 = CartesianProduct<Vector8Types, Vector8Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 8-element vector and 16-element
+ * vector types.
+ */
+using Vector8ToVector16 = CartesianProduct<Vector8Types, Vector16Types>::type;
 
 /**
  * Tuple containing 2-element tuples of OpenCL C 8-element integer vector types.
@@ -318,6 +436,36 @@ using Vector8IntegerToVector8Integer =
 using Vector8FloatingPointToVector8FloatingPoint =
     CartesianProduct<Vector8FloatingPointTypes,
                      Vector8FloatingPointTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 16-element vector and scalar
+ * types.
+ */
+using Vector16ToScalar = CartesianProduct<Vector16Types, ScalarTypes>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 16element vector and 2-element
+ * vector types.
+ */
+using Vector16ToVector2 = CartesianProduct<Vector16Types, Vector2Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 16element vector and 3-element
+ * vector types.
+ */
+using Vector16ToVector3 = CartesianProduct<Vector16Types, Vector3Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 16-element vector and 4-element
+ * vector types.
+ */
+using Vector16ToVector4 = CartesianProduct<Vector16Types, Vector4Types>::type;
+
+/**
+ * Tuple containing 2-element tuples of OpenCL C 16-element vector and 8-element
+ * vector types.
+ */
+using Vector16ToVector8 = CartesianProduct<Vector16Types, Vector8Types>::type;
 
 /**
  * Tuple containing 2-element tuples of OpenCL C 16-element vector types.
