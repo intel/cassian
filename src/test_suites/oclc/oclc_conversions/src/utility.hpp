@@ -17,20 +17,29 @@ template <typename T, typename U> struct TupleToTestCase<std::tuple<T, U>> {
 template <RoundingMode RND, typename... T> struct RoundingModeProductRow {};
 
 template <RoundingMode DestRND, typename... T, typename... U,
-          RoundingMode... RND, OverflowHandling... SAT>
+          RoundingMode... RND, OverflowHandling... SAT, TestVariant... TV>
 struct RoundingModeProductRow<DestRND,
-                              std::tuple<TestCase<T, U, RND, SAT>...>> {
-  using type = std::tuple<TestCase<T, U, DestRND, SAT>...>;
+                              std::tuple<TestCase<T, U, RND, SAT, TV>...>> {
+  using type = std::tuple<TestCase<T, U, DestRND, SAT, TV>...>;
 };
 
 template <OverflowHandling SAT, typename... T>
 struct OverflowHandlingProductRow {};
 
 template <OverflowHandling DestSAT, typename... T, typename... U,
-          RoundingMode... RND, OverflowHandling... SAT>
+          RoundingMode... RND, OverflowHandling... SAT, TestVariant... TV>
 struct OverflowHandlingProductRow<DestSAT,
-                                  std::tuple<TestCase<T, U, RND, SAT>...>> {
-  using type = std::tuple<TestCase<T, U, RND, DestSAT>...>;
+                                  std::tuple<TestCase<T, U, RND, SAT, TV>...>> {
+  using type = std::tuple<TestCase<T, U, RND, DestSAT, TV>...>;
+};
+
+template <TestVariant TV, typename... T> struct TestVariantProductRow {};
+
+template <TestVariant DestTestVariant, typename... T, typename... U,
+          RoundingMode... RND, OverflowHandling... SAT, TestVariant... TV>
+struct TestVariantProductRow<DestTestVariant,
+                             std::tuple<TestCase<T, U, RND, SAT, TV>...>> {
+  using type = std::tuple<TestCase<T, U, RND, SAT, DestTestVariant>...>;
 };
 
 } // namespace detail
@@ -59,7 +68,146 @@ template <typename T, OverflowHandling... SAT>
 using overflow_handling_product_t =
     typename OverflowHandlingProduct<T, SAT...>::type;
 
+template <typename T, TestVariant... TV> struct TestVariantProduct {
+  using type = typename ca::TupleConcat<
+      typename detail::TestVariantProductRow<TV, T>::type...>::type;
+};
+template <typename T, TestVariant... TV>
+using test_variant_product_t = typename TestVariantProduct<T, TV...>::type;
+
 namespace cassian {
+
+namespace detail {
+
+using VectorSizes = std::index_sequence<1, 2, 3, 4, 8, 16>;
+
+template <size_t N>
+using OneByteTypes = std::tuple<OpenCLCChar<N>, OpenCLCUchar<N>>;
+
+template <size_t N>
+using TwoByteTypes = std::tuple<OpenCLCShort<N>, OpenCLCUshort<N>>;
+
+template <size_t N>
+using FourByteTypes =
+    std::tuple<OpenCLCInt<N>, OpenCLCUint<N>, OpenCLCFloat<N>>;
+
+template <size_t N>
+using EightByteTypes =
+    std::tuple<OpenCLCLong<N>, OpenCLCUlong<N>, OpenCLCDouble<N>>;
+} // namespace detail
+
+using ScalarOneByteTypesToScalarOneByteTypes =
+    cassian::CartesianProduct<detail::OneByteTypes<1>,
+                              detail::OneByteTypes<1>>::type;
+
+using Vector2OneByteTypesToVector2OneByteTypes =
+    cassian::CartesianProduct<detail::OneByteTypes<2>,
+                              detail::OneByteTypes<2>>::type;
+
+using Vector3OneByteTypesToVector3OneByteTypes =
+    cassian::CartesianProduct<detail::OneByteTypes<3>,
+                              detail::OneByteTypes<3>>::type;
+
+using Vector4OneByteTypesToVector4OneByteTypes =
+    cassian::CartesianProduct<detail::OneByteTypes<4>,
+                              detail::OneByteTypes<4>>::type;
+
+using Vector4OneByteTypesToVector3OneByteTypes =
+    cassian::CartesianProduct<detail::OneByteTypes<4>,
+                              detail::OneByteTypes<3>>::type;
+
+using Vector8OneByteTypesToVector8OneByteTypes =
+    cassian::CartesianProduct<detail::OneByteTypes<8>,
+                              detail::OneByteTypes<8>>::type;
+
+using Vector16OneByteTypesToVector16OneByteTypes =
+    cassian::CartesianProduct<detail::OneByteTypes<16>,
+                              detail::OneByteTypes<16>>::type;
+
+using ScalarTwoByteTypesToScalarTwoByteTypes =
+    cassian::CartesianProduct<detail::TwoByteTypes<1>,
+                              detail::TwoByteTypes<1>>::type;
+
+using Vector2TwoByteTypesToVector2TwoByteTypes =
+    cassian::CartesianProduct<detail::TwoByteTypes<2>,
+                              detail::TwoByteTypes<2>>::type;
+
+using Vector3TwoByteTypesToVector3TwoByteTypes =
+    cassian::CartesianProduct<detail::TwoByteTypes<3>,
+                              detail::TwoByteTypes<3>>::type;
+
+using Vector4TwoByteTypesToVector4TwoByteTypes =
+    cassian::CartesianProduct<detail::TwoByteTypes<4>,
+                              detail::TwoByteTypes<4>>::type;
+
+using Vector4TwoByteTypesToVector3TwoByteTypes =
+    cassian::CartesianProduct<detail::TwoByteTypes<4>,
+                              detail::TwoByteTypes<3>>::type;
+
+using Vector8TwoByteTypesToVector8TwoByteTypes =
+    cassian::CartesianProduct<detail::TwoByteTypes<8>,
+                              detail::TwoByteTypes<8>>::type;
+
+using Vector16TwoByteTypesToVector16TwoByteTypes =
+    cassian::CartesianProduct<detail::TwoByteTypes<16>,
+                              detail::TwoByteTypes<16>>::type;
+
+using ScalarFourByteTypesToScalarFourByteTypes =
+    cassian::CartesianProduct<detail::FourByteTypes<1>,
+                              detail::FourByteTypes<1>>::type;
+
+using Vector2FourByteTypesToVector2FourByteTypes =
+    cassian::CartesianProduct<detail::FourByteTypes<2>,
+                              detail::FourByteTypes<2>>::type;
+
+using Vector3FourByteTypesToVector3FourByteTypes =
+    cassian::CartesianProduct<detail::FourByteTypes<3>,
+                              detail::FourByteTypes<3>>::type;
+
+using Vector4FourByteTypesToVector4FourByteTypes =
+    cassian::CartesianProduct<detail::FourByteTypes<4>,
+                              detail::FourByteTypes<4>>::type;
+
+using Vector4FourByteTypesToVector3FourByteTypes =
+    cassian::CartesianProduct<detail::FourByteTypes<4>,
+                              detail::FourByteTypes<3>>::type;
+
+using Vector8FourByteTypesToVector8FourByteTypes =
+    cassian::CartesianProduct<detail::FourByteTypes<8>,
+                              detail::FourByteTypes<8>>::type;
+
+using Vector16FourByteTypesToVector16FourByteTypes =
+    cassian::CartesianProduct<detail::FourByteTypes<16>,
+                              detail::FourByteTypes<16>>::type;
+
+using ScalarEightByteTypesToScalarEightByteTypes =
+    cassian::CartesianProduct<detail::EightByteTypes<1>,
+                              detail::EightByteTypes<1>>::type;
+
+using Vector2EightByteTypesToVector2EightByteTypes =
+    cassian::CartesianProduct<detail::EightByteTypes<2>,
+                              detail::EightByteTypes<2>>::type;
+
+using Vector3EightByteTypesToVector3EightByteTypes =
+    cassian::CartesianProduct<detail::EightByteTypes<3>,
+                              detail::EightByteTypes<3>>::type;
+
+using Vector4EightByteTypesToVector4EightByteTypes =
+    cassian::CartesianProduct<detail::EightByteTypes<4>,
+                              detail::EightByteTypes<4>>::type;
+
+using Vector4EightByteTypesToVector3EightByteTypes =
+    cassian::CartesianProduct<detail::EightByteTypes<4>,
+                              detail::EightByteTypes<3>>::type;
+
+using Vector8EightByteTypesToVector8EightByteTypes =
+    cassian::CartesianProduct<detail::EightByteTypes<8>,
+                              detail::EightByteTypes<8>>::type;
+
+using Vector16EightByteTypesToVector16EightByteTypes =
+    cassian::CartesianProduct<detail::EightByteTypes<16>,
+                              detail::EightByteTypes<16>>::type;
+
 /**
  * Tuple containing cartesian product of OpenCL C integer scalar types and
  * OpenCL C floating point scalar types.

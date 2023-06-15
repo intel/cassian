@@ -44,6 +44,8 @@ std::string to_string(RoundingMode rounding_mode);
 std::string function_suffix(RoundingMode rounding_mode);
 void set_rounding_mode(RoundingMode rounding_mode);
 
+enum class TestVariant { conversion, reinterpretation };
+
 enum class OverflowHandling { overflow_default, overflow_saturation };
 
 std::string to_string(OverflowHandling overflow_handling);
@@ -59,10 +61,12 @@ class UnknownOverflowHandlingException : public std::runtime_error {
 
 template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
-          OverflowHandling SAT = OverflowHandling::overflow_default>
+          OverflowHandling SAT = OverflowHandling::overflow_default,
+          TestVariant TV = TestVariant::conversion>
 struct TestCase {
   using from_type = FROM;
   using to_type = TO;
+  constexpr static TestVariant test_variant = TV;
   constexpr static RoundingMode rounding_mode = RND;
   constexpr static OverflowHandling overflow_handling = SAT;
 };
@@ -134,17 +138,35 @@ std::string convert_function() {
          function_suffix(RND);
 }
 
-template <typename FROM, typename TO, RoundingMode RND, OverflowHandling SAT>
+template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_default,
+          typename T = typename FROM::scalar_type::host_type,
+          typename U = typename TO::scalar_type::host_type,
+          EnableIfBothBuiltinTypes<T, U> = 0>
+std::string reinterpret_function() {
+  return std::string("as_") + TO::device_type;
+}
+
+template <typename FROM, typename TO, RoundingMode RND, OverflowHandling SAT,
+          TestVariant TV>
 std::string build_options(const int work_size) {
-  return "-DDATA_TYPE_OUT=" + std::string(TO::device_type) +
-         " -DDATA_TYPE_IN=" + std::string(FROM::device_type) +
-         " -DCONVERT_FUNC=" + convert_function<FROM, TO, RND, SAT>() +
-         " -DWORK_GROUP_SIZE=" + std::to_string(work_size);
+  std::string options = "-DDATA_TYPE_OUT=" + std::string(TO::device_type) +
+                        " -DDATA_TYPE_IN=" + std::string(FROM::device_type) +
+                        " -DWORK_GROUP_SIZE=" + std::to_string(work_size);
+  if constexpr (TV == TestVariant::conversion) {
+    options += " -DCONVERT_FUNC=" + convert_function<FROM, TO, RND, SAT>();
+  } else if constexpr (TV == TestVariant::reinterpretation) {
+    options +=
+        " -DREINTERPRET_FUNC=" + reinterpret_function<FROM, TO, RND, SAT>();
+  }
+  return options;
 }
 
 template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
           OverflowHandling SAT = OverflowHandling::overflow_default,
+          TestVariant TV = TestVariant::conversion,
           typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type>
 void test_in_out(std::vector<T> &values, std::vector<U> &output,
@@ -152,7 +174,7 @@ void test_in_out(std::vector<T> &values, std::vector<U> &output,
                  const std::string &program_type) {
   const std::string source = ca::load_text_file(ca::get_asset(program));
   const int work_size = values.size();
-  const std::string options = build_options<FROM, TO, RND, SAT>(work_size);
+  const std::string options = build_options<FROM, TO, RND, SAT, TV>(work_size);
 
   ca::Kernel kernel =
       runtime->create_kernel("test_kernel", source, options, program_type);
@@ -212,10 +234,11 @@ std::vector<U> test_references() {
 
 template <
     typename FROM, typename TO, RoundingMode RND = RoundingMode::round_default,
-    OverflowHandling SAT = OverflowHandling::overflow_default,
+    OverflowHandling SAT = OverflowHandling::overflow_default, TestVariant TV,
     typename T = typename FROM::scalar_type::host_type,
     typename U = typename TO::scalar_type::host_type,
-    std::enable_if_t<SAT == OverflowHandling::overflow_default &&
+    std::enable_if_t<TV == TestVariant::conversion &&
+                         SAT == OverflowHandling::overflow_default &&
                          (std::is_integral_v<T> || ca::is_floating_point_v<U>),
                      int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
@@ -232,10 +255,11 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
 
 template <
     typename FROM, typename TO, RoundingMode RND = RoundingMode::round_default,
-    OverflowHandling SAT = OverflowHandling::overflow_default,
+    OverflowHandling SAT = OverflowHandling::overflow_default, TestVariant TV,
     typename T = typename FROM::scalar_type::host_type,
     typename U = typename TO::scalar_type::host_type,
-    std::enable_if_t<SAT == OverflowHandling::overflow_default &&
+    std::enable_if_t<TV == TestVariant::conversion &&
+                         SAT == OverflowHandling::overflow_default &&
                          ca::is_floating_point_v<T> && std::is_integral_v<U>,
                      int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
@@ -273,9 +297,10 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
 template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
           OverflowHandling SAT = OverflowHandling::overflow_saturation,
-          typename T = typename FROM::scalar_type::host_type,
+          TestVariant TV, typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type,
-          std::enable_if_t<SAT == OverflowHandling::overflow_saturation &&
+          std::enable_if_t<TV == TestVariant::conversion &&
+                               SAT == OverflowHandling::overflow_saturation &&
                                ca::is_floating_point_v<T>,
                            int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
@@ -325,9 +350,10 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
 template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
           OverflowHandling SAT = OverflowHandling::overflow_saturation,
-          typename T = typename FROM::scalar_type::host_type,
+          TestVariant TV, typename T = typename FROM::scalar_type::host_type,
           typename U = typename TO::scalar_type::host_type,
-          std::enable_if_t<SAT == OverflowHandling::overflow_saturation &&
+          std::enable_if_t<TV == TestVariant::conversion &&
+                               SAT == OverflowHandling::overflow_saturation &&
                                std::is_integral_v<T>,
                            int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
@@ -350,6 +376,33 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
   std::transform(std::begin(values), std::end(values), begin(ret),
                  convert_to_output_type);
   return ret;
+}
+
+template <typename FROM, typename TO,
+          RoundingMode RND = RoundingMode::round_default,
+          OverflowHandling SAT = OverflowHandling::overflow_saturation,
+          TestVariant TV, typename T = typename FROM::scalar_type::host_type,
+          typename U = typename TO::scalar_type::host_type,
+          std::enable_if_t<TV == TestVariant::reinterpretation, int> = 0>
+std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  const size_t input_size_in_bytes = sizeof(T) * values.size();
+  const size_t output_type_size_in_bytes = sizeof(U);
+  int byte_idx = 0;
+  unsigned char *buffer = reinterpret_cast<unsigned char *>(values.data());
+  std::vector<U> vec;
+  while (byte_idx < input_size_in_bytes && byte_idx < sizeof(U) * output_size) {
+    U val = 0;
+    unsigned char *c = reinterpret_cast<unsigned char *>(&val);
+    for (auto i = 0; i < output_type_size_in_bytes; i++) {
+      if (byte_idx >= input_size_in_bytes) {
+        break;
+      }
+      c[i] = buffer[byte_idx];
+      byte_idx++;
+    }
+    vec.push_back(val);
+  }
+  return vec;
 }
 
 template <typename FROM, typename TO,
@@ -382,6 +435,23 @@ template <>
 void compare(const std::vector<double> &output,
              const std::vector<double> &reference);
 
+template <typename T>
+void compare_bytewise(const std::vector<T> &output,
+                      const std::vector<T> &reference,
+                      size_t number_of_bytes_to_compare) {
+  const uint8_t *output_data = reinterpret_cast<const uint8_t *>(output.data());
+  const uint8_t *reference_data =
+      reinterpret_cast<const uint8_t *>(reference.data());
+  CHECKED_IF(std::memcmp(output_data, reference_data,
+                         number_of_bytes_to_compare) == 0) {
+    return;
+  }
+  for (auto i = 0; i < number_of_bytes_to_compare; i++) {
+    REQUIRE(static_cast<int>(output_data[i]) ==
+            static_cast<int>(reference_data[i]));
+  }
+}
+
 template <typename TestType> void scalar_to_scalar(const std::string &program) {
   using from = typename TestType::from_type;
   using to = typename TestType::to_type;
@@ -390,6 +460,7 @@ template <typename TestType> void scalar_to_scalar(const std::string &program) {
 
   const RoundingMode rounding_mode = TestType::rounding_mode;
   const OverflowHandling overflow_handling = TestType::overflow_handling;
+  const TestVariant test_variant = TestType::test_variant;
 
   const TestConfig &config = get_test_config();
 
@@ -403,14 +474,24 @@ template <typename TestType> void scalar_to_scalar(const std::string &program) {
   auto values = test_values<from, to, rounding_mode, overflow_handling>(1);
   std::vector<type_to> output(
       1, type_to(static_cast<typename to::underlying_type>(0)));
-  const auto references =
-      test_references<from, to, rounding_mode, overflow_handling>(values, 1);
+
+  std::vector<type_to> references =
+      test_references<from, to, rounding_mode, overflow_handling, test_variant>(
+          values, 1);
+  references.resize(output.size(), references[0]);
   assert(output.size() == references.size());
 
-  test_in_out<from, to, rounding_mode, overflow_handling>(
+  test_in_out<from, to, rounding_mode, overflow_handling, test_variant>(
       values, output, program, config.runtime(), config.program_type());
 
-  compare(output, references);
+  if constexpr (test_variant == TestVariant::conversion) {
+    compare(output, references);
+  }
+  if constexpr (test_variant == TestVariant::reinterpretation) {
+    compare_bytewise(output, references,
+                     std::min(static_cast<unsigned int>(sizeof(type_from)),
+                              static_cast<unsigned int>(sizeof(type_to))));
+  }
 }
 
 template <typename TestType> void scalar_to_vector(const std::string &program) {
@@ -423,6 +504,7 @@ template <typename TestType> void scalar_to_vector(const std::string &program) {
 
   const RoundingMode rounding_mode = TestType::rounding_mode;
   const OverflowHandling overflow_handling = TestType::overflow_handling;
+  const TestVariant test_variant = TestType::test_variant;
 
   const TestConfig &config = get_test_config();
 
@@ -439,16 +521,26 @@ template <typename TestType> void scalar_to_vector(const std::string &program) {
   std::vector<value_type_to> output(
       type_to::vector_size,
       value_type_to(static_cast<typename to::underlying_type>(0)));
-  auto references =
-      test_references<from, typename to::scalar_type, rounding_mode,
-                      overflow_handling>(values, type_to::vector_size);
+
+  std::vector<value_type_to> references =
+      test_references<from, to, rounding_mode, overflow_handling, test_variant>(
+          values, type_to::vector_size);
   references.resize(output.size(), references[0]);
   assert(output.size() == references.size());
 
-  test_in_out<from, to>(values, output, program, config.runtime(),
-                        config.program_type());
+  test_in_out<from, to, rounding_mode, overflow_handling, test_variant>(
+      values, output, program, config.runtime(), config.program_type());
 
-  compare(output, references);
+  if constexpr (test_variant == TestVariant::conversion) {
+    compare(output, references);
+  }
+  if constexpr (test_variant == TestVariant::reinterpretation) {
+    compare_bytewise(
+        output, references,
+        std::min(static_cast<unsigned int>(sizeof(type_from)),
+                 static_cast<unsigned int>(sizeof(underlying_type_to) *
+                                           type_to::vector_size)));
+  }
 }
 
 template <typename TestType> void vector_to_vector(const std::string &program) {
@@ -463,6 +555,8 @@ template <typename TestType> void vector_to_vector(const std::string &program) {
 
   const RoundingMode rounding_mode = TestType::rounding_mode;
   const OverflowHandling overflow_handling = TestType::overflow_handling;
+  const TestVariant test_variant = TestType::test_variant;
+
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
@@ -479,15 +573,75 @@ template <typename TestType> void vector_to_vector(const std::string &program) {
   std::vector<value_type_to> output(
       type_to::vector_size,
       value_type_to(static_cast<typename to::underlying_type>(0)));
-  auto references =
-      test_references<typename from::scalar_type, typename to::scalar_type,
-                      rounding_mode, overflow_handling>(values,
-                                                        type_to::vector_size);
 
-  test_in_out<from, to, rounding_mode, overflow_handling>(
+  std::vector<value_type_to> references =
+      test_references<from, to, rounding_mode, overflow_handling, test_variant>(
+          values, type_to::vector_size);
+  references.resize(output.size(), references[0]);
+  assert(output.size() == references.size());
+  test_in_out<from, to, rounding_mode, overflow_handling, test_variant>(
       values, output, program, config.runtime(), config.program_type());
 
-  compare(output, references);
+  if constexpr (test_variant == TestVariant::conversion) {
+    compare(output, references);
+  }
+  if constexpr (test_variant == TestVariant::reinterpretation) {
+    compare_bytewise(
+        output, references,
+        std::min(static_cast<unsigned int>(sizeof(underlying_type_from) *
+                                           type_from::vector_size),
+                 static_cast<unsigned int>(sizeof(underlying_type_to) *
+                                           type_to::vector_size)));
+  }
+}
+
+template <typename TestType> void vector_to_scalar(const std::string &program) {
+  using from = typename TestType::from_type;
+  using to = typename TestType::to_type;
+  using type_from = typename from::host_type;
+  using value_type_from = typename type_from::value_type;
+  using type_to = typename to::host_type;
+  using underlying_type_from = typename from::underlying_type;
+  using underlying_type_to = typename to::underlying_type;
+
+  const RoundingMode rounding_mode = TestType::rounding_mode;
+  const OverflowHandling overflow_handling = TestType::overflow_handling;
+  const TestVariant test_variant = TestType::test_variant;
+
+  const TestConfig &config = get_test_config();
+
+  ca::Requirements requirements;
+  requirements.arithmetic_type<typename from::scalar_type>();
+  requirements.arithmetic_type<typename to::scalar_type>();
+  if (ca::should_skip_test(requirements, *config.runtime())) {
+    return;
+  }
+
+  auto values =
+      test_values<typename from::scalar_type, to>(type_from::vector_size);
+
+  std::vector<type_to> output(
+      1, type_to(static_cast<typename to::underlying_type>(0)));
+  std::vector<type_to> references =
+      test_references<from, to, rounding_mode, overflow_handling, test_variant>(
+          values, 1);
+  references.resize(output.size(), references[0]);
+  assert(output.size() == references.size());
+
+  test_in_out<from, to, rounding_mode, overflow_handling, test_variant>(
+      values, output, program, config.runtime(), config.program_type());
+
+  if constexpr (test_variant == TestVariant::conversion) {
+
+    compare(output, references);
+  }
+  if constexpr (test_variant == TestVariant::reinterpretation) {
+    compare_bytewise(
+        output, references,
+        std::min(static_cast<unsigned int>(sizeof(underlying_type_from) *
+                                           type_from::vector_size),
+                 static_cast<unsigned int>(sizeof(type_to))));
+  }
 }
 
 #endif

@@ -41,7 +41,7 @@ Tests are done using specific value. TODO: multiple patterns.
 
 #### Using unions
 
-* Status: TODO
+* Status: DONE
 * Goal: Verify that reinterpretation using unions produces correct values.
 * Description: Run OpenCL C kernel that assigns a value, reinterprets it using union and then returns that value or values in output. Values are then returned in output.
 * Expectations: Returned values are correct.
