@@ -461,11 +461,13 @@ using GenericTestTypes =
                     ScalarTestTypes, ca::TypesChar, ca::TypesUchar,
                     ca::TypesShort, ca::TypesUshort>::type;
 
-using BlockFunctionTestTypes = std::tuple<
-    ca::clc_uint_t, ca::clc_uint2_t, ca::clc_uint4_t, ca::clc_uint8_t,
-    ca::clc_uchar_t, ca::clc_uchar2_t, ca::clc_uchar4_t, ca::clc_uchar8_t,
-    ca::clc_ushort_t, ca::clc_ushort2_t, ca::clc_ushort4_t, ca::clc_ushort8_t,
-    ca::clc_ulong_t, ca::clc_ulong2_t, ca::clc_ulong4_t, ca::clc_ulong8_t>;
+using BlockFunctionTestTypes =
+    std::tuple<ca::clc_uint_t, ca::clc_uint2_t, ca::clc_uint4_t,
+               ca::clc_uint8_t, ca::clc_uchar_t, ca::clc_uchar2_t,
+               ca::clc_uchar4_t, ca::clc_uchar8_t, ca::clc_ushort_t,
+               ca::clc_ushort2_t, ca::clc_ushort4_t, ca::clc_ushort8_t,
+               ca::clc_ushort16_t, ca::clc_ulong_t, ca::clc_ulong2_t,
+               ca::clc_ulong4_t, ca::clc_ulong8_t>;
 using MediaBlockFunctionTestTypes =
     std::tuple<ca::clc_uint_t, ca::clc_uint2_t, ca::clc_uint4_t,
                ca::clc_uint8_t, ca::clc_uchar_t, ca::clc_uchar2_t,
