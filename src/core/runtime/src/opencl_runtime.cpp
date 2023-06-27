@@ -131,6 +131,9 @@ void OpenCLRuntime::initialize_subdevices() {
 
     result = wrapper_.clCreateSubDevices(devices_[i], partition_properties, 0,
                                          nullptr, &num_subdevices);
+    if (result == CL_DEVICE_PARTITION_FAILED) {
+      return;
+    }
     if (result != CL_SUCCESS) {
       throw RuntimeException("Failed to get number of OpenCL subdevices");
     }
