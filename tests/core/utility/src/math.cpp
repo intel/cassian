@@ -36,18 +36,32 @@ TEST_CASE("dot_product", "") {
   }
 }
 TEST_CASE("cross_product", "") {
-  SECTION("vectors - integers") {
+  SECTION("vectors - integers - 3-element") {
     const ca::Vector<int32_t, 3> vector_a = {1, 2, 3};
     const ca::Vector<int32_t, 3> vector_b = {4, 5, 6};
     const ca::Vector<int32_t, 3> result = ca::cross_product(vector_a, vector_b);
     const ca::Vector<int32_t, 3> reference = {-3, 6, -3};
     REQUIRE(reference == result);
   }
-  SECTION("vectors - floating point") {
+  SECTION("vectors - integers - 4-element") {
+    const ca::Vector<int32_t, 4> vector_a = {1, 2, 3, 5};
+    const ca::Vector<int32_t, 4> vector_b = {4, 5, 6, 8};
+    const ca::Vector<int32_t, 4> result = ca::cross_product(vector_a, vector_b);
+    const ca::Vector<int32_t, 4> reference = {-3, 6, -3, 0};
+    REQUIRE(reference == result);
+  }
+  SECTION("vectors - floating point - 3-element") {
     const ca::Vector<double, 3> vector_a = {2.0, 2.0, 2.0};
     const ca::Vector<double, 3> vector_b = {3.0, 3.0, 3.0};
     const ca::Vector<double, 3> result = ca::cross_product(vector_a, vector_b);
     const ca::Vector<double, 3> reference = {0.0, 0.0, 0.0};
+    REQUIRE(reference == result);
+  }
+  SECTION("vectors - floating point - 4-element") {
+    const ca::Vector<double, 4> vector_a = {2.0, 2.0, 2.0, 4.0};
+    const ca::Vector<double, 4> vector_b = {3.0, 3.0, 3.0, 2.0};
+    const ca::Vector<double, 4> result = ca::cross_product(vector_a, vector_b);
+    const ca::Vector<double, 4> reference = {0.0, 0.0, 0.0, 0.0};
     REQUIRE(reference == result);
   }
 }

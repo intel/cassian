@@ -48,6 +48,9 @@ T cross_product(const T &a, const T &b) {
   result[0] = (a[1] * b[2]) - (a[2] * b[1]);
   result[1] = (a[2] * b[0]) - (a[0] * b[2]);
   result[2] = (a[0] * b[1]) - (a[1] * b[0]);
+  if (result.size() == 4) {
+    result[3] = 0;
+  }
   return result;
 }
 
