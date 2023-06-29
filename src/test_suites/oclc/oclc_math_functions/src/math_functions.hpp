@@ -82,6 +82,27 @@ public:
       return false;
     }
   }
+  static constexpr auto get_is_native() {
+    switch (function) {
+    case Function::native_cos:
+    case Function::native_divide:
+    case Function::native_exp:
+    case Function::native_exp10:
+    case Function::native_exp2:
+    case Function::native_log:
+    case Function::native_log10:
+    case Function::native_log2:
+    case Function::native_powr:
+    case Function::native_recip:
+    case Function::native_rsqrt:
+    case Function::native_sin:
+    case Function::native_sqrt:
+    case Function::native_tan:
+      return true;
+    default:
+      return false;
+    }
+  }
 
   auto get_build_options() const {
     std::stringstream ss;
@@ -518,7 +539,6 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::round:
   case Function::trunc:
   case Function::nan:
-  case Function::native_recip:
   case Function::fract:
   case Function::frexp:
   case Function::remquo:
@@ -526,34 +546,21 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
     return std::vector<scalar_type>(work_size, 0.0F);
   case Function::log1p:
   case Function::cbrt:
-  case Function::rsqrt:
-  case Function::native_rsqrt: {
+  case Function::rsqrt: {
     constexpr scalar_type ulp = 2.0F * epsilon;
-    std::vector<scalar_type> ulp_values(work_size, ulp);
-    return ulp_values;
-  }
-  case Function::native_divide: {
-    constexpr scalar_type ulp = 2.5F * epsilon;
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
   case Function::exp:
   case Function::exp2:
   case Function::exp10:
-  case Function::native_exp:
-  case Function::native_exp2:
-  case Function::native_exp10:
   case Function::expm1:
   case Function::sqrt:
-  case Function::native_sqrt:
   case Function::log10:
   case Function::lgamma:
   case Function::lgamma_r:
   case Function::log:
-  case Function::log2:
-  case Function::native_log:
-  case Function::native_log2:
-  case Function::native_log10: {
+  case Function::log2: {
     constexpr scalar_type ulp = 3.0F * epsilon;
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
@@ -563,13 +570,11 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::asin:
   case Function::asinh:
   case Function::cos:
-  case Function::native_cos:
   case Function::cosh:
   case Function::cospi:
   case Function::hypot:
   case Function::sinh:
   case Function::sin:
-  case Function::native_sin:
   case Function::sinpi:
   case Function::sincos: {
     constexpr scalar_type ulp = 4.0F * epsilon;
@@ -582,7 +587,6 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::atanh:
   case Function::atanpi:
   case Function::tan:
-  case Function::native_tan:
   case Function::tanh: {
     constexpr scalar_type ulp = 5.0F * epsilon;
     std::vector<scalar_type> ulp_values(work_size, ulp);
@@ -601,12 +605,25 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::rootn:
   case Function::pown:
   case Function::powr:
-  case Function::native_powr:
   case Function::tgamma: {
     constexpr scalar_type ulp = 16.0F * epsilon;
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
+  case Function::native_divide:
+  case Function::native_recip:
+  case Function::native_rsqrt:
+  case Function::native_exp:
+  case Function::native_exp2:
+  case Function::native_exp10:
+  case Function::native_sqrt:
+  case Function::native_log:
+  case Function::native_log2:
+  case Function::native_log10:
+  case Function::native_sin:
+  case Function::native_cos:
+  case Function::native_tan:
+  case Function::native_powr:
   case Function::half_cos:
   case Function::half_divide:
   case Function::half_exp:

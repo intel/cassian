@@ -11,6 +11,7 @@ OpenCL C functionality.
 * Status: TODO
 * Goal: Verify that math functions are the same on the device and the host with specified relative error(ULP).
 * Description: Get the device return value from OpenCL C function and compare it with the value returned on the host taking ULP into account.
+  ULP comparison is not functional for native_* functions because their precision is implementation-defined.
 * Available modes: - TODO
   * `-cl-unsafe-math-optimizations` - passed to the compiler options
 * Input values: 
