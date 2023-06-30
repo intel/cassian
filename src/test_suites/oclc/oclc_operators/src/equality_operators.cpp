@@ -5,8 +5,10 @@
  *
  */
 
+#include <cassian/catch2_utils/catch2_utils.hpp>
 #include <cassian/cli/cli.hpp>
 #include <cassian/random/random.hpp>
+#include <cassian/runtime/openclc_type_tuples.hpp>
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
@@ -293,77 +295,43 @@ template <typename TEST_TYPE> void test_equal_vector(const TestConfig &config) {
   }
 }
 
-TEMPLATE_TEST_CASE("equality operators - equal - integer - scalar", "",
-                   ca::clc_char_t, ca::clc_short_t, ca::clc_int_t,
-                   ca::clc_long_t, ca::clc_uchar_t, ca::clc_ushort_t,
-                   ca::clc_uint_t, ca::clc_ulong_t) {
+template <typename TestType> auto test_name() {
+  return std::string(TestType::type_name);
+}
+
+using float_types = ca::TupleConcat<ca::TypesFloat, ca::TypesDouble>::type;
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("equality operators - equal", "",
+                                    ca::IntegerTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_equal_common<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_equal_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE("equality operators - equal - float - scalar", "",
-                   ca::clc_float_t, ca::clc_double_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("equality operators - equal", "",
+                                    float_types, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_equal_common<TestType>(config);
   test_equal_float<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "equality operators - equal - integer - vector", "", ca::clc_char2_t,
-    ca::clc_char3_t, ca::clc_char4_t, ca::clc_char8_t, ca::clc_char16_t,
-    ca::clc_short2_t, ca::clc_short3_t, ca::clc_short4_t, ca::clc_short8_t,
-    ca::clc_short16_t, ca::clc_int2_t, ca::clc_int3_t, ca::clc_int4_t,
-    ca::clc_int8_t, ca::clc_int16_t, ca::clc_long2_t, ca::clc_long3_t,
-    ca::clc_long4_t, ca::clc_long8_t, ca::clc_long16_t, ca::clc_uchar2_t,
-    ca::clc_uchar3_t, ca::clc_uchar4_t, ca::clc_uchar8_t, ca::clc_uchar16_t,
-    ca::clc_ushort2_t, ca::clc_ushort3_t, ca::clc_ushort4_t, ca::clc_ushort8_t,
-    ca::clc_ushort16_t, ca::clc_uint2_t, ca::clc_uint3_t, ca::clc_uint4_t,
-    ca::clc_uint8_t, ca::clc_uint16_t, ca::clc_ulong2_t, ca::clc_ulong3_t,
-    ca::clc_ulong4_t, ca::clc_ulong8_t, ca::clc_ulong16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_equal_vector<TestType>(config);
   }
-
-  test_equal_common<TestType>(config);
-  test_equal_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("equality operators - equal - float - vector", "",
-                   ca::clc_float2_t, ca::clc_float3_t, ca::clc_float4_t,
-                   ca::clc_float8_t, ca::clc_float16_t, ca::clc_double2_t,
-                   ca::clc_double3_t, ca::clc_double4_t, ca::clc_double8_t,
-                   ca::clc_double16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_equal_common<TestType>(config);
-  test_equal_float<TestType>(config);
-  test_equal_vector<TestType>(config);
 }
 
 template <typename TEST_TYPE>
@@ -531,77 +499,37 @@ void test_not_equal_vector(const TestConfig &config) {
   }
 }
 
-TEMPLATE_TEST_CASE("equality operators - not equal - integer - scalar", "",
-                   ca::clc_char_t, ca::clc_short_t, ca::clc_int_t,
-                   ca::clc_long_t, ca::clc_uchar_t, ca::clc_ushort_t,
-                   ca::clc_uint_t, ca::clc_ulong_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("equality operators - not equal", "",
+                                    ca::IntegerTypes, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_not_equal_common<TestType>(config);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_not_equal_vector<TestType>(config);
+  }
 }
 
-TEMPLATE_TEST_CASE("equality operators - not equal - float - scalar", "",
-                   ca::clc_float_t, ca::clc_double_t) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("equality operators - not equal", "",
+                                    float_types, test_name<TestType>) {
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
-  requirements.arithmetic_type<TestType>();
+  requirements.arithmetic_type<typename TestType::scalar_type>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   test_not_equal_common<TestType>(config);
   test_not_equal_float<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE(
-    "equality operators - not equal - integer - vector", "", ca::clc_char2_t,
-    ca::clc_char3_t, ca::clc_char4_t, ca::clc_char8_t, ca::clc_char16_t,
-    ca::clc_short2_t, ca::clc_short3_t, ca::clc_short4_t, ca::clc_short8_t,
-    ca::clc_short16_t, ca::clc_int2_t, ca::clc_int3_t, ca::clc_int4_t,
-    ca::clc_int8_t, ca::clc_int16_t, ca::clc_long2_t, ca::clc_long3_t,
-    ca::clc_long4_t, ca::clc_long8_t, ca::clc_long16_t, ca::clc_uchar2_t,
-    ca::clc_uchar3_t, ca::clc_uchar4_t, ca::clc_uchar8_t, ca::clc_uchar16_t,
-    ca::clc_ushort2_t, ca::clc_ushort3_t, ca::clc_ushort4_t, ca::clc_ushort8_t,
-    ca::clc_ushort16_t, ca::clc_uint2_t, ca::clc_uint3_t, ca::clc_uint4_t,
-    ca::clc_uint8_t, ca::clc_uint16_t, ca::clc_ulong2_t, ca::clc_ulong3_t,
-    ca::clc_ulong4_t, ca::clc_ulong8_t, ca::clc_ulong16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_not_equal_vector<TestType>(config);
   }
-
-  test_not_equal_common<TestType>(config);
-  test_not_equal_vector<TestType>(config);
-}
-
-TEMPLATE_TEST_CASE("equality operators - not equal - float - vector", "",
-                   ca::clc_float2_t, ca::clc_float3_t, ca::clc_float4_t,
-                   ca::clc_float8_t, ca::clc_float16_t, ca::clc_double2_t,
-                   ca::clc_double3_t, ca::clc_double4_t, ca::clc_double8_t,
-                   ca::clc_double16_t) {
-  const TestConfig &config = get_test_config();
-  using scalar_type = typename TestType::scalar_type;
-
-  ca::Requirements requirements;
-  requirements.arithmetic_type<scalar_type>();
-  if (ca::should_skip_test(requirements, *config.runtime())) {
-    return;
-  }
-
-  test_not_equal_common<TestType>(config);
-  test_not_equal_float<TestType>(config);
-  test_not_equal_vector<TestType>(config);
 }
 
 } // namespace
