@@ -135,7 +135,7 @@ def install_opencl(install_directory, tmp_directory, architecture, clear=False):
     opencl_headers_install_directory = opencl_install_directory / "include"
 
     subprocess.run(
-        "git clone https://github.com/KhronosGroup/OpenCL-Headers.git --depth 1 --branch v2022.09.30",
+        "git clone https://github.com/KhronosGroup/OpenCL-Headers.git --depth 1 --branch v2023.04.17",
         cwd=tmp_directory,
         shell=True,
         check=True,
@@ -159,7 +159,7 @@ def install_level_zero(install_directory, tmp_directory, architecture, clear=Fal
     level_zero_headers_install_directory = level_zero_install_directory / "include"
 
     subprocess.run(
-        "git clone https://github.com/oneapi-src/level-zero.git --depth 1 --branch v1.8.8",
+        "git clone https://github.com/oneapi-src/level-zero.git --depth 1 --branch v1.12.0",
         cwd=tmp_directory,
         shell=True,
         check=True,
