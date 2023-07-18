@@ -580,13 +580,11 @@ ze_module_handle_t LevelZeroRuntime::ze_create_module(
   }
 
   if (program_type == "spirv") {
-    static const auto device_id =
-        get_device_property(DeviceProperty::device_id);
-    static const auto device_revision =
-        get_device_property(DeviceProperty::device_revision);
+    static const auto ip_version =
+        get_device_property(DeviceProperty::ip_version);
 
-    const std::vector<uint8_t> spv = generate_spirv_from_source(
-        device_id, device_revision, source, build_options, quiet);
+    const std::vector<uint8_t> spv =
+        generate_spirv_from_source(ip_version, source, build_options, quiet);
 
     ze_module_desc_t module_description = {};
     module_description.stype = ZE_STRUCTURE_TYPE_MODULE_DESC;
@@ -1029,9 +1027,13 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
 }
 
 int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
+  ze_device_ip_version_ext_t ip_version = {};
+  ip_version.stype = ZE_STRUCTURE_TYPE_DEVICE_IP_VERSION_EXT;
+  ip_version.pNext = nullptr;
+
   ze_device_properties_t device_properties = {};
   device_properties.stype = ZE_STRUCTURE_TYPE_DEVICE_PROPERTIES;
-  device_properties.pNext = nullptr;
+  device_properties.pNext = &ip_version;
   ze_result_t result =
       wrapper_.zeDeviceGetProperties(devices_[0], &device_properties);
   if (result != ZE_RESULT_SUCCESS) {
@@ -1092,6 +1094,8 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
     return static_cast<int>(device_compute_properties.maxSharedLocalMemory);
   case DeviceProperty::device_id:
     return static_cast<int>(device_properties.deviceId);
+  case DeviceProperty::ip_version:
+    return static_cast<int>(ip_version.ipVersion);
   case DeviceProperty::device_revision:
     return -1;
   case DeviceProperty::simd_width:

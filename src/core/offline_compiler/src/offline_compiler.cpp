@@ -69,22 +69,20 @@ public:
             library_->get_function("oclocFreeOutput"))) {}
 };
 
-std::string generate_spirv(uint32_t device_id, int32_t device_revision,
-                           const std::string &path,
+std::string generate_spirv(uint32_t ip_version, const std::string &path,
                            const std::string &build_options, bool quiet) {
   static const std::string spv_file = "kernel.spv";
 
   auto source = load_text_file(path);
-  auto spirv = generate_spirv_from_source(device_id, device_revision, source,
-                                          build_options, quiet);
+  auto spirv =
+      generate_spirv_from_source(ip_version, source, build_options, quiet);
   save_binary_file(spirv, spv_file);
 
   return spv_file;
 }
 
 std::vector<uint8_t>
-generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
-                           const std::string &source,
+generate_spirv_from_source(uint32_t ip_version, const std::string &source,
                            const std::string &build_options, bool quiet) {
   static const std::string ocloc_cmd = "compile";
 
@@ -92,8 +90,8 @@ generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
   source_bytes.push_back(0);
   std::vector<const char *> ocloc_options = {"-spv_only"};
   std::vector<OclocProduct> ocloc_products = generate_offline_compiler_products(
-      device_id, device_revision, source_bytes, build_options, ocloc_cmd,
-      ocloc_options, "source", quiet);
+      ip_version, source_bytes, build_options, ocloc_cmd, ocloc_options,
+      "source", quiet);
 
   auto it = std::find_if(std::begin(ocloc_products), std::end(ocloc_products),
                          [](const auto &product) {
@@ -108,9 +106,8 @@ generate_spirv_from_source(uint32_t device_id, int32_t device_revision,
 }
 
 std::vector<OclocProduct> generate_offline_compiler_products(
-    uint32_t device_id, int32_t device_revision,
-    const std::vector<uint8_t> &source_bytes, const std::string &build_options,
-    const std::string &ocloc_cmd,
+    uint32_t ip_version, const std::vector<uint8_t> &source_bytes,
+    const std::string &build_options, const std::string &ocloc_cmd,
     const std::vector<const char *> &ocloc_options,
     const std::string &program_type, bool quiet) {
   static Ocloc ocloc;
@@ -138,21 +135,13 @@ std::vector<OclocProduct> generate_offline_compiler_products(
   args.push_back("-file");
   args.push_back(src_file);
 
-  if (device_id != 0) {
+  if (ip_version != 0) {
     std::ostringstream out;
-    out << "0x" << std::hex << std::setw(4) << std::setfill('0')
-        << std::noshowbase << device_id;
+    out << std::dec << ip_version;
     device = out.str();
 
     args.push_back("-device");
     args.push_back(device.c_str());
-  }
-
-  if (device_revision >= 0) {
-    revision = std::to_string(device_revision);
-
-    args.push_back("-revision_id");
-    args.push_back(revision.c_str());
   }
 
   if (quiet) {

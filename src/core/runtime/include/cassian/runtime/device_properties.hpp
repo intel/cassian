@@ -27,6 +27,7 @@ enum class DeviceProperty {
   max_local_memory_size,
   device_id,
   device_revision,
+  ip_version,
   simd_width,
   fp32_atomics_capabilities,
   fp64_atomics_capabilities,

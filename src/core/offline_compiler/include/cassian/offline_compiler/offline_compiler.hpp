@@ -27,8 +27,7 @@ struct OclocProduct {
  * @param[in] build_options build options to use during generation.
  * @returns path to output binary file with generated SPIR-V module.
  */
-std::string generate_spirv(uint32_t device_id, int32_t device_revision,
-                           const std::string &path,
+std::string generate_spirv(uint32_t ip_version, const std::string &path,
                            const std::string &build_options = std::string(),
                            bool quiet = false);
 
@@ -39,9 +38,10 @@ std::string generate_spirv(uint32_t device_id, int32_t device_revision,
  * @param[in] build_options build options to use during generation.
  * @returns SPIR-V module stored in raw bytes.
  */
-std::vector<uint8_t> generate_spirv_from_source(
-    uint32_t device_id, int32_t device_revision, const std::string &source,
-    const std::string &build_options = std::string(), bool quiet = false);
+std::vector<uint8_t>
+generate_spirv_from_source(uint32_t ip_version, const std::string &source,
+                           const std::string &build_options = std::string(),
+                           bool quiet = false);
 
 /**
  * Generate ocloc products from different input types(source/spirv/binary data).
@@ -54,9 +54,8 @@ std::vector<uint8_t> generate_spirv_from_source(
  * @returns set of OclocProducts - files produced by ocloc.
  */
 std::vector<OclocProduct> generate_offline_compiler_products(
-    uint32_t device_id, int32_t device_revision,
-    const std::vector<uint8_t> &source_bytes, const std::string &build_options,
-    const std::string &ocloc_cmd,
+    uint32_t ip_version, const std::vector<uint8_t> &source_bytes,
+    const std::string &build_options, const std::string &ocloc_cmd,
     const std::vector<const char *> &ocloc_options,
     const std::string &program_type, bool quiet = false);
 /**
