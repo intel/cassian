@@ -196,6 +196,10 @@ void Requirements::atomic_load_store<clc_half_t>(AtomicMemoryType type) {
   }
 }
 
+template <> void Requirements::correctly_rounded_divide_sqrt<clc_float_t>() {
+  features_.push_back(Feature::fp32_correctly_rounded_divide_sqrt);
+}
+
 bool should_skip_test(const Requirements &requirements,
                       const Runtime &runtime) {
   // Catch2 requires at least one assertion to report test case result

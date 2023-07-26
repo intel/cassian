@@ -1021,6 +1021,10 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
     return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
             ZE_DEVICE_FP_ATOMIC_EXT_FLAG_LOCAL_MIN_MAX) != 0;
   }
+  case Feature::fp32_correctly_rounded_divide_sqrt: {
+    return (device_module_properties.fp32flags &
+            ZE_DEVICE_FP_FLAG_ROUNDED_DIVIDE_SQRT) != 0;
+  }
   default:
     return false;
   }

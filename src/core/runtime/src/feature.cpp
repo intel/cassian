@@ -64,6 +64,8 @@ std::string to_string(const Feature feature) {
     return "fp32_atomics_local_min_max";
   case Feature::fp64_atomics_local_min_max:
     return "fp64_atomics_local_min_max";
+  case Feature::fp32_correctly_rounded_divide_sqrt:
+    return "fp32_correctly_rounded_divide_sqrt";
   default:
     return "unknown";
   }

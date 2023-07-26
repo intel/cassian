@@ -710,6 +710,10 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     return (get_device_property(DeviceProperty::fp64_atomics_capabilities) &
             CL_DEVICE_LOCAL_FP_ATOMIC_MIN_MAX_EXT) != 0;
   }
+  case Feature::fp32_correctly_rounded_divide_sqrt: {
+    return (get_device_property(DeviceProperty::fp32_config) &
+            CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT) != 0;
+  }
   default:
     return false;
   }
@@ -794,6 +798,14 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     }
     return 0;
   }
+  case DeviceProperty::fp32_config:
+    return static_cast<int>(
+        cl_get_device_property_at_index<cl_device_fp_config>(
+            devices_[0], CL_DEVICE_SINGLE_FP_CONFIG, 0));
+  case DeviceProperty::fp64_config:
+    return static_cast<int>(
+        cl_get_device_property_at_index<cl_device_fp_config>(
+            devices_[0], CL_DEVICE_DOUBLE_FP_CONFIG, 0));
   default:
     throw RuntimeException("Failed to find device property");
   }

@@ -44,7 +44,8 @@ enum class Feature {
   fp64_atomics_global_min_max,
   fp16_atomics_local_min_max,
   fp32_atomics_local_min_max,
-  fp64_atomics_local_min_max
+  fp64_atomics_local_min_max,
+  fp32_correctly_rounded_divide_sqrt
 };
 
 /**

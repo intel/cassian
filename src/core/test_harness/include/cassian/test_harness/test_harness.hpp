@@ -79,6 +79,13 @@ public:
   template <typename T>
   void atomic_load_store(AtomicMemoryType type = AtomicMemoryType::all) {}
 
+  /**
+   * Require correctly-rounded divide/sqrt.
+   *
+   * @tparam T OpenCl C scalar type to be required.
+   */
+  template <typename T> void correctly_rounded_divide_sqrt() {}
+
 private:
   std::vector<Feature> features_;
 
@@ -187,6 +194,11 @@ void Requirements::atomic_load_store<clc_double_t>(AtomicMemoryType type);
  */
 template <>
 void Requirements::atomic_load_store<clc_half_t>(AtomicMemoryType type);
+
+/**
+ * Specialization for float.
+ */
+template <> void Requirements::correctly_rounded_divide_sqrt<clc_float_t>();
 
 /**
  * Check if a test should be skipped based on given requirements and a runtime.
