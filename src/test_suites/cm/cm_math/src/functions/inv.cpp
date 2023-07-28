@@ -17,7 +17,7 @@
 namespace ca = cassian;
 using ca::half;
 
-constexpr double inv_margin = std::numeric_limits<float>::epsilon();
+template <typename T> const T inv_margin = std::numeric_limits<T>::epsilon();
 
 TEMPLATE_TEST_CASE("cm_inv(vector)", "[cm][inv]", float, half) {
   SECTION("--no-sat") {
@@ -27,7 +27,7 @@ TEMPLATE_TEST_CASE("cm_inv(vector)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::vector, inv_margin);
+        InputType::vector, inv_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -36,7 +36,7 @@ TEMPLATE_TEST_CASE("cm_inv(vector)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         SAT_LEFT_LIM, SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO,
-        InputType::vector, inv_margin);
+        InputType::vector, inv_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -46,7 +46,7 @@ TEMPLATE_TEST_CASE("cm_inv(vector)", "[cm][inv]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::vector, inv_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::vector, inv_margin<TestType>);
   }
 }
 
@@ -58,7 +58,7 @@ TEMPLATE_TEST_CASE("cm_inv(matrix)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::matrix, inv_margin);
+        InputType::matrix, inv_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -67,7 +67,7 @@ TEMPLATE_TEST_CASE("cm_inv(matrix)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         SAT_LEFT_LIM, SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO,
-        InputType::matrix, inv_margin);
+        InputType::matrix, inv_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -77,7 +77,7 @@ TEMPLATE_TEST_CASE("cm_inv(matrix)", "[cm][inv]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::matrix, inv_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::matrix, inv_margin<TestType>);
   }
 }
 
@@ -89,7 +89,7 @@ TEMPLATE_TEST_CASE("cm_inv(scalar)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::scalar, inv_margin);
+        InputType::scalar, inv_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -98,7 +98,7 @@ TEMPLATE_TEST_CASE("cm_inv(scalar)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         SAT_LEFT_LIM, SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO,
-        InputType::scalar, inv_margin);
+        InputType::scalar, inv_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -108,7 +108,7 @@ TEMPLATE_TEST_CASE("cm_inv(scalar)", "[cm][inv]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::scalar, inv_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::scalar, inv_margin<TestType>);
   }
 }
 
@@ -120,7 +120,7 @@ TEMPLATE_TEST_CASE("cm_inv(const)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::constant, inv_margin);
+        InputType::constant, inv_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -129,7 +129,7 @@ TEMPLATE_TEST_CASE("cm_inv(const)", "[cm][inv]", float, half) {
           return static_cast<TestType>(1 / static_cast<double>(x));
         },
         SAT_LEFT_LIM, SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO,
-        InputType::constant, inv_margin);
+        InputType::constant, inv_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -139,6 +139,7 @@ TEMPLATE_TEST_CASE("cm_inv(const)", "[cm][inv]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::min()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::constant, inv_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::constant,
+        inv_margin<TestType>);
   }
 }

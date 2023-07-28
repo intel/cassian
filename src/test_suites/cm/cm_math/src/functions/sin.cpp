@@ -17,7 +17,7 @@
 namespace ca = cassian;
 using ca::half;
 
-constexpr double sin_margin = 0.0008;
+template <typename T> const T sin_margin = static_cast<T>(.0008);
 
 TEMPLATE_TEST_CASE("cm_sin(vector)", "[cm][sin]", float, half) {
   SECTION("--no-sat") {
@@ -27,7 +27,7 @@ TEMPLATE_TEST_CASE("cm_sin(vector)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM *pi, NO_SAT_RIGHT_LIM *pi, Saturation::NO_SAT,
-        InputType::vector, sin_margin);
+        InputType::vector, sin_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -36,7 +36,7 @@ TEMPLATE_TEST_CASE("cm_sin(vector)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         SAT_LEFT_LIM *pi, SAT_RIGHT_LIM *pi, Saturation::USE_SAT_ZERO,
-        InputType::vector, sin_margin);
+        InputType::vector, sin_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -45,7 +45,7 @@ TEMPLATE_TEST_CASE("cm_sin(vector)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         -trig_lim *pi, trig_lim *pi, Saturation::USE_SAT_NOLIMITS,
-        InputType::vector, sin_margin);
+        InputType::vector, sin_margin<TestType>);
   }
 }
 
@@ -57,7 +57,7 @@ TEMPLATE_TEST_CASE("cm_sin(matrix)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM *pi, NO_SAT_RIGHT_LIM *pi, Saturation::NO_SAT,
-        InputType::matrix, sin_margin);
+        InputType::matrix, sin_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -66,7 +66,7 @@ TEMPLATE_TEST_CASE("cm_sin(matrix)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         SAT_LEFT_LIM *pi, SAT_RIGHT_LIM *pi, Saturation::USE_SAT_ZERO,
-        InputType::matrix, sin_margin);
+        InputType::matrix, sin_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -75,7 +75,7 @@ TEMPLATE_TEST_CASE("cm_sin(matrix)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         -trig_lim *pi, trig_lim *pi, Saturation::USE_SAT_NOLIMITS,
-        InputType::matrix, sin_margin);
+        InputType::matrix, sin_margin<TestType>);
   }
 }
 
@@ -87,7 +87,7 @@ TEMPLATE_TEST_CASE("cm_sin(scalar)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM *pi, NO_SAT_RIGHT_LIM *pi, Saturation::NO_SAT,
-        InputType::scalar, sin_margin);
+        InputType::scalar, sin_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -96,7 +96,7 @@ TEMPLATE_TEST_CASE("cm_sin(scalar)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         SAT_LEFT_LIM *pi, SAT_RIGHT_LIM *pi, Saturation::USE_SAT_ZERO,
-        InputType::scalar, sin_margin);
+        InputType::scalar, sin_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -105,7 +105,7 @@ TEMPLATE_TEST_CASE("cm_sin(scalar)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         -trig_lim *pi, trig_lim *pi, Saturation::USE_SAT_NOLIMITS,
-        InputType::scalar, sin_margin);
+        InputType::scalar, sin_margin<TestType>);
   }
 }
 
@@ -117,7 +117,7 @@ TEMPLATE_TEST_CASE("cm_sin(const)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM *pi, NO_SAT_RIGHT_LIM *pi, Saturation::NO_SAT,
-        InputType::constant, sin_margin);
+        InputType::constant, sin_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -126,7 +126,7 @@ TEMPLATE_TEST_CASE("cm_sin(const)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         SAT_LEFT_LIM *pi, SAT_RIGHT_LIM *pi, Saturation::USE_SAT_ZERO,
-        InputType::constant, sin_margin);
+        InputType::constant, sin_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -135,6 +135,6 @@ TEMPLATE_TEST_CASE("cm_sin(const)", "[cm][sin]", float, half) {
           return static_cast<TestType>(std::sin(static_cast<double>(x)));
         },
         -trig_lim *pi, trig_lim *pi, Saturation::USE_SAT_NOLIMITS,
-        InputType::constant, sin_margin);
+        InputType::constant, sin_margin<TestType>);
   }
 }

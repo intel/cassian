@@ -34,7 +34,7 @@ const double SAT_RIGHT_LIM = 2;
 template <typename T>
 void test_math(int simd_u, int simd_v, std::string test_func,
                std::function<T(T)> f, float a, float b, Saturation sat_type,
-               InputType input_type, double margin) {
+               InputType input_type, T margin) {
   const std::string source =
       ca::load_text_file(ca::get_asset("kernels/cm_math/math_genx.cpp"));
 
@@ -99,5 +99,5 @@ void test_math(int simd_u, int simd_v, std::string test_func,
                        .define("OUT_TYPE", ca::to_cm_string<T>())
                        .str());
 
-  REQUIRE_THAT(out, Catch::Approx(ref).margin(static_cast<T>(margin)));
+  REQUIRE_THAT(out, Catch::Approx(ref).margin(margin));
 }

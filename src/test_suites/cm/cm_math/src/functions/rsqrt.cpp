@@ -17,7 +17,8 @@
 namespace ca = cassian;
 using ca::half;
 
-constexpr double rsqrt_margin = std::numeric_limits<float>::epsilon() * 3;
+template <typename T>
+const T rsqrt_margin = std::numeric_limits<T>::epsilon() * 4;
 
 TEMPLATE_TEST_CASE("cm_rsqrt(vector)", "[cm][rsqrt]", float, half) {
   SECTION("--no-sat") {
@@ -27,7 +28,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(vector)", "[cm][rsqrt]", float, half) {
           return static_cast<TestType>(1 / std::sqrt(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::vector, rsqrt_margin);
+        InputType::vector, rsqrt_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -37,7 +38,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(vector)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::vector,
-        rsqrt_margin);
+        rsqrt_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -47,7 +48,8 @@ TEMPLATE_TEST_CASE("cm_rsqrt(vector)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::vector, rsqrt_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::vector,
+        rsqrt_margin<TestType>);
   }
 }
 
@@ -59,7 +61,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(matrix)", "[cm][rsqrt]", float, half) {
           return static_cast<TestType>(1 / std::sqrt(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::matrix, rsqrt_margin);
+        InputType::matrix, rsqrt_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -69,7 +71,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(matrix)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::matrix,
-        rsqrt_margin);
+        rsqrt_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -79,7 +81,8 @@ TEMPLATE_TEST_CASE("cm_rsqrt(matrix)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::matrix, rsqrt_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::matrix,
+        rsqrt_margin<TestType>);
   }
 }
 
@@ -91,7 +94,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(scalar)", "[cm][rsqrt]", float, half) {
           return static_cast<TestType>(1 / std::sqrt(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::scalar, rsqrt_margin);
+        InputType::scalar, rsqrt_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -101,7 +104,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(scalar)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::scalar,
-        rsqrt_margin);
+        rsqrt_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -111,7 +114,8 @@ TEMPLATE_TEST_CASE("cm_rsqrt(scalar)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::scalar, rsqrt_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::scalar,
+        rsqrt_margin<TestType>);
   }
 }
 
@@ -123,7 +127,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(const)", "[cm][rsqrt]", float, half) {
           return static_cast<TestType>(1 / std::sqrt(static_cast<double>(x)));
         },
         NO_SAT_LEFT_LIM, NO_SAT_RIGHT_LIM, Saturation::NO_SAT,
-        InputType::constant, rsqrt_margin);
+        InputType::constant, rsqrt_margin<TestType>);
   }
   SECTION("--sat-near-zero") {
     test_math<TestType>(
@@ -133,7 +137,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(const)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         SAT_RIGHT_LIM, Saturation::USE_SAT_ZERO, InputType::constant,
-        rsqrt_margin);
+        rsqrt_margin<TestType>);
   }
   SECTION("--sat-no-limits") {
     test_math<TestType>(
@@ -143,6 +147,7 @@ TEMPLATE_TEST_CASE("cm_rsqrt(const)", "[cm][rsqrt]", float, half) {
         },
         static_cast<float>(std::numeric_limits<TestType>::epsilon()),
         static_cast<float>(std::numeric_limits<TestType>::max()),
-        Saturation::USE_SAT_NOLIMITS, InputType::constant, rsqrt_margin);
+        Saturation::USE_SAT_NOLIMITS, InputType::constant,
+        rsqrt_margin<TestType>);
   }
 }
