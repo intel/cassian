@@ -139,9 +139,18 @@ void test(const std::string &components,
       "-DDATA_TYPE=" + std::string(TYPE::device_type) + " -DVALUE=\"" +
       constructor<TYPE>(values) + "\" -DCOMPONENTS=\"" + components +
       "\" -DCOMPONENTS_DATA_TYPE=\"" + components_data_type + "\"";
-  ca::Kernel kernel = runtime->create_kernel("test_kernel", source,
-                                             build_options, program_type);
-  run_kernel<V>(kernel, output, components_count, runtime);
+
+  SECTION("global") {
+    ca::Kernel kernel = runtime->create_kernel("test_kernel_global", source,
+                                               build_options, program_type);
+    run_kernel<V>(kernel, output, components_count, runtime);
+  }
+  SECTION("local") {
+    bool use_local_mem = true;
+    ca::Kernel kernel = runtime->create_kernel("test_kernel_local", source,
+                                               build_options, program_type);
+    run_kernel<V>(kernel, output, components_count, runtime, use_local_mem);
+  }
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("vector components - numeric indices", "",

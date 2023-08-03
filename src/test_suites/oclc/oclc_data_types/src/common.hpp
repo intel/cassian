@@ -14,15 +14,16 @@
 
 template <typename T>
 void run_kernel(const cassian::Kernel &kernel, std::vector<T> &output,
-                int output_count, cassian::Runtime *runtime) {
-
-  std::vector<cassian::Buffer> buffers;
-
+                int output_count, cassian::Runtime *runtime,
+                bool use_local_mem = false) {
   cassian::Buffer output_buffer =
       runtime->create_buffer(sizeof(T) * output_count);
-  buffers.push_back(output_buffer);
+  cassian::LocalMemory local_memory(sizeof(T) * output_count);
 
   runtime->set_kernel_argument(kernel, 0, output_buffer);
+  if (use_local_mem) {
+    runtime->set_kernel_argument(kernel, 1, local_memory);
+  }
 
   runtime->run_kernel(kernel, 1);
   output = runtime->read_buffer_to_vector<T>(output_buffer);
