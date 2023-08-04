@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cassian/fp_types/math.hpp>
 #include <cassian/logging/logging.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_types.hpp>
@@ -42,7 +43,6 @@ enum class RoundingMode {
 
 std::string to_string(RoundingMode rounding_mode);
 std::string function_suffix(RoundingMode rounding_mode);
-void set_rounding_mode(RoundingMode rounding_mode);
 
 enum class TestVariant { conversion, reinterpretation };
 
@@ -58,6 +58,38 @@ class UnknownRoundingModeException : public std::runtime_error {
 class UnknownOverflowHandlingException : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
+
+template <typename TO> void set_rounding_mode(RoundingMode rounding_mode) {
+  switch (rounding_mode) {
+  case RoundingMode::round_default: {
+    if (std::is_integral<TO>::value) {
+      fesetround(FE_TOWARDZERO);
+      return;
+    } else {
+      fesetround(FE_TONEAREST);
+      return;
+    }
+  }
+  case RoundingMode::round_to_nearest_even: {
+    fesetround(FE_TONEAREST);
+    return;
+  }
+  case RoundingMode::round_toward_negative_infinity: {
+    fesetround(FE_DOWNWARD);
+    return;
+  }
+  case RoundingMode::round_toward_positive_infinity: {
+    fesetround(FE_UPWARD);
+    return;
+  }
+  case RoundingMode::round_toward_zero: {
+    fesetround(FE_TOWARDZERO);
+    return;
+  }
+  default:
+    throw UnknownRoundingModeException("Unknown rounding mode");
+  }
+}
 
 template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
@@ -119,29 +151,19 @@ void run_kernel(const ca::Kernel &kernel, const std::vector<T> &input,
   runtime->release_buffer(output_buffer);
 }
 
-template <typename T, typename U>
-using EnableIfBothBuiltinTypes =
-    std::enable_if_t<(std::is_scalar_v<T> || ca::is_vector_v<T>)&&(
-                         std::is_scalar_v<U> || ca::is_vector_v<U>),
-                     int>;
-
 template <typename FROM, typename TO,
           RoundingMode RND = RoundingMode::round_default,
           OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
-          typename U = typename TO::scalar_type::host_type,
-          EnableIfBothBuiltinTypes<T, U> = 0>
+          typename U = typename TO::scalar_type::host_type>
 std::string convert_function() {
   return std::string("convert_") + TO::device_type + function_suffix(SAT) +
          function_suffix(RND);
 }
 
 template <typename FROM, typename TO,
-          RoundingMode RND = RoundingMode::round_default,
-          OverflowHandling SAT = OverflowHandling::overflow_default,
           typename T = typename FROM::scalar_type::host_type,
-          typename U = typename TO::scalar_type::host_type,
-          EnableIfBothBuiltinTypes<T, U> = 0>
+          typename U = typename TO::scalar_type::host_type>
 std::string reinterpret_function() {
   return std::string("as_") + TO::device_type;
 }
@@ -155,8 +177,7 @@ std::string build_options(const int work_size) {
   if constexpr (TV == TestVariant::conversion) {
     options += " -DCONVERT_FUNC=" + convert_function<FROM, TO, RND, SAT>();
   } else if constexpr (TV == TestVariant::reinterpretation) {
-    options +=
-        " -DREINTERPRET_FUNC=" + reinterpret_function<FROM, TO, RND, SAT>();
+    options += " -DREINTERPRET_FUNC=" + reinterpret_function<FROM, TO>();
   }
   return options;
 }
@@ -190,6 +211,14 @@ template <typename FROM, typename TO,
                                 std::is_integral_v<T>),
                            int> = 0>
 std::vector<T> test_values(int vector_size) {
+  if constexpr (std::is_same_v<U, ca::Half>) {
+    return ca::generate_vector<T>(vector_size,
+                                  std::max(std::numeric_limits<T>::min(),
+                                           T(std::numeric_limits<U>::min())),
+                                  std::min(std::numeric_limits<T>::max(),
+                                           T(std::numeric_limits<U>::max())),
+                                  0);
+  }
   return ca::generate_vector<T>(vector_size, 0);
 }
 
@@ -240,10 +269,12 @@ template <
                          (std::is_integral_v<T> || ca::is_floating_point_v<U>),
                      int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
-  set_rounding_mode(RND);
+  set_rounding_mode<U>(RND);
   std::vector<U> ret(values.size());
   auto cast_to_output_type = [](const T val) {
-    return U(static_cast<typename TO::underlying_type>(val));
+    if (std::is_same<U, ca::Half>::value)
+      return U(static_cast<U>(float(val)));
+    return U(static_cast<U>(val));
   };
   std::transform(std::begin(values), std::end(values), begin(ret),
                  cast_to_output_type);
@@ -261,50 +292,29 @@ template <
                          ca::is_floating_point_v<T> && std::is_integral_v<U>,
                      int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  set_rounding_mode<U>(RND);
   std::vector<U> ret(values.size());
   for (size_t i = 0; i < values.size(); i++) {
-    switch (RND) {
-    case RoundingMode::round_default:
-    case RoundingMode::round_toward_zero: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::trunc(values[i])));
-      continue;
-    }
-    case RoundingMode::round_to_nearest_even: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::round(values[i])));
-      continue;
-    }
-    case RoundingMode::round_toward_negative_infinity: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::floor(values[i])));
-      continue;
-    }
-    case RoundingMode::round_toward_positive_infinity: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::ceil(values[i])));
-      continue;
-    }
-    default:
-      throw UnknownRoundingModeException("Unknown rounding mode");
-    }
+    ret[i] =
+        U(static_cast<typename TO::underlying_type>(ca::nearbyint(values[i])));
   }
   return ret;
 }
 
-template <typename FROM, typename TO,
-          RoundingMode RND = RoundingMode::round_default,
-          OverflowHandling SAT = OverflowHandling::overflow_saturation,
-          TestVariant TV, typename T = typename FROM::scalar_type::host_type,
-          typename U = typename TO::scalar_type::host_type,
-          std::enable_if_t<TV == TestVariant::conversion &&
-                               SAT == OverflowHandling::overflow_saturation &&
-                               ca::is_floating_point_v<T>,
-                           int> = 0>
+template <
+    typename FROM, typename TO, RoundingMode RND = RoundingMode::round_default,
+    OverflowHandling SAT = OverflowHandling::overflow_saturation,
+    TestVariant TV, typename T = typename FROM::scalar_type::host_type,
+    typename U = typename TO::scalar_type::host_type,
+    std::enable_if_t<TV == TestVariant::conversion &&
+                         SAT == OverflowHandling::overflow_saturation &&
+                         ca::is_floating_point_v<T> && std::is_integral_v<U>,
+                     int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  set_rounding_mode<U>(RND);
   std::vector<U> ret(values.size());
   for (size_t i = 0; i < values.size(); i++) {
-    if (std::isnan(values[i])) {
+    if (ca::isnan(values[i])) {
       ret[i] = U(0);
       continue;
     }
@@ -316,31 +326,8 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
       ret[i] = std::numeric_limits<U>::lowest();
       continue;
     }
-    switch (RND) {
-    case RoundingMode::round_default:
-    case RoundingMode::round_toward_zero: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::trunc(values[i])));
-      continue;
-    }
-    case RoundingMode::round_to_nearest_even: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::round(values[i])));
-      continue;
-    }
-    case RoundingMode::round_toward_negative_infinity: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::floor(values[i])));
-      continue;
-    }
-    case RoundingMode::round_toward_positive_infinity: {
-      ret[i] =
-          U(static_cast<typename TO::underlying_type>(std::ceil(values[i])));
-      continue;
-    }
-    default:
-      throw UnknownRoundingModeException("Unknown rounding mode");
-    }
+    ret[i] =
+        U(static_cast<typename TO::underlying_type>(ca::nearbyint(values[i])));
   }
   return ret;
 }
@@ -355,7 +342,7 @@ template <typename FROM, typename TO,
                                std::is_integral_v<T>,
                            int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
-  set_rounding_mode(RND);
+  set_rounding_mode<U>(RND);
   auto tmp = values;
   std::vector<U> ret(tmp.size());
   auto convert_to_output_type = [](const T val) {
@@ -389,7 +376,7 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
   unsigned char *buffer = reinterpret_cast<unsigned char *>(values.data());
   std::vector<U> vec;
   while (byte_idx < input_size_in_bytes && byte_idx < sizeof(U) * output_size) {
-    U val = 0;
+    U val = U(0);
     unsigned char *c = reinterpret_cast<unsigned char *>(&val);
     for (auto i = 0; i < output_type_size_in_bytes; i++) {
       if (byte_idx >= input_size_in_bytes) {

@@ -2,6 +2,7 @@
 #define CASSIAN_OCLC_CONVERSIONS_UTILITY_HPP
 
 #include <cassian/runtime/openclc_type_tuples.hpp>
+#include <cassian/runtime/openclc_types.hpp>
 #include <cassian/utility/metaprogramming.hpp>
 #include <common.hpp>
 #include <tuple>
@@ -66,10 +67,15 @@ namespace detail {
 using VectorSizes = std::index_sequence<1, 2, 3, 4, 8, 16>;
 
 template <size_t N>
+using BasicTypesExtended =
+    typename TupleConcat<BasicTypes<N>, std::tuple<OpenCLCHalf<N>>>::type;
+
+template <size_t N>
 using OneByteTypes = std::tuple<OpenCLCChar<N>, OpenCLCUchar<N>>;
 
 template <size_t N>
-using TwoByteTypes = std::tuple<OpenCLCShort<N>, OpenCLCUshort<N>>;
+using TwoByteTypes =
+    std::tuple<OpenCLCShort<N>, OpenCLCUshort<N>, OpenCLCHalf<N>>;
 
 template <size_t N>
 using FourByteTypes =
@@ -78,6 +84,7 @@ using FourByteTypes =
 template <size_t N>
 using EightByteTypes =
     std::tuple<OpenCLCLong<N>, OpenCLCUlong<N>, OpenCLCDouble<N>>;
+
 } // namespace detail
 
 using ScalarOneByteTypesToScalarOneByteTypes =
@@ -192,6 +199,36 @@ using Vector16EightByteTypesToVector16EightByteTypes =
     cassian::CartesianProduct<detail::EightByteTypes<16>,
                               detail::EightByteTypes<16>>::type;
 
+using ScalarTypesExtended = detail::BasicTypesExtended<1>;
+
+using Vector2TypesExtended = detail::BasicTypesExtended<2>;
+
+using Vector3TypesExtended = detail::BasicTypesExtended<3>;
+
+using Vector4TypesExtended = detail::BasicTypesExtended<4>;
+
+using Vector8TypesExtended = detail::BasicTypesExtended<8>;
+
+using Vector16TypesExtended = detail::BasicTypesExtended<16>;
+
+using ScalarToScalarExtended =
+    CartesianProduct<ScalarTypesExtended, ScalarTypesExtended>::type;
+
+using ScalarToVector2Extended =
+    CartesianProduct<ScalarTypesExtended, Vector2TypesExtended>::type;
+
+using ScalarToVector3Extended =
+    CartesianProduct<ScalarTypesExtended, Vector3TypesExtended>::type;
+
+using ScalarToVector4Extended =
+    CartesianProduct<ScalarTypesExtended, Vector4TypesExtended>::type;
+
+using ScalarToVector8Extended =
+    CartesianProduct<ScalarTypesExtended, Vector8TypesExtended>::type;
+
+using ScalarToVector16Extended =
+    CartesianProduct<ScalarTypesExtended, Vector16TypesExtended>::type;
+
 /**
  * Tuple containing cartesian product of OpenCL C integer scalar types and
  * OpenCL C floating point scalar types.
@@ -287,23 +324,6 @@ using Vector16IntegerToVector16FloatingPoint =
 using Vector16FloatingPointToVector16Integer =
     cassian::CartesianProduct<cassian::Vector16FloatingPointTypes,
                               cassian::Vector16IntegerTypes>::type;
-
-using ScalarHalftoScalar = CartesianProduct<
-    CartesianProduct<std::index_sequence<1>>::type<detail::OpenCLCHalf>,
-    ScalarTypes>::type;
-
-using ScalarHalftoVectors = CartesianProduct<
-    CartesianProduct<std::index_sequence<1>>::type<detail::OpenCLCHalf>,
-    VectorTypes>::type;
-
-using ScalartoHalfScalar = CartesianProduct<
-    ScalarTypes,
-    CartesianProduct<std::index_sequence<1>>::type<detail::OpenCLCHalf>>::type;
-
-using ScalartoHalfVectors =
-    CartesianProduct<ScalarTypes,
-                     CartesianProduct<std::index_sequence<2, 4, 8, 16>>::type<
-                         detail::OpenCLCHalf>>::type;
 
 } // namespace cassian
 

@@ -87,30 +87,6 @@ std::string function_suffix(RoundingMode rounding_mode) {
   }
 }
 
-void set_rounding_mode(RoundingMode rounding_mode) {
-  switch (rounding_mode) {
-  case RoundingMode::round_default:
-  case RoundingMode::round_to_nearest_even: {
-    fesetround(FE_TONEAREST);
-    return;
-  }
-  case RoundingMode::round_toward_negative_infinity: {
-    fesetround(FE_DOWNWARD);
-    return;
-  }
-  case RoundingMode::round_toward_positive_infinity: {
-    fesetround(FE_UPWARD);
-    return;
-  }
-  case RoundingMode::round_toward_zero: {
-    fesetround(FE_TOWARDZERO);
-    return;
-  }
-  default:
-    throw UnknownRoundingModeException("Unknown rounding mode");
-  }
-}
-
 std::string to_string(OverflowHandling overflow_handling) {
   switch (overflow_handling) {
   case OverflowHandling::overflow_saturation:

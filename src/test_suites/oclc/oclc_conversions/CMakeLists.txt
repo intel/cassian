@@ -45,6 +45,13 @@ target_link_libraries(
           cassian::catch2_utils)
 
 set_target_properties(oclc_conversions PROPERTIES FOLDER test_suites/oclc)
+
+if(MSVC)
+  set_source_files_properties(${SOURCES} COMPILE_FLAGS /fp:strict)
+else()
+  set_source_files_properties(${SOURCES} COMPILE_FLAGS -frounding-math)
+endif()
+
 cassian_install_target(oclc_conversions)
 
 cassian_target_add_kernels(oclc_conversions ${KERNELS})

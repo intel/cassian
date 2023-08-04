@@ -30,39 +30,39 @@ template <typename TestType> auto test_name() {
   return std::string(from::type_name) + "->" + std::string(to::type_name);
 }
 
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("implicit conversion", "",
-                                    tuples_to_test_cases_t<ca::ScalarToScalar>,
-                                    test_name<TestType>) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
+    "implicit conversion", "",
+    tuples_to_test_cases_t<ca::ScalarToScalarExtended>, test_name<TestType>) {
   scalar_to_scalar<TestType, TestVariant::conversion>(program);
 }
 
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("implicit conversion", "",
-                                    tuples_to_test_cases_t<ca::ScalarToVector2>,
-                                    test_name<TestType>) {
-  scalar_to_vector<TestType, TestVariant::conversion>(program);
-}
-
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("implicit conversion", "",
-                                    tuples_to_test_cases_t<ca::ScalarToVector3>,
-                                    test_name<TestType>) {
-  scalar_to_vector<TestType, TestVariant::conversion>(program);
-}
-
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("implicit conversion", "",
-                                    tuples_to_test_cases_t<ca::ScalarToVector4>,
-                                    test_name<TestType>) {
-  scalar_to_vector<TestType, TestVariant::conversion>(program);
-}
-
-TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("implicit conversion", "",
-                                    tuples_to_test_cases_t<ca::ScalarToVector8>,
-                                    test_name<TestType>) {
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
+    "implicit conversion", "",
+    tuples_to_test_cases_t<ca::ScalarToVector2Extended>, test_name<TestType>) {
   scalar_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
-    "implicit conversion", "", tuples_to_test_cases_t<ca::ScalarToVector16>,
-    test_name<TestType>) {
+    "implicit conversion", "",
+    tuples_to_test_cases_t<ca::ScalarToVector3Extended>, test_name<TestType>) {
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
+}
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
+    "implicit conversion", "",
+    tuples_to_test_cases_t<ca::ScalarToVector4Extended>, test_name<TestType>) {
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
+}
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
+    "implicit conversion", "",
+    tuples_to_test_cases_t<ca::ScalarToVector8Extended>, test_name<TestType>) {
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
+}
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
+    "implicit conversion", "",
+    tuples_to_test_cases_t<ca::ScalarToVector16Extended>, test_name<TestType>) {
   scalar_to_vector<TestType, TestVariant::conversion>(program);
 }
 
