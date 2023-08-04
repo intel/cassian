@@ -34,7 +34,8 @@ using IntegerTypes =
                OpenCLCUlong<N>>;
 
 template <size_t N>
-using FloatingPointTypes = std::tuple<OpenCLCFloat<N>, OpenCLCDouble<N>>;
+using FloatingPointTypes =
+    std::tuple<OpenCLCHalf<N>, OpenCLCFloat<N>, OpenCLCDouble<N>>;
 } // namespace detail
 
 /**
@@ -181,6 +182,11 @@ using TypesUint =
 using TypesUlong =
     CartesianProduct<detail::VectorSizes>::type<detail::OpenCLCUlong>;
 
+/**
+ * Tuple containing OpenCL C half scalar and vector types.
+ */
+using TypesHalf =
+    CartesianProduct<detail::VectorSizes>::type<detail::OpenCLCHalf>;
 /**
  * Tuple containing OpenCL C float scalar and vector types.
  */
