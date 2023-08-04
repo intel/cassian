@@ -78,6 +78,50 @@ template <typename T> T sqrt(T const &value) {
   }
 }
 
+template <typename T> T floor(T const &value) {
+  if constexpr (is_custom_type_v<T>) {
+    static_assert(std::is_same_v<T, cassian::Half>);
+    return floor(value);
+  } else {
+    return std::floor(value);
+  }
+}
+
+template <typename T> T ceil(T const &value) {
+  if constexpr (is_custom_type_v<T>) {
+    static_assert(std::is_same_v<T, cassian::Half>);
+    return ceil(value);
+  } else {
+    return std::ceil(value);
+  }
+}
+
+template <typename T> T trunc(T const &value) {
+  if constexpr (is_custom_type_v<T>) {
+    static_assert(std::is_same_v<T, cassian::Half>);
+    return trunc(value);
+  } else {
+    return std::trunc(value);
+  }
+}
+
+template <typename T> T round(T const &value) {
+  if constexpr (is_custom_type_v<T>) {
+    static_assert(std::is_same_v<T, cassian::Half>);
+    return round(value);
+  } else {
+    return std::round(value);
+  }
+}
+
+template <typename T> T nearbyint(T const &value) {
+  if constexpr (is_custom_type_v<T>) {
+    static_assert(std::is_same_v<T, cassian::Half>);
+    return nearbyint(value);
+  } else {
+    return std::nearbyint(value);
+  }
+}
 } // namespace cassian
 
 #endif

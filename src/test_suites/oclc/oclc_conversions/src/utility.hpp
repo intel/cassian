@@ -288,6 +288,23 @@ using Vector16FloatingPointToVector16Integer =
     cassian::CartesianProduct<cassian::Vector16FloatingPointTypes,
                               cassian::Vector16IntegerTypes>::type;
 
+using ScalarHalftoScalar = CartesianProduct<
+    CartesianProduct<std::index_sequence<1>>::type<detail::OpenCLCHalf>,
+    ScalarTypes>::type;
+
+using ScalarHalftoVectors = CartesianProduct<
+    CartesianProduct<std::index_sequence<1>>::type<detail::OpenCLCHalf>,
+    VectorTypes>::type;
+
+using ScalartoHalfScalar = CartesianProduct<
+    ScalarTypes,
+    CartesianProduct<std::index_sequence<1>>::type<detail::OpenCLCHalf>>::type;
+
+using ScalartoHalfVectors =
+    CartesianProduct<ScalarTypes,
+                     CartesianProduct<std::index_sequence<2, 4, 8, 16>>::type<
+                         detail::OpenCLCHalf>>::type;
+
 } // namespace cassian
 
 #endif

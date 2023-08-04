@@ -6,6 +6,7 @@
  */
 
 #include <cassian/fp_types/half.hpp>
+#include <cfenv>
 #include <cstdint>
 #include <cstring>
 #include <iomanip>
@@ -69,9 +70,19 @@ Half::Half(float v) {
       const bool next = (mantissa32 & half_next_unsaved_mask) != 0;
       const bool rest = (mantissa32 & half_rest_unsaved_mask) != 0;
       const bool is_odd = (mantissa16 & 1) != 0;
-
-      if (next && (is_odd || rest)) {
-        mantissa16 += 1;
+      const bool is_negative = sign != 0;
+      if (std::fegetround() == FE_TONEAREST) {
+        if (next && (is_odd || rest)) {
+          mantissa16 += 1;
+        }
+      } else if (std::fegetround() == FE_UPWARD) {
+        if (!is_negative && (next || rest)) {
+          mantissa16 += 1;
+        }
+      } else if (std::fegetround() == FE_DOWNWARD) {
+        if (is_negative && (next || rest)) {
+          mantissa16 += 1;
+        }
       }
     } else {
       // large float maps to inf
@@ -264,4 +275,15 @@ Half nextafter(const Half from, const Half to) {
                           : Half(to));
 }
 
+Half floor(Half value) { return Half(std::floor(static_cast<float>(value))); }
+
+Half ceil(Half value) { return Half(std::ceil(static_cast<float>(value))); }
+
+Half trunc(Half value) { return Half(std::trunc(static_cast<float>(value))); }
+
+Half round(Half value) { return Half(std::round(static_cast<float>(value))); }
+
+Half nearbyint(Half value) {
+  return Half(std::nearbyint(static_cast<float>(value)));
+}
 } // namespace cassian

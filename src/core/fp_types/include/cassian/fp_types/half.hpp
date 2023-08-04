@@ -686,6 +686,16 @@ Half sqrt(Half value);
  */
 Half nextafter(const Half from, const Half to);
 
+Half trunc(Half value);
+
+Half round(Half value);
+
+Half floor(Half value);
+
+Half ceil(Half value);
+
+Half nearbyint(Half value);
+
 } // namespace cassian
 
 /**
