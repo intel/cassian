@@ -191,18 +191,12 @@ Buffer LevelZeroRuntime::create_buffer(int device, const size_t size,
   device_memory_allocation_description.flags = 0;
   device_memory_allocation_description.ordinal = 0;
 
-  ze_host_mem_alloc_desc_t host_memory_allocation_description = {};
-  host_memory_allocation_description.stype =
-      ZE_STRUCTURE_TYPE_HOST_MEM_ALLOC_DESC;
-  host_memory_allocation_description.pNext = nullptr;
-  host_memory_allocation_description.flags = 0;
-
   void *buffer = nullptr;
   ze_result_t result = ZE_RESULT_SUCCESS;
 
-  result = wrapper_.zeMemAllocShared(
-      contexts_[device], &device_memory_allocation_description,
-      &host_memory_allocation_description, size, 1, devices_[device], &buffer);
+  result = wrapper_.zeMemAllocDevice(contexts_[device],
+                                     &device_memory_allocation_description,
+                                     size, 1, devices_[device], &buffer);
 
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to allocate Level Zero memory");

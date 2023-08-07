@@ -50,6 +50,7 @@ public:
   ze_pfnCommandListAppendLaunchKernel_t zeCommandListAppendLaunchKernel =
       nullptr;
   ze_pfnMemAllocShared_t zeMemAllocShared = nullptr;
+  ze_pfnMemAllocDevice_t zeMemAllocDevice = nullptr;
   ze_pfnMemFree_t zeMemFree = nullptr;
   ze_pfnCommandListAppendMemoryCopy_t zeCommandListAppendMemoryCopy = nullptr;
   ze_pfnCommandListAppendImageCopyToMemory_t

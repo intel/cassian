@@ -75,6 +75,8 @@ LevelZeroWrapper::LevelZeroWrapper() {
           library_->get_function("zeCommandListAppendLaunchKernel"));
   zeMemAllocShared = reinterpret_cast<ze_pfnMemAllocShared_t>(
       library_->get_function("zeMemAllocShared"));
+  zeMemAllocDevice = reinterpret_cast<ze_pfnMemAllocDevice_t>(
+      library_->get_function("zeMemAllocDevice"));
   zeMemFree =
       reinterpret_cast<ze_pfnMemFree_t>(library_->get_function("zeMemFree"));
   zeCommandListAppendMemoryCopy =
