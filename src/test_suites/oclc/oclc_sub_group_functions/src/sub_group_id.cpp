@@ -32,26 +32,19 @@ void test_num_subgroup(const TestConfig &config) {
 
   std::vector<uint32_t> input_data_values(global_work_size_total, 1);
   TestCaseDescriptor<TEST_TYPE> test_description;
-  TestArguments arg1;
-  TestArguments arg2;
-  TestArguments arg3;
+  TestArguments arg1(input_data_values.data(),
+                     input_data_values.size() * sizeof(uint32_t),
+                     input_data_values.size());
+  TestArguments arg2(input_data_values.data(),
+                     input_data_values.size() * sizeof(uint32_t),
+                     input_data_values.size());
+  TestArguments arg3(input_data_values.data(),
+                     input_data_values.size() * sizeof(uint32_t),
+                     input_data_values.size());
   test_description.kernel_name = get_kernel_name(name);
   test_description.kernel_file_name =
       "kernels/oclc_sub_group_functions/" + name + ".cl";
   test_description.kernel_func_name = name;
-
-  arg1.data = input_data_values.data();
-  arg1.data_count = input_data_values.size();
-  arg1.data_size = input_data_values.size() * sizeof(uint32_t);
-
-  arg2.data = input_data_values.data();
-  arg2.data_count = input_data_values.size();
-  arg2.data_size = input_data_values.size() * sizeof(uint32_t);
-
-  arg3.data = input_data_values.data();
-  arg3.data_count = input_data_values.size();
-  arg3.data_size = input_data_values.size() * sizeof(uint32_t);
-
   test_description.test_args.push_back(arg1);
   test_description.test_args.push_back(arg2);
   test_description.test_args.push_back(arg3);

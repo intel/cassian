@@ -89,9 +89,6 @@ void test_subgroup_block(const TestConfig &config,
   std::array<size_t, N> local_work_size = {};
   size_t global_work_size_total = 1;
   TestCaseDescriptor<TEST_TYPE> test_description;
-  TestArguments arg1;
-  TestArguments arg2;
-
   constexpr size_t initial_image_width = 128;
   constexpr size_t initial_image_height = 128;
   size_t image_width = initial_image_width;
@@ -137,6 +134,13 @@ void test_subgroup_block(const TestConfig &config,
     vector_size = vector_type_check::vector_size;
   }
 
+  TestArguments arg1(input_data_values.data(),
+                     input_data_values.size() * sizeof(scalar_type),
+                     input_data_values.size());
+  TestArguments arg2(output_data_values.data(),
+                     output_data_values.size() * sizeof(scalar_type),
+                     output_data_values.size());
+
   if ((test_extension_type == block_image ||
        test_extension_type == media_block_image) &&
       test_function_type == read_ft) {
@@ -174,13 +178,6 @@ void test_subgroup_block(const TestConfig &config,
     arg1.data_size = output_data_values.size() * sizeof(scalar_type);
     test_description.test_args.push_back(arg1);
   } else {
-    arg1.data = input_data_values.data();
-    arg1.data_count = input_data_values.size();
-    arg1.data_size = input_data_values.size() * sizeof(scalar_type);
-
-    arg2.data = output_data_values.data();
-    arg2.data_count = output_data_values.size();
-    arg2.data_size = output_data_values.size() * sizeof(scalar_type);
     test_description.test_args.push_back(arg1);
     test_description.test_args.push_back(arg2);
   }

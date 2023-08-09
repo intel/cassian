@@ -33,16 +33,15 @@ void test_subgroup_broadcast(const TestConfig &config) {
   std::iota(input_data_values.begin(), input_data_values.end(), 0);
 
   TestCaseDescriptor<TEST_TYPE> test_description;
-  TestArguments arg1;
+  TestArguments arg1(input_data_values.data(),
+                     input_data_values.size() * sizeof(uint32_t),
+                     input_data_values.size());
   const std::string name = "sub_group_broadcast";
   test_description.kernel_name = get_kernel_name(name);
   test_description.kernel_file_name =
       "kernels/oclc_sub_group_functions/" + name + ".cl";
   test_description.kernel_func_name = name;
   test_description.change_prefix_for_types = true;
-  arg1.data = input_data_values.data();
-  arg1.data_count = input_data_values.size();
-  arg1.data_size = input_data_values.size() * sizeof(uint32_t);
 
   test_description.test_args.push_back(arg1);
 

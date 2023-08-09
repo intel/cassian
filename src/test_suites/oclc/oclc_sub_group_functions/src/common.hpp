@@ -45,19 +45,19 @@ struct ImageConfig {
 struct TestArguments {
   void *data;
   size_t data_size;
+  size_t data_count;
   size_t image_dim_0;
   size_t image_dim_1;
-  size_t data_count;
-
   bool is_image;
-
   // memory flags
   bool is_local_memory;
   TestArguments(void *data = nullptr, size_t data_size = 0,
-                size_t data_count = 0, bool is_image = false,
+                size_t data_count = 0, size_t image_dim_0 = 0,
+                size_t image_dim_1 = 0, bool is_image = false,
                 bool is_local_memory = false)
       : data(data), data_size(data_size), data_count(data_count),
-        is_image(is_image), is_local_memory(is_local_memory) {}
+        image_dim_0(image_dim_0), image_dim_1(image_dim_1), is_image(is_image),
+        is_local_memory(is_local_memory) {}
 };
 
 template <typename T> struct TestCaseDescriptor {
@@ -430,16 +430,15 @@ void test_subgroup_generic(const TestConfig &config,
   for (uint32_t delta_size = 1; delta_size <= max_delta_size; delta_size++) {
     std::vector<uint32_t> input_data_values(global_work_size_total, 1);
     TestCaseDescriptor<TEST_TYPE> test_description;
-    TestArguments arg1;
+    TestArguments arg1(input_data_values.data(),
+                       input_data_values.size() * sizeof(uint32_t),
+                       input_data_values.size());
     test_description.kernel_name = get_kernel_name(func_name);
     test_description.kernel_file_name =
         "kernels/oclc_sub_group_functions/" + func_name + ".cl";
     test_description.kernel_func_name = func_name;
     test_description.change_prefix_for_all_types = false;
     test_description.delta_size = delta_size;
-    arg1.data = input_data_values.data();
-    arg1.data_count = input_data_values.size();
-    arg1.data_size = input_data_values.size() * sizeof(uint32_t);
     test_description.test_args.push_back(arg1);
 
     const std::vector<std::vector<uint32_t>> outputs =
