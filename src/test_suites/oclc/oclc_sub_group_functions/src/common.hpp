@@ -40,6 +40,10 @@ struct ImageConfig {
   ca::ImageDimensions dim;
   ca::ImageFormat format;
   ca::ImageChannelOrder order;
+  ImageConfig()
+      : type(ca::ImageType::t_2d), dim({1, 1, 1}),
+        format(ca::ImageFormat::unsigned_int32),
+        order(ca::ImageChannelOrder::r) {}
 };
 
 struct TestArguments {

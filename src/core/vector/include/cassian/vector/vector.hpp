@@ -91,6 +91,9 @@ public:
     const int list_size = static_cast<int>(list.size());
     if (list_size == N) {
       std::copy(list.begin(), list.end(), data_.begin());
+      if (N < SIZE_IN_MEMORY) {
+        std::fill(data_.begin() + N, data_.end(), 0);
+      }
     } else {
       throw VectorBadNumberOfElementsException("initializer list", N,
                                                list_size);
@@ -108,6 +111,9 @@ public:
     const int vector_size = static_cast<int>(vector.size());
     if (vector.size() == N) {
       std::move(vector.begin(), vector.end(), data_.begin());
+      if (N < SIZE_IN_MEMORY) {
+        std::fill(data_.begin() + N, data_.end(), 0);
+      }
     } else {
       throw VectorBadNumberOfElementsException("std::vector", N, vector_size);
     }
