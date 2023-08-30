@@ -22,8 +22,11 @@ namespace cassian {
  */
 template <typename T, EnableIfIsVector<T> = 0>
 scalar_type_v<T> dot_product(const T &a, const T &b) {
-  return std::inner_product(a.begin(), a.begin() + T::vector_size, b.begin(),
-                            scalar_type_v<T>(0ULL));
+  scalar_type_v<T> result = 0;
+  for (auto i = 0; i < T::vector_size; i++) {
+    result = std::fma(a[i], b[i], result);
+  }
+  return result;
 }
 
 /**
