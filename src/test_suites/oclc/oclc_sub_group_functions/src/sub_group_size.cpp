@@ -59,7 +59,7 @@ void test_subgroup_size(const TestConfig &config) {
     std::vector<uint32_t> input_data_values(global_work_size_total, 1);
     TestCaseDescriptor<TEST_TYPE> test_description;
     TestArguments arg1(input_data_values.data(),
-                       input_data_values.size() * sizeof(uint32_t), 0, 0,
+                       input_data_values.size() * sizeof(uint32_t),
                        input_data_values.size());
     test_description.kernel_name = get_kernel_name(name + "_max_value");
     test_description.kernel_file_name =
