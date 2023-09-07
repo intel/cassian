@@ -31,6 +31,8 @@ constexpr int get_channel_number(ImageChannelOrder order) {
   case ImageChannelOrder::argb:
   case ImageChannelOrder::abgr:
     return 4;
+  default:
+    return -1;
   }
 }
 
