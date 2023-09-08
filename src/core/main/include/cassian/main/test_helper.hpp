@@ -137,6 +137,11 @@ void kernel(std::array<size_t, 1> global_work_size,
             const std::string &source, const std::string &flags,
             const std::optional<std::string> &spirv_flags = std::nullopt);
 
+void kernel(size_t global_work_size, size_t local_work_size,
+            const std::string &name, const std::string &source,
+            const std::string &flags,
+            const std::optional<std::string> &spirv_flags = std::nullopt);
+
 void kernel(const std::string &name,
             const std::vector<ProgramDescriptor> &program_descriptors,
             const std::string &linker_options = "");

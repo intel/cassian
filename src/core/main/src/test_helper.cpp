@@ -174,6 +174,14 @@ void kernel(std::array<size_t, 3> global_work_size, const std::string &name,
   kernel(global_work_size, {1, 1, 1}, name, source, flags, spirv_flags);
 }
 
+void kernel(size_t global_work_size, size_t local_work_size,
+            const std::string &name, const std::string &source,
+            const std::string &flags,
+            const std::optional<std::string> &spirv_flags) {
+  kernel({global_work_size, 1, 1}, {local_work_size, 1, 1}, name, source, flags,
+         spirv_flags);
+}
+
 void kernel(std::array<size_t, 1> global_work_size,
             std::array<size_t, 1> local_work_size, const std::string &name,
             const std::string &source, const std::string &flags,
