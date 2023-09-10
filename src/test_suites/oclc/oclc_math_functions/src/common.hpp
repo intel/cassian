@@ -767,15 +767,14 @@ template <typename T> T calculate_tanh(const T &input) {
 }
 
 template <typename T> T calculate_tanpi(const T &input) {
-  constexpr cassian::scalar_type_v<T> pi_value = M_PI;
   if constexpr (cassian::is_vector_v<T>) {
     T result(0.0F);
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = std::tan(pi_value * input[i]);
+      result[i] = std::sin(M_PI * input[i]) / std::cos(M_PI * input[i]);
     }
     return result;
   } else {
-    return std::tan(pi_value * input);
+    return std::sin(M_PI * input) / std::cos(M_PI * input);
   }
 }
 
