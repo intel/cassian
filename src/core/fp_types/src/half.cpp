@@ -58,10 +58,24 @@ Half::Half(float v) {
       mantissa16 = 0;
     } else if (exp < half_min_exp) {
       // small float numbers map to half denormals
+      int denorm_mantissa_shift = -(exp + 1);
+      int implicit_one_denorm_shift = -(exp + float_mantissa_shift + 1);
+
       biased_exp16 = 0;
-      // TODO: Round to nearest or even
-      mantissa16 = half_implicit_one >> -(exp + float_mantissa_shift + 1) |
-                   mantissa32 >> -(exp + 1);
+
+      mantissa16 = half_implicit_one >> implicit_one_denorm_shift |
+                   mantissa32 >> denorm_mantissa_shift;
+
+      const bool next = ((half_implicit_one >> (implicit_one_denorm_shift - 1) |
+                          mantissa32 >> (denorm_mantissa_shift - 1)) &
+                         1) != 0;
+      const bool rest = (mantissa32 << (sizeof(mantissa32) * 8 -
+                                        (denorm_mantissa_shift - 1))) != 0;
+      const bool is_odd = (mantissa16 & 1) != 0;
+
+      if (next && (is_odd || rest)) {
+        mantissa16 += 1;
+      }
     } else if (exp <= 15) {
       biased_exp16 = exp + half_bias;
       mantissa16 = mantissa32 >> float_mantissa_shift;

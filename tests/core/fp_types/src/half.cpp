@@ -21,30 +21,45 @@
 namespace ca = cassian;
 
 namespace {
-// 0.000000059604645 subnormal gets converted wrong
-// (to 0x0000, should be 0x0001) in two cases:
-// float -> uint16
-// float -> uint16 -> float
 const float float_certain_value = -0.1572265625F;
 const float float_half_subnormal_value = 0.0000254511833191F;
+const float float_lowest_half_subnormal_value = 5.960464477539063e-8F;
 const uint32_t float_random = 0x0000000f;
 const uint32_t float_random_carry_over = 0x00001000;
 const uint32_t float_to_be_rounded_up_srnd = 0x427ff000; // 63.9844
 const std::vector<float> float_values{
     {0.0F, -0.0F, 1.0F, 2.0F, float_certain_value, float_half_subnormal_value,
+     float_lowest_half_subnormal_value,
      std::numeric_limits<float>::infinity()}};
 
 const std::vector<float> float_expected{
     {0.0F, -0.0F, 1.0F, 2.0F, float_certain_value, float_half_subnormal_value,
+     float_lowest_half_subnormal_value,
      std::numeric_limits<float>::infinity()}};
 
-const uint32_t float_to_be_rounded_down = 0x42005000;
-const uint32_t float_to_be_rounded_up = 0x42007000;
+const uint32_t float_to_be_rounded_down = 0x42006140;
+const uint32_t float_to_be_rounded_down_to_even = 0x42005000;
+const uint32_t float_to_be_rounded_up = 0x42005090;
+const uint32_t float_to_be_rounded_up_to_even = 0x42007000;
 const uint32_t float_to_be_rounded_max = 0xffffffff;
+const uint32_t float_to_be_rounded_to_zero = 0x17a04120;
+const uint32_t float_to_be_rounded_to_inf = 0x7ba04120;
+const uint32_t float_to_be_rounded_up_to_denorm = 0x37864288;
+const uint32_t float_to_be_rounded_up_to_even_to_denorm = 0x3786c000;
+const uint32_t float_to_be_rounded_down_to_denorm = 0x37860a88;
+const uint32_t float_to_be_rounded_down_to_even_to_denorm = 0x37864000;
 const std::vector<float> float_rnde_rounding_values{
     {uint32_to_float(float_to_be_rounded_down),
+     uint32_to_float(float_to_be_rounded_down_to_even),
      uint32_to_float(float_to_be_rounded_up),
-     uint32_to_float(float_to_be_rounded_max)}};
+     uint32_to_float(float_to_be_rounded_up_to_even),
+     uint32_to_float(float_to_be_rounded_max),
+     uint32_to_float(float_to_be_rounded_to_zero),
+     uint32_to_float(float_to_be_rounded_to_inf),
+     uint32_to_float(float_to_be_rounded_up_to_denorm),
+     uint32_to_float(float_to_be_rounded_up_to_even_to_denorm),
+     uint32_to_float(float_to_be_rounded_down_to_denorm),
+     uint32_to_float(float_to_be_rounded_down_to_even_to_denorm)}};
 const std::vector<float> float_srnd_rounding_values{
     {0.0F, -0.0F, 1.0F, 2.0F, std::numeric_limits<float>::infinity(),
      uint32_to_float(float_to_be_rounded_up_srnd),
@@ -63,20 +78,31 @@ const uint16_t half_one = 0x3c00;
 const uint16_t half_two = 0x4000;
 const uint16_t half_certain_value = 0xb108;
 const uint16_t half_subnormal_value = 0x01ab;
+const uint16_t half_lowest_subnormal_value = 0x0001;
 const uint16_t half_infinity = 0x7c00;
 const uint16_t half_srnd_no_carry_over = 0x53ff; // 63.96875
 const uint16_t half_srnd_carry_over = 0x5400;    // 64
-const std::vector<uint16_t> half_values{{half_zero, half_minus_zero, half_one,
-                                         half_two, half_certain_value,
-                                         half_subnormal_value, half_infinity}};
+
+const std::vector<uint16_t> half_values{
+    {half_zero, half_minus_zero, half_one, half_two, half_certain_value,
+     half_subnormal_value, half_lowest_subnormal_value, half_infinity}};
 const std::vector<uint16_t> half_expected{
     {half_zero, half_minus_zero, half_one, half_two, half_certain_value,
-     half_subnormal_value, half_infinity}};
-const uint16_t half_rounded_down = 0x5002;
-const uint16_t half_rounded_up = 0x5004;
+     half_subnormal_value, half_lowest_subnormal_value, half_infinity}};
+const uint16_t half_rounded_down = 0x5003;
+const uint16_t half_rounded_down_to_even = 0x5002;
+const uint16_t half_rounded_up = 0x5003;
+const uint16_t half_rounded_up_to_even = 0x5004;
 const uint16_t half_rounded_max = 0xffff;
+const uint16_t half_denorm_rounded_up = 0x010d;
+const uint16_t half_denorm_rounded_up_to_even = 0x010e;
+const uint16_t half_denorm_rounded_down = 0x010c;
+const uint16_t half_denorm_rounded_down_to_even = 0x010c;
 const std::vector<uint16_t> half_rnde_rounding_expected{
-    {half_rounded_down, half_rounded_up, half_rounded_max}};
+    {half_rounded_down, half_rounded_down_to_even, half_rounded_up,
+     half_rounded_up_to_even, half_rounded_max, half_zero, half_infinity,
+     half_denorm_rounded_up, half_denorm_rounded_up_to_even,
+     half_denorm_rounded_down, half_denorm_rounded_down_to_even}};
 const std::vector<uint16_t> half_srnd_rounding_expected{
     {half_zero, half_minus_zero, half_one, half_two, half_infinity,
      half_srnd_no_carry_over, half_srnd_carry_over}};
