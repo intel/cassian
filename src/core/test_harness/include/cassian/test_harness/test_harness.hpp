@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -9,7 +9,9 @@
 #define CASSIAN_TEST_HARNESS_TEST_HARNESS_HPP
 
 #include <cassian/runtime/openclc_types.hpp>
+#include <cassian/runtime/property_checks.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <memory>
 
 /**
  * Cassian namespace.
@@ -86,8 +88,23 @@ public:
    */
   template <typename T> void correctly_rounded_divide_sqrt() {}
 
+  /**
+   * Require a work group size.
+   *
+   * @param x Work group X size.
+   * @param y Work group Y size, the default is 1.
+   * @param z Work group Z size, the default is 1.
+   */
+  void min_work_group_size(int x, int y = 1, int z = 1);
+
+  /**
+   * Require a sub group size.
+   */
+  template <int N> void sub_group_size() {}
+
 private:
   std::vector<Feature> features_;
+  std::vector<std::unique_ptr<PropertyCheck>> properties_;
 
   /**
    * Specialization for OpenCL C type wrappers.
@@ -199,6 +216,21 @@ void Requirements::atomic_load_store<clc_half_t>(AtomicMemoryType type);
  * Specialization for float.
  */
 template <> void Requirements::correctly_rounded_divide_sqrt<clc_float_t>();
+
+/**
+ * Specialization for sub group size 8.
+ */
+template <> void Requirements::sub_group_size<8>();
+
+/**
+ * Specialization for sub group size 16.
+ */
+template <> void Requirements::sub_group_size<16>();
+
+/**
+ * Specialization for sub group size 32.
+ */
+template <> void Requirements::sub_group_size<32>();
 
 /**
  * Check if a test should be skipped based on given requirements and a runtime.

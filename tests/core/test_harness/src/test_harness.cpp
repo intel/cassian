@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -148,6 +148,55 @@ TEST_CASE("Requirements::check") {
       REQUIRE(reason.empty());
     }
   }
+
+  SECTION("sub_group_size") {
+    runtime.is_simd8_supported_ = true;
+    runtime.is_simd16_supported_ = false;
+    runtime.is_simd32_supported_ = false;
+    SECTION("can be 8") {
+      requirements.sub_group_size<8>();
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason.empty());
+    }
+    SECTION("can't be 8") {
+      runtime.is_simd8_supported_ = false;
+      requirements.sub_group_size<8>();
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason == "Feature not supported: simd8");
+    }
+    SECTION("can't be 16") {
+      requirements.sub_group_size<16>();
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason == "Feature not supported: simd16");
+    }
+    SECTION("can't be 32") {
+      requirements.sub_group_size<32>();
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason == "Feature not supported: simd32");
+    }
+  }
+
+  SECTION("min_work_group_size") {
+    runtime.max_group_size_x_ = 1024;
+    runtime.max_group_size_y_ = 1024;
+    runtime.max_group_size_z_ = 1024;
+    SECTION("can be (1, 1, 1)") {
+      requirements.min_work_group_size(1, 1, 1);
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason.empty());
+    }
+    SECTION("can be (1024, 1024, 1024)") {
+      requirements.min_work_group_size(1024, 1024, 1024);
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason.empty());
+    }
+    SECTION("can't be (1025, 1025, 1025)") {
+      requirements.min_work_group_size(1025, 1025, 1025);
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason == "Test case requirements not met: minimum workgroup "
+                        "size (1025, 1025, 1025)");
+    }
+  }
 }
 
 TEST_CASE("should_skip_test") {
@@ -164,6 +213,33 @@ TEST_CASE("should_skip_test") {
     runtime.is_fp16_supported_ = false;
     requirements.feature(ca::Feature::fp16);
     REQUIRE(ca::should_skip_test(requirements, runtime));
+  }
+
+  SECTION("min_work_group_size") {
+    runtime.max_group_size_x_ = 1024;
+    runtime.max_group_size_y_ = 1024;
+    runtime.max_group_size_z_ = 1024;
+    SECTION("correct") {
+      requirements.min_work_group_size(1024, 1024, 1024);
+      REQUIRE_FALSE(ca::should_skip_test(requirements, runtime));
+    }
+    SECTION("incorrect") {
+      requirements.min_work_group_size(1025, 1025, 1025);
+      REQUIRE(ca::should_skip_test(requirements, runtime));
+    }
+  }
+
+  SECTION("sub_group_size") {
+    runtime.is_simd8_supported_ = true;
+    runtime.is_simd32_supported_ = false;
+    SECTION("correct") {
+      requirements.sub_group_size<8>();
+      REQUIRE_FALSE(ca::should_skip_test(requirements, runtime));
+    }
+    SECTION("incorrect") {
+      requirements.sub_group_size<32>();
+      REQUIRE(ca::should_skip_test(requirements, runtime));
+    }
   }
 }
 

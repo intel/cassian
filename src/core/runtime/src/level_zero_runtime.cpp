@@ -932,6 +932,12 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
   if (result != ZE_RESULT_SUCCESS) {
     throw RuntimeException("Failed to get Level Zero image properties");
   }
+  ze_device_compute_properties_t device_compute_properties = {};
+  result = wrapper_.zeDeviceGetComputeProperties(devices_[0],
+                                                 &device_compute_properties);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to get Level Zero compute properties");
+  }
 
   switch (feature) {
   case Feature::fp16:
@@ -1024,6 +1030,21 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
   case Feature::fp32_correctly_rounded_divide_sqrt: {
     return (device_module_properties.fp32flags &
             ZE_DEVICE_FP_FLAG_ROUNDED_DIVIDE_SQRT) != 0;
+  }
+  case Feature::simd8: {
+    return std::find(std::begin(device_compute_properties.subGroupSizes),
+                     std::end(device_compute_properties.subGroupSizes),
+                     8) != std::end(device_compute_properties.subGroupSizes);
+  }
+  case Feature::simd16: {
+    return std::find(std::begin(device_compute_properties.subGroupSizes),
+                     std::end(device_compute_properties.subGroupSizes),
+                     16) != std::end(device_compute_properties.subGroupSizes);
+  }
+  case Feature::simd32: {
+    return std::find(std::begin(device_compute_properties.subGroupSizes),
+                     std::end(device_compute_properties.subGroupSizes),
+                     32) != std::end(device_compute_properties.subGroupSizes);
   }
   default:
     return false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -66,6 +66,14 @@ std::string to_string(const Feature feature) {
     return "fp64_atomics_local_min_max";
   case Feature::fp32_correctly_rounded_divide_sqrt:
     return "fp32_correctly_rounded_divide_sqrt";
+  case Feature::intel_required_subgroup_size:
+    return "intel_required_subgroup_size";
+  case Feature::simd8:
+    return "simd8";
+  case Feature::simd16:
+    return "simd16";
+  case Feature::simd32:
+    return "simd32";
   default:
     return "unknown";
   }

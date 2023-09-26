@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -9,6 +9,7 @@
 #include <cassian/logging/logging.hpp>
 #include <cassian/runtime/feature.hpp>
 #include <cassian/runtime/openclc_types.hpp>
+#include <cassian/runtime/property_checks.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
 #include <cstddef>
@@ -24,6 +25,13 @@ std::string Requirements::check(const Runtime &runtime) const {
       reason = "Feature not supported: " + to_string(feature);
     }
   }
+
+  for (const auto &property : properties_) {
+    if (!property->check(runtime)) {
+      reason = "Test case requirements not met: " + property->to_string();
+    }
+  }
+
   return reason;
 }
 
@@ -198,6 +206,22 @@ void Requirements::atomic_load_store<clc_half_t>(AtomicMemoryType type) {
 
 template <> void Requirements::correctly_rounded_divide_sqrt<clc_float_t>() {
   features_.push_back(Feature::fp32_correctly_rounded_divide_sqrt);
+}
+
+void Requirements::min_work_group_size(int x, int y, int z) {
+  properties_.push_back(std::make_unique<MinWorkGroupSize>(x, y, z));
+}
+
+template <> void Requirements::sub_group_size<8>() {
+  features_.push_back(Feature::simd8);
+}
+
+template <> void Requirements::sub_group_size<16>() {
+  features_.push_back(Feature::simd16);
+}
+
+template <> void Requirements::sub_group_size<32>() {
+  features_.push_back(Feature::simd32);
 }
 
 bool should_skip_test(const Requirements &requirements,

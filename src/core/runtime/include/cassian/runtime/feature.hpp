@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -45,7 +45,11 @@ enum class Feature {
   fp16_atomics_local_min_max,
   fp32_atomics_local_min_max,
   fp64_atomics_local_min_max,
-  fp32_correctly_rounded_divide_sqrt
+  fp32_correctly_rounded_divide_sqrt,
+  intel_required_subgroup_size,
+  simd8,
+  simd16,
+  simd32
 };
 
 /**

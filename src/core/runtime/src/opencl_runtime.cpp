@@ -26,6 +26,7 @@
 #include <cassian/runtime/image_properties.hpp>
 #include <cassian/runtime/opencl_utils.hpp>
 #include <cassian/runtime/program_descriptor.hpp>
+#include <cassian/runtime/property_checks.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/utility/utility.hpp>
 
@@ -713,6 +714,38 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::fp32_correctly_rounded_divide_sqrt: {
     return (get_device_property(DeviceProperty::fp32_config) &
             CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT) != 0;
+  }
+  case Feature::simd8: {
+    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+      auto sizes = cl_get_device_property<size_t>(
+          devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
+      if (std::find(std::begin(sizes), std::end(sizes), 8) != std::end(sizes)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  case Feature::simd16: {
+    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+      auto sizes = cl_get_device_property<size_t>(
+          devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
+      if (std::find(std::begin(sizes), std::end(sizes), 16) !=
+          std::end(sizes)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  case Feature::simd32: {
+    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+      auto sizes = cl_get_device_property<size_t>(
+          devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
+      if (std::find(std::begin(sizes), std::end(sizes), 32) !=
+          std::end(sizes)) {
+        return true;
+      }
+    }
+    return false;
   }
   default:
     return false;
