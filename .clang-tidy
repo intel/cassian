@@ -1,8 +1,8 @@
 ---
 Checks: -*,
-        readability-*,
+        readability-*, -readability-magic-numbers,
         modernize-*, -modernize-use-trailing-return-type, -modernize-avoid-c-arrays, -modernize-use-nodiscard, 
-        cppcoreguidelines-*, -cppcoreguidelines-avoid-c-arrays, -cppcoreguidelines-pro-bounds-pointer-arithmetic, -cppcoreguidelines-pro-type-reinterpret-cast, -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+        cppcoreguidelines-*, -cppcoreguidelines-avoid-c-arrays, -cppcoreguidelines-pro-bounds-pointer-arithmetic, -cppcoreguidelines-pro-type-reinterpret-cast, -cppcoreguidelines-pro-bounds-array-to-pointer-decay, -cppcoreguidelines-avoid-magic-numbers,
         performance-*,
         misc-*, -misc-misplaced-const,
         bugprone-*, -bugprone-sizeof-expression,
@@ -30,9 +30,5 @@ CheckOptions:
     value:           lower_case
   - key:             readability-identifier-naming.NamespaceCase
     value:           lower_case
-  - key:             readability-magic-numbers.IgnoredIntegerValues
-    value:           '1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;'
-  - key:             cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues
-    value:           '1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;'
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           1
