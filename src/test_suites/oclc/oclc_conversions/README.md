@@ -48,7 +48,7 @@ Tests are done using specific value. TODO: multiple patterns.
 
 #### Using as_type
 
-* Status: TODO
+* Status: DONE
 * Goal: Verify that reinterpretation using as_type produces correct values.
 * Description: Run OpenCL C kernel that assigns a value, reinterprets it using as_type and then returns that value or values in output. Values are then returned in output.
 * Expectations: Returned values are correct.
