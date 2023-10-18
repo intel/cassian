@@ -12,6 +12,7 @@
 #include <cassian/runtime/openclc_type_tuples.hpp>
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
 #include <catch2/catch.hpp>
 #include <cstdint>
@@ -112,6 +113,13 @@ template <typename TestType>
 void run_test(const std::function<std::vector<std::string>()> &flags) {
   using type = typename TestType::scalar_type::host_type;
   const TestConfig &config = get_test_config();
+
+  ca::Requirements requirements;
+  requirements.arithmetic_type<typename TestType::scalar_type>();
+  if (ca::should_skip_test(requirements, *config.runtime())) {
+    return;
+  }
+
   const auto size = config.work_size();
   ca::logging::debug() << "Type: " << std::string(TestType::type_name) << "\n";
   for (const auto &format : formats<type>()) {
