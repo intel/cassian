@@ -17,29 +17,20 @@ template <typename T, typename U> struct TupleToTestCase<std::tuple<T, U>> {
 template <RoundingMode RND, typename... T> struct RoundingModeProductRow {};
 
 template <RoundingMode DestRND, typename... T, typename... U,
-          RoundingMode... RND, OverflowHandling... SAT, TestVariant... TV>
+          RoundingMode... RND, OverflowHandling... SAT>
 struct RoundingModeProductRow<DestRND,
-                              std::tuple<TestCase<T, U, RND, SAT, TV>...>> {
-  using type = std::tuple<TestCase<T, U, DestRND, SAT, TV>...>;
+                              std::tuple<TestCase<T, U, RND, SAT>...>> {
+  using type = std::tuple<TestCase<T, U, DestRND, SAT>...>;
 };
 
 template <OverflowHandling SAT, typename... T>
 struct OverflowHandlingProductRow {};
 
 template <OverflowHandling DestSAT, typename... T, typename... U,
-          RoundingMode... RND, OverflowHandling... SAT, TestVariant... TV>
+          RoundingMode... RND, OverflowHandling... SAT>
 struct OverflowHandlingProductRow<DestSAT,
-                                  std::tuple<TestCase<T, U, RND, SAT, TV>...>> {
-  using type = std::tuple<TestCase<T, U, RND, DestSAT, TV>...>;
-};
-
-template <TestVariant TV, typename... T> struct TestVariantProductRow {};
-
-template <TestVariant DestTestVariant, typename... T, typename... U,
-          RoundingMode... RND, OverflowHandling... SAT, TestVariant... TV>
-struct TestVariantProductRow<DestTestVariant,
-                             std::tuple<TestCase<T, U, RND, SAT, TV>...>> {
-  using type = std::tuple<TestCase<T, U, RND, SAT, DestTestVariant>...>;
+                                  std::tuple<TestCase<T, U, RND, SAT>...>> {
+  using type = std::tuple<TestCase<T, U, RND, DestSAT>...>;
 };
 
 } // namespace detail
@@ -67,13 +58,6 @@ template <typename T, OverflowHandling... SAT> struct OverflowHandlingProduct {
 template <typename T, OverflowHandling... SAT>
 using overflow_handling_product_t =
     typename OverflowHandlingProduct<T, SAT...>::type;
-
-template <typename T, TestVariant... TV> struct TestVariantProduct {
-  using type = typename ca::TupleConcat<
-      typename detail::TestVariantProductRow<TV, T>::type...>::type;
-};
-template <typename T, TestVariant... TV>
-using test_variant_product_t = typename TestVariantProduct<T, TV...>::type;
 
 namespace cassian {
 

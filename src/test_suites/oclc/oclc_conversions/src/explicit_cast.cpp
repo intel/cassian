@@ -33,37 +33,37 @@ template <typename TestType> auto test_name() {
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit cast", "",
                                     tuples_to_test_cases_t<ca::ScalarToScalar>,
                                     test_name<TestType>) {
-  scalar_to_scalar<TestType>(program);
+  scalar_to_scalar<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit cast", "",
                                     tuples_to_test_cases_t<ca::ScalarToVector2>,
                                     test_name<TestType>) {
-  scalar_to_vector<TestType>(program);
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit cast", "",
                                     tuples_to_test_cases_t<ca::ScalarToVector3>,
                                     test_name<TestType>) {
-  scalar_to_vector<TestType>(program);
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit cast", "",
                                     tuples_to_test_cases_t<ca::ScalarToVector4>,
                                     test_name<TestType>) {
-  scalar_to_vector<TestType>(program);
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit cast", "",
                                     tuples_to_test_cases_t<ca::ScalarToVector8>,
                                     test_name<TestType>) {
-  scalar_to_vector<TestType>(program);
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit cast", "", tuples_to_test_cases_t<ca::ScalarToVector16>,
     test_name<TestType>) {
-  scalar_to_vector<TestType>(program);
+  scalar_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 } // namespace

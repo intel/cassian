@@ -306,182 +306,182 @@ using Vector16FloatingPointToVector16FloatingPointTestCases =
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     IntegerScalarToIntegerScalarTestCases,
                                     test_name<TestType>) {
-  scalar_to_scalar<TestType>(program);
+  scalar_to_scalar<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", IntegerScalarToIntegerScalarSaturationTestCases,
     test_name<TestType>) {
-  scalar_to_scalar<TestType>(program);
+  scalar_to_scalar<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     IntegerScalarToFloatingPointScalarTestCases,
                                     test_name<TestType>) {
-  scalar_to_scalar<TestType>(program);
+  scalar_to_scalar<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     FloatingPointScalarToIntegerScalarTestCases,
                                     test_name<TestType>) {
-  scalar_to_scalar<TestType>(program);
+  scalar_to_scalar<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     FloatingPointScalarToFloatingPointScalarTestCases, test_name<TestType>) {
-  scalar_to_scalar<TestType>(program);
+  scalar_to_scalar<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     Vector2IntegerToVector2IntegerTestCases,
                                     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector2IntegerToVector2IntegerSaturationTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector2IntegerToVector2FloatingPointTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector2FloatingPointToVector2IntegerTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector2FloatingPointToVector2FloatingPointTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     Vector3IntegerToVector3IntegerTestCases,
                                     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector3IntegerToVector3IntegerSaturationTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector3IntegerToVector3FloatingPointTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector3FloatingPointToVector3IntegerTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector3FloatingPointToVector3FloatingPointTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     Vector4IntegerToVector4IntegerTestCases,
                                     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector4IntegerToVector4IntegerSaturationTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector4IntegerToVector4FloatingPointTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector4FloatingPointToVector4IntegerTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector4FloatingPointToVector4FloatingPointTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     Vector8IntegerToVector8IntegerTestCases,
                                     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector8IntegerToVector8IntegerSaturationTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector8IntegerToVector8FloatingPointTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector8FloatingPointToVector8IntegerTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector8FloatingPointToVector8FloatingPointTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("explicit conversion", "",
                                     Vector16IntegerToVector16IntegerTestCases,
                                     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector16IntegerToVector16IntegerSaturationTestCases, test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector16IntegerToVector16FloatingPointTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "", Vector16FloatingPointToVector16IntegerTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
     "explicit conversion", "",
     Vector16FloatingPointToVector16FloatingPointTestCases,
     test_name<TestType>) {
-  vector_to_vector<TestType>(program);
+  vector_to_vector<TestType, TestVariant::conversion>(program);
 }
 
 } // namespace
