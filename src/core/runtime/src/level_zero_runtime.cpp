@@ -1031,6 +1031,11 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
     return (device_module_properties.fp32flags &
             ZE_DEVICE_FP_FLAG_ROUNDED_DIVIDE_SQRT) != 0;
   }
+  case Feature::intel_required_subgroup_size: {
+    // At the moment there is no option to check for intel_reqd_sub_group_size
+    // attribute in LevelZero, so it just checks for numSubGroupSizes
+    return device_compute_properties.numSubGroupSizes != 0;
+  }
   case Feature::simd8: {
     return std::find(std::begin(device_compute_properties.subGroupSizes),
                      std::end(device_compute_properties.subGroupSizes),

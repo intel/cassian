@@ -715,6 +715,9 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     return (get_device_property(DeviceProperty::fp32_config) &
             CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT) != 0;
   }
+  case Feature::intel_required_subgroup_size: {
+    return extensions_.count("cl_intel_required_subgroup_size") != 0U;
+  }
   case Feature::simd8: {
     if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
       auto sizes = cl_get_device_property<size_t>(
