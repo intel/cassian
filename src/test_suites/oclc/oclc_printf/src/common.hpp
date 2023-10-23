@@ -61,7 +61,9 @@ public:
       close(original_fd);
       original_fd = -1;
     }
-    remove(filename.c_str());
+    if (remove(filename.c_str()) != 0) {
+      ca::logging::error() << "Deleting file " << filename.c_str() << " failed";
+    }
   }
 
   std::string GetOutput() {
