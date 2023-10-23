@@ -416,33 +416,30 @@ OUTPUT_TYPE calculate_reference(const INPUT_TYPE_1 &input_value_a,
     OUTPUT_TYPE result(0.0F);
     constexpr scalar_type pi_const = 180.0F / M_PI;
     if constexpr (is_vector_a) {
-      OUTPUT_TYPE result(0.0F);
       for (auto i = 0; i < OUTPUT_TYPE::vector_size; i++) {
         result[i] = pi_const * input_value_a[i];
       }
-      return result;
     } else if constexpr (!is_vector_a && !is_vector_output) {
-      return pi_const * input_value_a;
+      result = pi_const * input_value_a;
     }
+    return result;
   }
   case Function::radians: {
     using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
     OUTPUT_TYPE result(0.0F);
     constexpr scalar_type pi_const = scalar_type(M_PI) / 180.0F;
     if constexpr (is_vector_a && is_vector_output) {
-      OUTPUT_TYPE result(0.0F);
       for (auto i = 0; i < OUTPUT_TYPE::vector_size; i++) {
         result[i] = pi_const * input_value_a[i];
       }
-      return result;
     } else if constexpr (!is_vector_a && !is_vector_output) {
-      return pi_const * input_value_a;
+      result = pi_const * input_value_a;
     }
+    return result;
   }
   case Function::sign: {
     OUTPUT_TYPE result(0.0F);
     if constexpr (is_vector_a && is_vector_output) {
-      OUTPUT_TYPE result(0.0F);
       for (auto i = 0; i < OUTPUT_TYPE::vector_size; i++) {
         if (std::isnan(input_value_a[i])) {
           result[i] = 0.0F;
@@ -460,24 +457,24 @@ OUTPUT_TYPE calculate_reference(const INPUT_TYPE_1 &input_value_a,
           result[i] = -1.0F;
         }
       }
-      return result;
     } else if constexpr (!is_vector_a && !is_vector_output) {
       if (std::isnan(input_value_a)) {
-        return 0.0F;
+        result = 0.0F;
       }
       if (input_value_a > 0.0F) {
-        return 1.0F;
+        result = 1.0F;
       }
       if (input_value_a == -0.0F) {
-        return -0.0F;
+        result = -0.0F;
       }
       if (input_value_a == +0.0F) {
-        return +0.0F;
+        result = +0.0F;
       }
       if (input_value_a < 0.0F) {
-        return -1.0F;
+        result = -1.0F;
       }
     }
+    return result;
   }
   default:
     throw UnknownFunctionException(
