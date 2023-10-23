@@ -78,7 +78,10 @@ std::string constructor(const std::vector<int> &variant,
     if (size != 1) {
       s += "(" + type + std::to_string(size) + ") (";
       for (int i = 0; i < size; ++i) {
-        s += std::to_string(*values_it++);
+        s += std::to_string(*values_it);
+        if (values_it != values.end()) {
+          values_it++;
+        }
         if (i < size - 1) {
           s += ", ";
         }
