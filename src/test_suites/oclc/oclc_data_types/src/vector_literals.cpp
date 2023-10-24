@@ -88,7 +88,10 @@ std::string constructor(const std::vector<int> &variant,
       }
       s += ")";
     } else {
-      s += std::to_string(*values_it++);
+      s += std::to_string(*values_it);
+      if (values_it != values.end()) {
+        values_it++;
+      }
     }
     if (values_it != values.end()) {
       s += ", ";
