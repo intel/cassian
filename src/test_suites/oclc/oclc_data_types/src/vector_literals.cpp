@@ -75,11 +75,14 @@ std::string constructor(const std::vector<int> &variant,
   }
   auto values_it = values.cbegin();
   for (const auto &size : variant) {
+    if (values_it == values.cend()) {
+      throw std::out_of_range("Iterator values_it is out of range");
+    }
     if (size != 1) {
       s += "(" + type + std::to_string(size) + ") (";
       for (int i = 0; i < size; ++i) {
         s += std::to_string(*values_it);
-        if (values_it != values.end()) {
+        if (values_it != values.cend()) {
           values_it++;
         }
         if (i < size - 1) {
@@ -89,11 +92,11 @@ std::string constructor(const std::vector<int> &variant,
       s += ")";
     } else {
       s += std::to_string(*values_it);
-      if (values_it != values.end()) {
+      if (values_it != values.cend()) {
         values_it++;
       }
     }
-    if (values_it != values.end()) {
+    if (values_it != values.cend()) {
       s += ", ";
     }
   }
