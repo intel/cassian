@@ -8,6 +8,7 @@
 #ifndef CASSIAN_OCLC_MATH_FUNCTIONS_MATH_FUNCTIONS_HPP
 #define CASSIAN_OCLC_MATH_FUNCTIONS_MATH_FUNCTIONS_HPP
 
+#include <cassian/logging/logging.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 #include <cmath>
@@ -42,9 +43,7 @@ public:
   static constexpr auto calculate_reference = REFERENCE_FUNC;
   static constexpr auto address_space = ADDRESS_SPACE;
 
-private:
-  const std::string function_string_ =
-      Catch::StringMaker<Function>::convert(function);
+  using function_type = decltype(FUNCTION);
 
 public:
   OclcFunction() = default;
@@ -63,12 +62,13 @@ public:
     case AddressSpace::clc_generic:
       return "generic";
     default:
-      throw UnknownFunctionException(
-          Catch::StringMaker<Function>::convert(function) +
-          "address space uninitialized");
+      throw UnknownFunctionException(get_function_string() +
+                                     "address space uninitialized");
     }
   }
-  auto get_function_string() const { return function_string_; }
+  constexpr auto get_function_string() const {
+    return Catch::StringMaker<function_type>::convert(function);
+  }
   auto get_is_store() const {
     switch (function) {
     case Function::fract:
@@ -678,10 +678,8 @@ class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
 
 public:
   UlpComparator(const std::vector<OUTPUT_TYPE> &reference,
-                const size_t &work_size, const Function &function)
-      : reference(reference) {
-    ulp_values = get_ulp_values<OUTPUT_TYPE>(function, work_size);
-  }
+                const std::vector<scalar_type> &ulp_values)
+      : reference(reference), ulp_values(ulp_values) {}
 
   bool match(std::vector<OUTPUT_TYPE> const &result) const override {
     for (auto i = 0U; i < result.size(); i++) {
@@ -695,5 +693,176 @@ public:
     return "\nreference: " + input_to_string<OUTPUT_TYPE>(reference);
   }
 };
+
+template <typename T_1, typename T_2, typename T_3> struct Input {
+  std::vector<T_1> input_a;
+  std::vector<T_2> input_b;
+  std::vector<T_3> input_c;
+  Input(std::vector<T_1> input_a, std::vector<T_2> input_b,
+        std::vector<T_3> input_c)
+      : input_a(std::move(input_a)), input_b(std::move(input_b)),
+        input_c(std::move(input_c)) {}
+};
+
+template <typename T>
+void create_and_set_buffer(const std::vector<T> &input,
+                           cassian::Runtime *runtime,
+                           std::vector<cassian::Buffer> *buffers,
+                           const cassian::Kernel &kernel) {
+  const auto buffer = runtime->create_buffer(input.size() * sizeof(T));
+  runtime->write_buffer(buffer, input.data());
+  buffers->push_back(buffer);
+  runtime->set_kernel_argument(kernel, buffers->size() - 1, buffer);
+}
+
+template <typename T, typename INPUT, typename INPUT_B, typename INPUT_C>
+std::vector<T> run_gentype_kernel(const size_t &work_size, const INPUT &input,
+                                  std::vector<INPUT_B> &argument_2_output,
+                                  std::vector<INPUT_C> &argument_3_output,
+                                  cassian::Runtime *runtime,
+                                  const cassian::Kernel &kernel,
+                                  const bool is_store) {
+  std::vector<cassian::Buffer> buffers;
+  const auto buffer_out = runtime->create_buffer(work_size * sizeof(T));
+  buffers.push_back(buffer_out);
+  runtime->set_kernel_argument(kernel, 0, buffer_out);
+  create_and_set_buffer(input.input_a, runtime, &buffers, kernel);
+  if (!input.input_b.empty()) {
+    create_and_set_buffer(input.input_b, runtime, &buffers, kernel);
+  }
+  if (!input.input_c.empty()) {
+    create_and_set_buffer(input.input_c, runtime, &buffers, kernel);
+  }
+  runtime->run_kernel(kernel, work_size);
+  auto kernel_output = runtime->read_buffer_to_vector<T>(buffer_out);
+  if (!input.input_b.empty() && is_store) {
+    argument_2_output = runtime->read_buffer_to_vector<INPUT_B>(buffers.at(2));
+  }
+  if (!input.input_c.empty() && is_store) {
+    argument_3_output = runtime->read_buffer_to_vector<INPUT_C>(buffers.at(3));
+  }
+
+  for (const auto &buffer : buffers) {
+    runtime->release_buffer(buffer);
+  }
+  return kernel_output;
+}
+
+template <typename GENTYPE, typename INPUT, typename INPUT_B, typename INPUT_C>
+std::vector<GENTYPE>
+test_gentype(const INPUT &input, std::vector<INPUT_B> &argument_2_output,
+             std::vector<INPUT_C> &argument_3_output,
+             const std::string &build_options, const TestConfig &config,
+             const bool is_store) {
+  auto *runtime = config.runtime();
+  std::string path = is_store
+                         ? "kernels/oclc_math_functions/math_functions_store.cl"
+                         : "kernels/oclc_math_functions/math_functions.cl";
+  const std::string source = cassian::load_text_file(cassian::get_asset(path));
+  cassian::Kernel kernel = runtime->create_kernel("test", source, build_options,
+                                                  config.program_type());
+  auto output = run_gentype_kernel<GENTYPE, INPUT, INPUT_B>(
+      config.work_size(), input, argument_2_output, argument_3_output, runtime,
+      kernel, is_store);
+  runtime->release_kernel(kernel);
+  return output;
+}
+
+template <class T, typename INPUT>
+void run_section(const T &oclc_function, INPUT &input,
+                 const TestConfig &config) {
+  using output_type = typename T::output_type;
+  using input_b_type = typename T::input_type_2;
+  using input_c_type = typename T::input_type_3;
+  const auto work_size = config.work_size();
+
+  auto reference_vector = std::vector<output_type>(work_size);
+  auto reference_vector_2 = std::vector<input_b_type>(
+      work_size); // vector for reference values returned by function argument
+  auto reference_vector_3 = std::vector<input_c_type>(work_size);
+  for (auto j = 0; j < work_size; j++) {
+    if constexpr (T::arg_num == 3) {
+      reference_vector[j] = T::calculate_reference(
+          input.input_a[j], input.input_b[j], input.input_c[j]);
+      reference_vector_3[j] = input.input_c[j];
+    } else if constexpr (T::arg_num == 2) {
+      reference_vector[j] =
+          T::calculate_reference(input.input_a[j], input.input_b[j]);
+      reference_vector_2[j] = input.input_b[j];
+    } else {
+      reference_vector[j] = T::calculate_reference(input.input_a[j]);
+    }
+  }
+  std::vector<input_b_type> argument_2_output(work_size);
+  std::vector<input_c_type> argument_3_output(work_size);
+  const auto result = test_gentype<output_type, INPUT, input_b_type>(
+      input, argument_2_output, argument_3_output,
+      oclc_function.get_build_options(), config, oclc_function.get_is_store());
+  REQUIRE_THAT(result, UlpComparator<output_type>(reference_vector,
+                                                  get_ulp_values<output_type>(
+                                                      T::function, work_size)));
+  if (oclc_function.get_is_store() && T::arg_num == 2) {
+    REQUIRE_THAT(argument_2_output,
+                 UlpComparator<input_b_type>(
+                     reference_vector_2,
+                     get_ulp_values<input_b_type>(T::function, work_size)));
+  }
+  if (oclc_function.get_is_store() && T::arg_num == 3) {
+    REQUIRE_THAT(argument_3_output,
+                 UlpComparator<input_c_type>(
+                     reference_vector_3,
+                     get_ulp_values<input_c_type>(T::function, work_size)));
+  }
+}
+
+template <typename T>
+std::vector<T> create_input_vector(const T &input, const uint32_t &arg_index,
+                                   const uint32_t &arg_num,
+                                   const size_t &work_size) {
+  if (arg_num < arg_index + 1) {
+    return std::vector<T>();
+  }
+  std::vector<T> input_vector(work_size);
+  std::fill(input_vector.begin(), input_vector.end(), input);
+  return input_vector;
+}
+
+template <class T, SectionType section_type>
+void run_specific_section(const T &oclc_function,
+                          const std::vector<Value<T>> &input_values) {
+  const auto function_string = oclc_function.get_function_string();
+  const auto build_options = oclc_function.get_build_options();
+  const TestConfig &config = get_test_config();
+  const auto work_size = config.work_size();
+  using input_type_1 = typename T::input_type_1;
+  using input_type_2 = typename T::input_type_2;
+  using input_type_3 = typename T::input_type_3;
+  for (auto i = 0U; i < input_values.size(); i++) {
+    const auto section_name = create_section_name<section_type>(
+        function_string, i, input_values.size());
+    SECTION(section_name) {
+      auto input_a = create_input_vector<input_type_1>(
+          input_values[i].get_val_1(), 0, T::arg_num, work_size);
+      auto input_b = create_input_vector<input_type_2>(
+          input_values[i].get_val_2(), 1, T::arg_num, work_size);
+      auto input_c = create_input_vector<input_type_3>(
+          input_values[i].get_val_3(), 2, T::arg_num, work_size);
+      if (section_type == SectionType::random) {
+        input_a = randomize_input(input_a);
+        input_b = randomize_input(input_b);
+        input_c = randomize_input(input_c);
+      }
+      cassian::logging::debug() << "Build options: " << build_options << '\n';
+      cassian::logging::debug()
+          << "Input A: " << cassian::to_string(input_a) << '\n';
+      cassian::logging::debug()
+          << "Input B: " << cassian::to_string(input_b) << '\n';
+      cassian::logging::debug()
+          << "Input C: " << cassian::to_string(input_c) << '\n';
+      auto input = Input(input_a, input_b, input_c);
+      run_section(oclc_function, input, config);
+    }
+  }
+}
 
 #endif
