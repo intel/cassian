@@ -107,7 +107,9 @@ enum class Function {
   native_rsqrt,
   native_sin,
   native_sqrt,
-  native_tan
+  native_tan,
+  correctly_rounded_sqrt,
+  correctly_rounded_divide
 };
 
 enum class FloatMacros {
@@ -219,6 +221,7 @@ enum class FloatConstants {
       Function::native_exp10, Function::native_log, Function::native_log2,     \
       Function::native_log10, Function::native_powr, Function::native_recip,   \
       Function::native_rsqrt, Function::native_sin, Function::native_sqrt,     \
-      Function::native_tan)
+      Function::native_tan, Function::correctly_rounded_sqrt,                  \
+      Function::correctly_rounded_divide)
 
 #endif

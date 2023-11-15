@@ -35,7 +35,8 @@ enum class ArithmeticOperator {
   subtraction,
   multiplication,
   division,
-  remainder
+  remainder,
+  correctly_rounded_division
 };
 
 std::string to_clc_operator(const ArithmeticOperator op) {
@@ -47,6 +48,7 @@ std::string to_clc_operator(const ArithmeticOperator op) {
   case ArithmeticOperator::multiplication:
     return "*";
   case ArithmeticOperator::division:
+  case ArithmeticOperator::correctly_rounded_division:
     return "/";
   case ArithmeticOperator::remainder:
     return "%";
@@ -73,6 +75,7 @@ to_function(const ArithmeticOperator op) {
     return [](A_TYPE a, B_TYPE b) { return a * b; };
     break;
   case ArithmeticOperator::division:
+  case ArithmeticOperator::correctly_rounded_division:
     return [](A_TYPE a, B_TYPE b) { return a / b; };
     break;
   case ArithmeticOperator::remainder:
@@ -102,6 +105,7 @@ to_function(const ArithmeticOperator op) {
     return [](A_TYPE a, B_TYPE b) { return a * b; };
     break;
   case ArithmeticOperator::division:
+  case ArithmeticOperator::correctly_rounded_division:
     return [](A_TYPE a, B_TYPE b) { return a / b; };
     break;
   default:
@@ -119,6 +123,9 @@ std::string get_build_options(const ArithmeticOperator op) {
   std::string build_options =
       " -D A_TYPE=" + clc_a_type + " -D B_TYPE=" + clc_b_type +
       " -D OUTPUT_TYPE=" + clc_output_type + " -D OPERATOR=" + clc_operator;
+  if (op == ArithmeticOperator::correctly_rounded_division) {
+    build_options = build_options + " -cl-fp32-correctly-rounded-divide-sqrt";
+  }
   return build_options;
 }
 
@@ -921,8 +928,8 @@ void test_division_signed(const TestConfig &config) {
 }
 
 template <typename TEST_TYPE>
-void test_division_float(const TestConfig &config) {
-  const ArithmeticOperator op = ArithmeticOperator::division;
+void test_division_float(const TestConfig &config,
+                         const ArithmeticOperator op) {
   using host_type = typename TEST_TYPE::host_type;
 
   SECTION("divide by float") {
@@ -935,13 +942,24 @@ void test_division_float(const TestConfig &config) {
     compare(output, reference);
   }
 
+  SECTION("divide one by max") {
+    const std::vector<host_type> input_a(config.work_size(), host_type(1.0));
+    const std::vector<host_type> input_b(
+        config.work_size(), host_type(std::numeric_limits<host_type>::max()));
+    const std::vector<host_type> output = test<TEST_TYPE, TEST_TYPE, TEST_TYPE>(
+        input_a, input_b, op, config.runtime(), config.program_type());
+    const std::vector<host_type> reference =
+        get_reference<host_type>(input_a, input_b, op);
+    compare(output, reference);
+  }
+
   // TODO: Handle ULP comparisons
   // TODO: Handle NaN comparisons
 }
 
 template <typename TEST_TYPE>
-void test_division_vector(const TestConfig &config) {
-  const ArithmeticOperator op = ArithmeticOperator::division;
+void test_division_vector(const TestConfig &config,
+                          const ArithmeticOperator op) {
   using host_type = typename TEST_TYPE::host_type;
   using scalar_type = typename TEST_TYPE::scalar_type;
   using host_scalar_type = typename scalar_type::host_type;
@@ -1000,7 +1018,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - division", "",
   test_division_common<TestType>(config);
   test_division_signed<TestType>(config);
   if constexpr (ca::is_vector_v<typename TestType::host_type>) {
-    test_division_vector<TestType>(config);
+    test_division_vector<TestType>(config, ArithmeticOperator::division);
   }
 }
 
@@ -1016,7 +1034,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - division", "",
 
   test_division_common<TestType>(config);
   if constexpr (ca::is_vector_v<typename TestType::host_type>) {
-    test_division_vector<TestType>(config);
+    test_division_vector<TestType>(config, ArithmeticOperator::division);
   }
 }
 
@@ -1032,9 +1050,29 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("arithmetic operators - division", "",
 
   test_division_common<TestType>(config);
   test_division_signed<TestType>(config);
-  test_division_float<TestType>(config);
+  test_division_float<TestType>(config, ArithmeticOperator::division);
   if constexpr (ca::is_vector_v<typename TestType::host_type>) {
-    test_division_vector<TestType>(config);
+    test_division_vector<TestType>(config, ArithmeticOperator::division);
+  }
+}
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME(
+    "arithmetic operators - correctly rounded division", "", ca::TypesFloat,
+    test_name<TestType>) {
+  const TestConfig &config = get_test_config();
+
+  ca::Requirements requirements;
+  requirements.arithmetic_type<typename TestType::scalar_type>();
+  requirements.correctly_rounded_divide_sqrt<typename TestType::scalar_type>();
+  if (ca::should_skip_test(requirements, *config.runtime())) {
+    return;
+  }
+
+  test_division_float<TestType>(config,
+                                ArithmeticOperator::correctly_rounded_division);
+  if constexpr (ca::is_vector_v<typename TestType::host_type>) {
+    test_division_vector<TestType>(
+        config, ArithmeticOperator::correctly_rounded_division);
   }
 }
 

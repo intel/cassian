@@ -353,4 +353,21 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("math_functions_gentype - store", "",
             TestType, AddressSpace::clc_private, TestType, int_type>());
   }
 }
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("math_functions_correctly_rounded_flag", "",
+                                    ca::TypesFloat, test_name<TestType>) {
+  const TestConfig &config = get_test_config();
+  using scalar_type = typename TestType::scalar_type;
+  ca::Requirements requirements;
+  requirements.arithmetic_type<scalar_type>();
+  requirements.correctly_rounded_divide_sqrt<scalar_type>();
+  if (ca::should_skip_test(requirements, *config.runtime())) {
+    return;
+  }
+  using host_type = typename TestType::host_type;
+  run_each_test(OclcFunction<Function::correctly_rounded_sqrt, 1,
+                             calculate_sqrt<host_type>, TestType>(),
+                OclcFunction<Function::correctly_rounded_divide, 2,
+                             calculate_divide<host_type>, TestType>());
+}
 } // namespace

@@ -105,6 +105,7 @@ public:
   }
 
   auto get_build_options() const {
+    const std::string function_string = get_function_string();
     std::stringstream ss;
     ss << "-DOUTPUT_TYPE=" << OUTPUT_TYPE::device_type;
     ss << " -DINPUT_TYPE_1=" << INPUT_TYPE_1::device_type;
@@ -117,7 +118,13 @@ public:
       ss << " -DINPUT_TYPE_3=" << INPUT_TYPE_3::device_type;
     }
     ss << " -DADDRESS_SPACE=" << get_address_space();
-    ss << " -DFUNCTION=" << get_function_string();
+    if (function_string == "correctly_rounded_sqrt") {
+      ss << " -DFUNCTION=sqrt -cl-fp32-correctly-rounded-divide-sqrt";
+    } else if (function_string == "correctly_rounded_divide") {
+      ss << " -DFUNCTION=native_divide -cl-fp32-correctly-rounded-divide-sqrt";
+    } else {
+      ss << " -DFUNCTION=" << function_string;
+    }
     return ss.str();
   }
 };
@@ -497,6 +504,26 @@ template <class T> constexpr auto get_gentype_values() {
                              1); // odd number v
     values.add_edge_case(lower_than_zero_1, to_even - (to_even % 2));
     values.add_edge_case(generate_value<input_type_1>(), input_type_2(0.0F));
+  } else if constexpr (T::function == Function::correctly_rounded_sqrt) {
+    values.add_random_case(generate_value<input_type_1>(
+        0, std::numeric_limits<scalar_type_1>::max()));
+    values.add_edge_case(
+        input_type_1(std::numeric_limits<scalar_type_1>::min()));
+  } else if constexpr (T::function == Function::correctly_rounded_divide) {
+    values.add_random_case(generate_value<input_type_1>(),
+                           generate_value<input_type_2>());
+    values.add_edge_case(
+        input_type_1(1),
+        input_type_2(std::numeric_limits<scalar_type_2>::max()));
+    values.add_edge_case(
+        input_type_1(-1),
+        input_type_2(std::numeric_limits<scalar_type_2>::max()));
+    values.add_edge_case(
+        input_type_1(std::numeric_limits<scalar_type_1>::min()),
+        input_type_2(std::numeric_limits<scalar_type_2>::max()));
+    values.add_edge_case(
+        input_type_1(-std::numeric_limits<scalar_type_1>::min()),
+        input_type_2(std::numeric_limits<scalar_type_2>::max()));
   } else {
     if constexpr (T::arg_num == 2) {
       values.add_random_case(generate_value<input_type_1>(),
@@ -556,6 +583,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::exp10:
   case Function::expm1:
   case Function::sqrt:
+  case Function::correctly_rounded_sqrt:
   case Function::log10:
   case Function::lgamma:
   case Function::lgamma_r:
@@ -611,6 +639,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
     return ulp_values;
   }
   case Function::native_divide:
+  case Function::correctly_rounded_divide:
   case Function::native_recip:
   case Function::native_rsqrt:
   case Function::native_exp:
