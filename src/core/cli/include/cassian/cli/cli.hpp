@@ -39,6 +39,11 @@ public:
   void parse(int *argc, char **argv);
 
   /**
+   * Check if list was requested.
+   */
+  bool list_requested() const;
+
+  /**
    * Returned value of an argument.
    *
    * @tparam T the type of returned argument value.
@@ -50,6 +55,8 @@ public:
 
 private:
   std::unordered_map<std::string, std::string> arguments_;
+
+  bool list_requested_ = false;
 };
 
 template <typename T> T CommandLineParser::get(const std::string &name) const {

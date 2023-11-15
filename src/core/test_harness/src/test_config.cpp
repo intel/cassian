@@ -46,7 +46,9 @@ public:
 
 TestConfigBase::TestConfigBase(const CommandLineParser &parser) {
   runtime_ = create_runtime(parser.get<std::string>("--runtime"));
-  runtime_->initialize();
+  if (!parser.list_requested()) {
+    runtime_->initialize();
+  }
 
   auto log_level =
       logging::LogLevel(parser.get<LogLevelConverter>("--logging-level"));

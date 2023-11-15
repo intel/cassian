@@ -20,6 +20,10 @@ void CommandLineParser::parse(int *argc, char **argv) {
     const std::string str = argv[i];
     int tokens_to_remove = 0;
 
+    if (str.rfind("--list", 0) == 0 || str == "-l" || str == "-t") {
+      list_requested_ = true;
+    }
+
     for (const auto &kv : arguments_) {
       const auto key = kv.first;
       if (str == key) {
@@ -40,5 +44,7 @@ void CommandLineParser::parse(int *argc, char **argv) {
     i -= tokens_to_remove;
   }
 }
+
+bool CommandLineParser::list_requested() const { return list_requested_; }
 
 } // namespace cassian
