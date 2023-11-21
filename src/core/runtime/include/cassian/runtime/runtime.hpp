@@ -921,6 +921,12 @@ public:
   get_max_local_work_size(const std::array<size_t, N> &global_work_size,
                           const std::array<size_t, N> &max_sizes,
                           const size_t &max_work_size) {
+    for (auto i = 0U; i < N; i++) {
+      assert(global_work_size[i] > 0);
+      assert(max_sizes[i] > 0);
+    }
+    assert(max_work_size > 0);
+
     auto global_ws = global_work_size;
 
     if (global_ws < max_sizes) {
