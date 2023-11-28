@@ -260,7 +260,8 @@ void test_subgroup_block(const TestConfig &config,
             img_config.type = ca::ImageType::t_2d;
             test_description.image_config = img_config;
             size_t var_size = sizeof(scalar_type);
-            test_description.elements_per_pixel = var_size / pixel_size;
+            test_description.elements_per_pixel =
+                (pixel_size != 0) ? var_size / pixel_size : 0;
             if (test_description.elements_per_pixel == 0) {
               continue;
             }
