@@ -1,9 +1,7 @@
 # oclc_math_functions
 
 ## Overview
-Test suite for 
-[math functions](https://www.khronos.org/registry/OpenCL/specs/2.2/html/OpenCL_C.html#math-functions) 
-OpenCL C functionality.
+Test suite for [math functions](https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html#math-functions) OpenCL C functionality.
 
 ## Tests
 
