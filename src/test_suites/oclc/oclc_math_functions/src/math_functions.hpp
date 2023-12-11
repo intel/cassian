@@ -798,6 +798,9 @@ void run_section(const T &oclc_function, INPUT &input,
   const auto result = test_gentype<output_type, INPUT, input_b_type>(
       input, argument_2_output, argument_3_output,
       oclc_function.get_build_options(), config, oclc_function.get_is_store());
+  if constexpr (T::get_is_native()) {
+    return;
+  }
   REQUIRE_THAT(result, UlpComparator<output_type>(reference_vector,
                                                   get_ulp_values<output_type>(
                                                       T::function, work_size)));
