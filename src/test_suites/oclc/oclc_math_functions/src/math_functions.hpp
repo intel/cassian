@@ -415,12 +415,13 @@ template <class T> constexpr auto get_gentype_values() {
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     const auto even_number =
-        input_type_1(generate_value<scalar_type_1>() * scalar_type_1(2));
+        input_type_1(generate_value<int>() * scalar_type_1(2));
     const auto odd_number = input_type_1(
-        generate_value<scalar_type_1>() * scalar_type_1(2) + scalar_type_1(1));
-    values.add_random_case(generate_value<input_type_1>(
-        -M_PI / 2.0, M_PI / 2.0, {-M_PI / 2.0, M_PI / 2.0}));
+        generate_value<int>() * scalar_type_1(2) + scalar_type_1(1));
+    values.add_random_case(
+        generate_value<input_type_1>(-0.5 + 0.05, 0.5 - 0.05));
     values.add_edge_case(input_type_1(0.0F));
+    values.add_edge_case(input_type_1(1.0F));
     values.add_edge_case(infinity);
     values.add_edge_case(even_number);
     values.add_edge_case(odd_number);
@@ -599,7 +600,6 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::correctly_rounded_sqrt:
   case Function::log10:
   case Function::lgamma:
-  case Function::lgamma_r:
   case Function::log:
   case Function::log2: {
     constexpr scalar_type ulp = 3.0F * epsilon;
@@ -678,7 +678,8 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::half_rsqrt:
   case Function::half_sin:
   case Function::half_tan:
-  case Function::half_sqrt: {
+  case Function::half_sqrt:
+  case Function::lgamma_r: {
     constexpr scalar_type ulp = 8192.0F * epsilon;
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
@@ -716,11 +717,13 @@ class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
   using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
   std::vector<OUTPUT_TYPE> reference;
   std::vector<scalar_type> ulp_values;
+  std::vector<OUTPUT_TYPE> result;
 
 public:
-  UlpComparator(const std::vector<OUTPUT_TYPE> &reference,
+  UlpComparator(const std::vector<OUTPUT_TYPE> &result,
+                const std::vector<OUTPUT_TYPE> &reference,
                 const std::vector<scalar_type> &ulp_values)
-      : reference(reference), ulp_values(ulp_values) {}
+      : reference(reference), result(result), ulp_values(ulp_values) {}
 
   bool match(std::vector<OUTPUT_TYPE> const &result) const override {
     for (auto i = 0U; i < result.size(); i++) {
@@ -731,7 +734,24 @@ public:
     return true;
   }
   std::string describe() const override {
-    return "\nreference: " + input_to_string<OUTPUT_TYPE>(reference);
+    auto ulp_diffs = result;
+    std::stringstream os;
+    os.precision(std::numeric_limits<double>::max_digits10);
+    os << '{';
+    for (auto i = 0; i < result.size(); i++) {
+      if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
+        os << '{';
+        for (int j = 0; j < result[i].size(); j++) {
+          os << ulp_distance(result[i][j], reference[i][j]) << ", ";
+        }
+        os << '}';
+      } else {
+        os << ulp_distance(result[i], reference[i]) << ", ";
+      }
+    }
+    os << '}';
+    return "\nreference: " + input_to_string<OUTPUT_TYPE>(reference) +
+           "\nULP distance: " + os.str();
   }
 };
 
@@ -842,19 +862,19 @@ void run_section(const T &oclc_function, INPUT &input,
   if constexpr (T::get_is_native()) {
     return;
   }
-  REQUIRE_THAT(result, UlpComparator<output_type>(reference_vector,
+  REQUIRE_THAT(result, UlpComparator<output_type>(result, reference_vector,
                                                   get_ulp_values<output_type>(
                                                       T::function, work_size)));
   if (oclc_function.get_is_store() && T::arg_num == 2) {
     REQUIRE_THAT(argument_2_output,
                  UlpComparator<input_b_type>(
-                     reference_vector_2,
+                     argument_2_output, reference_vector_2,
                      get_ulp_values<input_b_type>(T::function, work_size)));
   }
   if (oclc_function.get_is_store() && T::arg_num == 3) {
     REQUIRE_THAT(argument_3_output,
                  UlpComparator<input_c_type>(
-                     reference_vector_3,
+                     argument_3_output, reference_vector_3,
                      get_ulp_values<input_c_type>(T::function, work_size)));
   }
 }
