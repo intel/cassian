@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -27,14 +27,6 @@
 namespace ca = cassian;
 
 namespace {
-
-template <class T> void run_multiple_test_sections(const T &oclc_function) {
-  const auto input = get_gentype_values<T>();
-  run_specific_section<T, SectionType::random>(oclc_function,
-                                               input.random_values);
-  run_specific_section<T, SectionType::edge>(oclc_function,
-                                             input.edge_case_values);
-}
 
 auto run_each_test = [](auto &&... oclc_function) {
   (run_multiple_test_sections(oclc_function), ...);
@@ -366,8 +358,6 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("math_functions_correctly_rounded_flag", "",
   }
   using host_type = typename TestType::host_type;
   run_each_test(OclcFunction<Function::correctly_rounded_sqrt, 1,
-                             calculate_sqrt<host_type>, TestType>(),
-                OclcFunction<Function::correctly_rounded_divide, 2,
-                             calculate_divide<host_type>, TestType>());
+                             calculate_sqrt<host_type>, TestType>());
 }
 } // namespace

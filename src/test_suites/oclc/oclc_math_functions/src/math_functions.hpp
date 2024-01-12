@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -24,6 +24,24 @@
 
 CASSIAN_CATCH_REGISTER_MATH_FUNCTIONS;
 
+namespace detail {
+
+template <template <typename...> typename OCLC_FUNCTION, typename... TYPE>
+struct FunctionProductRow {};
+
+template <template <typename...> typename OCLC_FUNCTION, typename... TYPE>
+struct FunctionProductRow<OCLC_FUNCTION, std::tuple<TYPE...>> {
+  using type = std::tuple<OCLC_FUNCTION<TYPE>...>;
+};
+
+} // namespace detail
+
+template <typename TYPE, template <typename...> typename... OCLC_FUNCTION>
+struct FunctionProduct {
+  using type = typename cassian::TupleConcat<
+      typename detail::FunctionProductRow<OCLC_FUNCTION, TYPE>::type...>::type;
+};
+
 template <auto FUNCTION, auto ARG_NUM, auto REFERENCE_FUNC,
           typename OUTPUT_TYPE, auto ADDRESS_SPACE = AddressSpace::clc_global,
           typename INPUT_TYPE_1 = OUTPUT_TYPE,
@@ -31,6 +49,8 @@ template <auto FUNCTION, auto ARG_NUM, auto REFERENCE_FUNC,
           typename INPUT_TYPE_3 = INPUT_TYPE_2>
 class OclcFunction {
 public:
+  using clc_output_type = OUTPUT_TYPE;
+  using clc_input_type_1 = INPUT_TYPE_1;
   using output_type = typename OUTPUT_TYPE::host_type;
   using input_type_1 = typename INPUT_TYPE_1::host_type;
   using input_type_2 = typename INPUT_TYPE_2::host_type;
@@ -47,9 +67,9 @@ public:
 
 public:
   OclcFunction() = default;
-  constexpr auto get_arg_num() const { return arg_num; }
-  constexpr auto get_function() const { return function; }
-  constexpr auto get_address_space() const {
+  static constexpr auto get_arg_num() { return arg_num; }
+  static constexpr auto get_function() { return function; }
+  static constexpr auto get_address_space() {
     switch (address_space) {
     case AddressSpace::clc_global:
       return "global";
@@ -63,10 +83,10 @@ public:
       return "generic";
     default:
       throw UnknownFunctionException(get_function_string() +
-                                     "address space uninitialized");
+                                     " address space uninitialized");
     }
   }
-  constexpr auto get_function_string() const {
+  static constexpr auto get_function_string() {
     return Catch::StringMaker<function_type>::convert(function);
   }
   auto get_is_store() const {
@@ -120,14 +140,21 @@ public:
     ss << " -DADDRESS_SPACE=" << get_address_space();
     if (function_string == "correctly_rounded_sqrt") {
       ss << " -DFUNCTION=sqrt -cl-fp32-correctly-rounded-divide-sqrt";
-    } else if (function_string == "correctly_rounded_divide") {
-      ss << " -DFUNCTION=native_divide -cl-fp32-correctly-rounded-divide-sqrt";
     } else {
       ss << " -DFUNCTION=" << function_string;
     }
     return ss.str();
   }
 };
+
+// TestType = OclcFunction<...>
+template <typename TestType> auto test_name_with_function() {
+  std::stringstream ss;
+  ss << TestType::get_function_string();
+  ss << " - ";
+  ss << TestType::clc_output_type::type_name;
+  return ss.str();
+}
 
 template <class T> constexpr auto get_gentype_values() {
   using input_type_1 = typename T::input_type_1;
@@ -509,21 +536,6 @@ template <class T> constexpr auto get_gentype_values() {
         0, std::numeric_limits<scalar_type_1>::max()));
     values.add_edge_case(
         input_type_1(std::numeric_limits<scalar_type_1>::min()));
-  } else if constexpr (T::function == Function::correctly_rounded_divide) {
-    values.add_random_case(generate_value<input_type_1>(),
-                           generate_value<input_type_2>());
-    values.add_edge_case(
-        input_type_1(1),
-        input_type_2(std::numeric_limits<scalar_type_2>::max()));
-    values.add_edge_case(
-        input_type_1(-1),
-        input_type_2(std::numeric_limits<scalar_type_2>::max()));
-    values.add_edge_case(
-        input_type_1(std::numeric_limits<scalar_type_1>::min()),
-        input_type_2(std::numeric_limits<scalar_type_2>::max()));
-    values.add_edge_case(
-        input_type_1(-std::numeric_limits<scalar_type_1>::min()),
-        input_type_2(std::numeric_limits<scalar_type_2>::max()));
   } else {
     if constexpr (T::arg_num == 2) {
       values.add_random_case(generate_value<input_type_1>(),
@@ -639,7 +651,6 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
     return ulp_values;
   }
   case Function::native_divide:
-  case Function::correctly_rounded_divide:
   case Function::native_recip:
   case Function::native_rsqrt:
   case Function::native_exp:
@@ -895,6 +906,14 @@ void run_specific_section(const T &oclc_function,
       run_section(oclc_function, input, config);
     }
   }
+}
+
+template <class T> void run_multiple_test_sections(const T &oclc_function) {
+  const auto input = get_gentype_values<T>();
+  run_specific_section<T, SectionType::random>(oclc_function,
+                                               input.random_values);
+  run_specific_section<T, SectionType::edge>(oclc_function,
+                                             input.edge_case_values);
 }
 
 #endif

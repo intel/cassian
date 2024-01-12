@@ -20,6 +20,12 @@ list(
   "src/common.cpp"
   "src/test_config.cpp"
   "src/math_functions.cpp"
+  "src/math_functions_float.cpp"
+  "src/math_functions_gentype_1.cpp"
+  "src/math_functions_gentype_2.cpp"
+  "src/math_functions_gentype_3.cpp"
+  "src/math_functions_gentype_store.cpp"
+  "src/math_functions_specializations.cpp"
   "src/math_macros.cpp"
   "src/math_constants.cpp")
 
