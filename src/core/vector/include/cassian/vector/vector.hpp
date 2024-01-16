@@ -764,7 +764,7 @@ std::string to_string(const Vector<T, N, SIZE_IN_MEMORY> &value) {
   std::stringstream ss;
   ss << "{";
   for (size_t i = 0; i < value.size(); ++i) {
-    ss << std::to_string(+value[i]);
+    ss << +value[i];
     if (i < value.size() - 1) {
       ss << ", ";
     }

@@ -8,6 +8,7 @@
 #ifndef CASSIAN_OCLC_MATH_FUNCTIONS_MATH_FUNCTIONS_HPP
 #define CASSIAN_OCLC_MATH_FUNCTIONS_MATH_FUNCTIONS_HPP
 
+#include <cassian/fp_types/math.hpp>
 #include <cassian/logging/logging.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
@@ -690,12 +691,12 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
 template <typename T, typename cassian::EnableIfIsScalar<T> = 0>
 bool match_results(const T &result, const T &reference, const T ulp_value) {
   if constexpr (!std::is_integral_v<T>) {
-    if (std::isnan(result) && std::isnan(reference)) {
+    if (cassian::isnan(result) && cassian::isnan(reference)) {
       return true;
     }
   }
   const auto ulp_dist = ulp_distance(result, reference);
-  return ulp_dist <= std::fabs(result + reference) * ulp_value ||
+  return ulp_dist <= cassian::abs(result + reference) * ulp_value ||
          ulp_dist < std::numeric_limits<T>::min();
 }
 

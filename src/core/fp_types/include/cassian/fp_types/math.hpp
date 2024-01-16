@@ -8,6 +8,7 @@
 #ifndef CASSIAN_FP_TYPES_MATH_HPP
 #define CASSIAN_FP_TYPES_MATH_HPP
 
+#include <cassian/fp_types/half.hpp>
 #include <cassian/fp_types/type_traits.hpp>
 #include <cmath>
 
@@ -26,6 +27,22 @@ template <typename T> bool isnan(T const &value) {
     return isnan(value);
   } else {
     return std::isnan(value);
+  }
+}
+
+/**
+ * Checks whether the value is Inf. Switches between std isinf function and
+ * cassian isinf function.
+ *
+ * @tparam T the type to check.
+ * @param[in] value typed value to check.
+ * @returns bool returned whether the value is Inf.
+ */
+template <typename T> bool isinf(T const &value) {
+  if constexpr (is_custom_type_v<T>) {
+    return isinf(value);
+  } else {
+    return std::isinf(value);
   }
 }
 
@@ -57,6 +74,8 @@ template <typename T> T nextafter(T const &from, T const &to) {
 template <typename T> T abs(T const &value) {
   if constexpr (is_custom_type_v<T>) {
     return abs(value);
+  } else if constexpr (std::is_unsigned_v<T>) {
+    return value;
   } else {
     return std::abs(value);
   }

@@ -662,6 +662,13 @@ std::ostream &operator<<(std::ostream &os, const Half &value);
 bool isnan(Half value);
 
 /**
+ * Checks whether the value is Inf.
+ *
+ * @param[in] value object to use.
+ */
+bool isinf(Half value);
+
+/**
  * Computes the absolute value of a Half value arg.
  *
  * @param[in] value object to use.
@@ -847,14 +854,16 @@ public:
   /**
    * difference between 1.0 and the next representable value
    */
-  static cassian::Half epsilon() {
+  static constexpr cassian::Half epsilon() {
     // cassian::Half::encode(0x3c01) - cassian::Half::encode(0x3c00);
     return cassian::Half::encode(0x1400);
   }
   /**
    * maximum rounding error
    */
-  static cassian::Half round_error() { return cassian::Half(0.5f); }
+  static constexpr cassian::Half round_error() { // cassian::Half(0.5f)
+    return cassian::Half::encode(0x3800);
+  }
   /**
    * infinity value
    */

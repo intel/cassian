@@ -9,6 +9,7 @@
 #define CASSIAN_OCLC_MATH_FUNCTIONS_COMMON_HPP
 
 #include <algorithm>
+#include <cassian/fp_types/math.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/runtime/runtime.hpp>
@@ -69,17 +70,17 @@ template <typename T> T generate_value() {
 
 template <typename T> T ulp_distance(const T &a, const T &b) {
   if (a == b) {
-    return 0;
+    return static_cast<T>(0);
   }
   if constexpr (!std::is_integral_v<T>) {
-    if (std::isnan(a) || std::isnan(b)) {
+    if (cassian::isnan(a) || cassian::isnan(b)) {
       return std::numeric_limits<T>::quiet_NaN();
     }
-    if (std::isinf(a) || std::isinf(b)) {
+    if (cassian::isinf(a) || cassian::isinf(b)) {
       return std::numeric_limits<T>::infinity();
     }
   }
-  return std::fabs(a - b);
+  return cassian::abs(a - b);
 }
 
 template <typename T>
@@ -172,9 +173,9 @@ auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
     for (auto k = 0; k < T::vector_size; k++) {
-      randomized_input[j][k] =
-          std::nextafter(input[j - 1][k],
-                         std::numeric_limits<cassian::scalar_type_v<T>>::max());
+      randomized_input[j][k] = cassian::nextafter(
+          input[j - 1][k],
+          std::numeric_limits<cassian::scalar_type_v<T>>::max());
     }
   }
   return randomized_input;
@@ -184,7 +185,7 @@ template <typename T, cassian::EnableIfIsScalar<T> = 0>
 auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
-    randomized_input[j] = std::nextafter(
+    randomized_input[j] = cassian::nextafter(
         input[j - 1], std::numeric_limits<cassian::scalar_type_v<T>>::max());
   }
   return randomized_input;
