@@ -12,7 +12,6 @@
 #include <cassian/vector/vector.hpp>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 
 int suggest_work_size(const std::string &type);
 

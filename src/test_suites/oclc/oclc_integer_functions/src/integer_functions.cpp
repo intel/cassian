@@ -23,7 +23,6 @@
 #include <map>
 #include <string>
 #include <test_config.hpp>
-#include <utility>
 #include <vector>
 
 namespace ca = cassian;
@@ -93,6 +92,8 @@ using GentypeTypes =
                     ca::TypesChar, ca::TypesUchar, ca::TypesShort,
                     ca::TypesUshort>::type;
 
+using FastIntTypes = ca::TupleConcat<ca::TypesInt, ca::TypesUint>::type;
+
 template <typename T, typename GENTYPE, typename UGENTYPE,
           typename INPUT_MAP_TYPE_1, typename INPUT_MAP_TYPE_2>
 void run_test(const std::vector<T> &list_of_functions,
@@ -151,7 +152,19 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("gentype_integer_functions", "",
       OclcFunc(Function::rhadd, {gentype(15), gentype(10)}),
       OclcFunc(1, Function::clamp, {gentype(15), gentype(5), gentype(20)}),
       OclcFunc(2, Function::clamp, {gentype(15)}, {sgentype(5), sgentype(20)}),
-      OclcFunc(Function::clz, {gentype(15)})};
+      OclcFunc(Function::clz, {gentype(15)}),
+      OclcFunc(1, Function::ctz, {gentype(15)}),
+      OclcFunc(2, Function::ctz, {gentype(0)}),
+      OclcFunc(Function::mul_hi, {gentype(10), gentype(18)}),
+      OclcFunc(Function::mad_hi, {gentype(15), gentype(5), gentype(20)}),
+      OclcFunc(Function::mad_sat, {gentype(15), gentype(5), gentype(20)}),
+      OclcFunc(1, Function::max, {gentype(35), gentype(18)}),
+      OclcFunc(2, Function::max, {gentype(35)}, {sgentype(18)}),
+      OclcFunc(1, Function::min, {gentype(35), gentype(18)}),
+      OclcFunc(2, Function::min, {gentype(35)}, {sgentype(18)}),
+      OclcFunc(Function::rotate, {gentype(57), gentype(7)}),
+      OclcFunc(Function::sub_sat, {gentype(15), gentype(5)}),
+      OclcFunc(Function::popcount, {gentype(10)})};
   run_test<OclcFunc, gentype, ugentype, gentype, sgentype>(
       list_of_gentype_functions, config);
 }
@@ -193,6 +206,29 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("special_functions", "", SpecialTypes,
                             uregressed_type>();
   run_test<OclcFunc, gentype, ugentype, regressed_type, uregressed_type>(
       list_of_special_func, config);
+}
+
+using FastIntTypes = ca::TupleConcat<ca::TypesInt, ca::TypesUint>::type;
+
+TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("fast_integer_functions", "", FastIntTypes,
+                                    test_name<TestType>) {
+  const TestConfig &config = get_test_config();
+  using scalar_type = typename TestType::scalar_type;
+  using gentype = typename TestType::host_type;
+  using ugentype = typename TestType::unsigned_type::host_type;
+  using sgentype = typename scalar_type::host_type;
+  ca::Requirements requirements;
+  requirements.arithmetic_type<scalar_type>();
+  if (ca::should_skip_test(requirements, *config.runtime())) {
+    return;
+  }
+  using OclcFunc = OclcGentypeFunction<TestType, gentype, sgentype>;
+  const std::initializer_list<OclcFunc> list_of_gentype_functions{
+      OclcFunc(Function::mul24, {gentype(8388608 - 10), gentype(8388608 - 20)}),
+      OclcFunc(Function::mad24,
+               {gentype(8388608 - 10), gentype(8388608 - 10), gentype(10)})};
+  run_test<OclcFunc, gentype, ugentype, gentype, sgentype>(
+      list_of_gentype_functions, config);
 }
 
 } // namespace

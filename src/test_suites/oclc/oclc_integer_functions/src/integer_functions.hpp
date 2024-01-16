@@ -205,6 +205,123 @@ public:
       }
       return count;
     }
+    case Function::ctz: {
+      SGENTYPE count = 0;
+      auto input = get_gentype_value(0);
+      if (input == 0)
+        return sizeof(SGENTYPE) * 8;
+      while ((input & SGENTYPE(1)) == SGENTYPE(0) && input != SGENTYPE(0)) {
+        input >>= SGENTYPE(1);
+        count++;
+      }
+      return count;
+    }
+    case Function::mul_hi: {
+      const auto input_a = get_gentype_value(0);
+      const auto input_b = get_gentype_value(1);
+      const auto result = input_a * input_b;
+      const auto size = sizeof(result) * 8;
+      return result >> (size / 2);
+    }
+    case Function::mad_hi: {
+      const auto input_a = get_gentype_value(0);
+      const auto input_b = get_gentype_value(1);
+      const auto input_c = get_gentype_value(2);
+      const auto result = input_a * input_b;
+      const auto size = sizeof(result) * 8;
+      return (result >> (size / 2)) + input_c;
+    }
+    case Function::mad_sat: {
+      const auto input_a = get_gentype_value(0);
+      const auto input_b = get_gentype_value(1);
+      const auto input_c = get_gentype_value(2);
+      const auto result = input_a * input_b + input_c;
+      if constexpr (std::is_unsigned<SGENTYPE>::value) {
+        if (result < input_a || result < input_b) {
+          return std::numeric_limits<SGENTYPE>::max();
+        }
+        return result;
+      } else {
+        if (input_b > 0) {
+          if (result < input_a) {
+            return std::numeric_limits<SGENTYPE>::max();
+          }
+        } else {
+          if (result > input_a) {
+            return std::numeric_limits<SGENTYPE>::min();
+          }
+        }
+        return result;
+      }
+    }
+    case Function::max: {
+      if (OclcFunc::get_version() == 1) {
+        const auto input_a = get_gentype_value(0);
+        const auto input_b = get_gentype_value(1);
+        return input_a < input_b ? input_b : input_a;
+      } else {
+        const auto input_a = get_gentype_value(0);
+        const auto input_b = get_sgentype_value(1);
+        return input_a < input_b ? input_b : input_a;
+      }
+    }
+    case Function::min: {
+      if (OclcFunc::get_version() == 1) {
+        const auto input_a = get_gentype_value(0);
+        const auto input_b = get_gentype_value(1);
+        return input_b < input_a ? input_b : input_a;
+      } else {
+        const auto input_a = get_gentype_value(0);
+        const auto input_b = get_sgentype_value(1);
+        return input_b < input_a ? input_b : input_a;
+      }
+    }
+    case Function::rotate: {
+      const auto input_a = get_gentype_value(0);
+      const auto input_b = get_gentype_value(1);
+      constexpr auto size = sizeof(SGENTYPE) * 8;
+      const auto shift = input_b % size;
+      return (input_a << input_b) | (input_a >> (size - input_b));
+    }
+    case Function::sub_sat: {
+      const auto x = get_gentype_value(0);
+      const auto y = get_gentype_value(1);
+      const auto result = x - y;
+      if constexpr (std::is_unsigned<SGENTYPE>::value) {
+        if (result > x || result < y) {
+          return std::numeric_limits<SGENTYPE>::max();
+        }
+        return result;
+      } else {
+        if (y < 0) {
+          if (result < x) {
+            return std::numeric_limits<SGENTYPE>::max();
+          }
+        } else {
+          if (result > x) {
+            return std::numeric_limits<SGENTYPE>::min();
+          }
+        }
+        return result;
+      }
+    }
+    case Function::popcount: {
+      const auto input_a = get_gentype_value(0);
+      constexpr auto size = sizeof(SGENTYPE) * 8;
+      const std::bitset<size> in_bits(input_a);
+      return in_bits.count();
+    }
+    case Function::mul24: {
+      const auto input_a = get_gentype_value(0);
+      const auto input_b = get_gentype_value(1);
+      return (input_a & 0xFFFFFF) * (input_b & 0xFFFFFF);
+    }
+    case Function::mad24: {
+      const auto input_a = get_gentype_value(0);
+      const auto input_b = get_gentype_value(1);
+      const auto input_c = get_gentype_value(2);
+      return (input_a & 0xFFFFFF) * (input_b & 0xFFFFFF) + input_c;
+    }
     default:
       throw UnknownFunctionException(
           "get_reference_value for Function: " +
