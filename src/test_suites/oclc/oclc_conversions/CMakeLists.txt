@@ -17,7 +17,8 @@ list(
   "src/explicit_conversion.cpp"
   "src/utility.hpp"
   "src/union_reinterpretation.cpp"
-  "src/as_type_reinterpretation.cpp")
+  "src/as_type_reinterpretation.cpp"
+  "src/pointer_cast.cpp")
 list(
   APPEND
   KERNELS
@@ -25,7 +26,8 @@ list(
   "kernels/oclc_conversions/explicit_cast.cl"
   "kernels/oclc_conversions/explicit_conversion.cl"
   "kernels/oclc_conversions/union_reinterpretation.cl"
-  "kernels/oclc_conversions/as_type_reinterpretation.cl")
+  "kernels/oclc_conversions/as_type_reinterpretation.cl"
+  "kernels/oclc_conversions/pointer_cast.cl")
 
 add_executable(oclc_conversions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 
