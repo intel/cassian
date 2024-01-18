@@ -5,6 +5,7 @@
  *
  */
 
+#include <cfenv>
 #include <cstdint>
 #include <limits>
 #include <sstream>
@@ -107,6 +108,24 @@ const std::vector<uint16_t> half_srnd_rounding_expected{
     {half_zero, half_minus_zero, half_one, half_two, half_infinity,
      half_srnd_no_carry_over, half_srnd_carry_over}};
 
+const std::vector<float> float_rounding{
+    uint32_to_float(0x42006140), uint32_to_float(0x42005000),
+    uint32_to_float(0x42005090), uint32_to_float(0x42007000),
+    uint32_to_float(0xc2006140), uint32_to_float(0xc2005000),
+    uint32_to_float(0xc2005090), uint32_to_float(0xc2007000)};
+
+const std::vector<uint16_t> half_rounding_down_expected{
+    0x5003, 0x5002, 0x5002, 0x5003, 0xd004, 0xd003, 0xd003, 0xd004};
+
+const std::vector<uint16_t> half_rounding_up_expected{
+    0x5004, 0x5003, 0x5003, 0x5004, 0xd003, 0xd002, 0xd002, 0xd003};
+
+const std::vector<uint16_t> half_rounding_to_nearest_expected{
+    0x5003, 0x5002, 0x5003, 0x5004, 0xd003, 0xd002, 0xd003, 0xd004};
+
+const std::vector<uint16_t> half_rounding_to_zero_expected{
+    0x5003, 0x5002, 0x5002, 0x5003, 0xd003, 0xd002, 0xd002, 0xd003};
+
 void test_srnd(float value, float random, uint16_t expected) {
   ca::Half result = ca::Half(value, random);
   REQUIRE(result.decode() == expected);
@@ -156,6 +175,53 @@ TEST_CASE("half from float with stochastic rounding", "") {
                                              half_srnd_rounding_expected)));
   test_srnd(std::get<0>(test_params), std::get<1>(test_params),
             std::get<2>(test_params));
+}
+
+template <auto F> class RoundingModeScopeGuard {
+public:
+  explicit RoundingModeScopeGuard(int round = FE_TONEAREST)
+      : rounding_mode(round){};
+
+  RoundingModeScopeGuard(RoundingModeScopeGuard &t) = delete;
+  RoundingModeScopeGuard &operator=(const RoundingModeScopeGuard &t) = delete;
+  RoundingModeScopeGuard(RoundingModeScopeGuard &&t) noexcept = default;
+  RoundingModeScopeGuard &operator=(RoundingModeScopeGuard &&t) = delete;
+  ~RoundingModeScopeGuard() { F(rounding_mode); }
+
+private:
+  const int rounding_mode;
+};
+
+TEST_CASE("half from float with rounding towards negative infinity", "") {
+  auto sg = RoundingModeScopeGuard<fesetround>(fegetround());
+  fesetround(FE_DOWNWARD);
+  auto test_params =
+      GENERATE(from_range(zip(float_rounding, half_rounding_down_expected)));
+  test(std::get<0>(test_params), std::get<1>(test_params));
+}
+
+TEST_CASE("half from float with rounding towards infinity", "") {
+  auto sg = RoundingModeScopeGuard<fesetround>(fegetround());
+  fesetround(FE_UPWARD);
+  auto test_params =
+      GENERATE(from_range(zip(float_rounding, half_rounding_up_expected)));
+  test(std::get<0>(test_params), std::get<1>(test_params));
+}
+
+TEST_CASE("half from float with rounding towards nearest", "") {
+  auto sg = RoundingModeScopeGuard<fesetround>(fegetround());
+  fesetround(FE_TONEAREST);
+  auto test_params = GENERATE(
+      from_range(zip(float_rounding, half_rounding_to_nearest_expected)));
+  test(std::get<0>(test_params), std::get<1>(test_params));
+}
+
+TEST_CASE("half from float with rounding towards zero", "") {
+  auto sg = RoundingModeScopeGuard<fesetround>(fegetround());
+  fesetround(FE_TOWARDZERO);
+  auto test_params =
+      GENERATE(from_range(zip(float_rounding, half_rounding_to_zero_expected)));
+  test(std::get<0>(test_params), std::get<1>(test_params));
 }
 
 const uint16_t half_nan = 0x7f00;
