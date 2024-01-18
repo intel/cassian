@@ -37,6 +37,14 @@ namespace ca = cassian;
 
 int suggest_work_size(const std::string &type);
 
+enum class RequirementType : uint32_t {
+  error_value,
+  ulp_value,
+  value_range,
+  any,
+  undefined
+};
+
 class UnknownFunctionException : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };

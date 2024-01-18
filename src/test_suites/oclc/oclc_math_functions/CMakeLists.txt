@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2021-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -25,6 +25,7 @@ list(
   "src/math_functions_gentype_2.cpp"
   "src/math_functions_gentype_3.cpp"
   "src/math_functions_gentype_store.cpp"
+  "src/math_functions_gentype_relaxed.cpp"
   "src/math_functions_specializations.cpp"
   "src/math_macros.cpp"
   "src/math_constants.cpp")
