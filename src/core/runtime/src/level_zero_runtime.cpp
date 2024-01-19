@@ -1089,7 +1089,7 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
   float_atomic_ext_properties.pNext = nullptr;
 
   ze_device_module_properties_t device_module_properties = {};
-  device_module_properties.stype = ZE_STRUCTURE_TYPE_MODULE_PROPERTIES;
+  device_module_properties.stype = ZE_STRUCTURE_TYPE_DEVICE_MODULE_PROPERTIES;
   device_module_properties.pNext = &float_atomic_ext_properties;
   result = wrapper_.zeDeviceGetModuleProperties(devices_[0],
                                                 &device_module_properties);
