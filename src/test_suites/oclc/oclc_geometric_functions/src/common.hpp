@@ -9,6 +9,7 @@
 #define CASSIAN_OCLC_GEOMETRIC_FUNCTIONS_COMMON_HPP
 
 #include <algorithm>
+#include <cassian/fp_types/math.hpp>
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
@@ -20,6 +21,7 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+namespace ca = cassian;
 
 CASSIAN_CATCH_REGISTER_GEOMETRIC_FUNCTIONS;
 
@@ -47,14 +49,14 @@ std::string input_to_string(const std::vector<T> &input_a,
   std::stringstream ss;
   ss << "{";
   for (const auto &input : input_a) {
-    ss << cassian::to_string<T>(input) << ", ";
+    ss << ca::to_string<T>(input) << ", ";
   }
   ss.seekp(-2, std::ios_base::end);
   ss << "}";
   if (!input_b.empty()) {
     ss << ", {";
     for (const auto &input : input_b) {
-      ss << cassian::to_string<T>(input) << ", ";
+      ss << ca::to_string<T>(input) << ", ";
     }
     ss.seekp(-2, std::ios_base::end);
     ss << "}";
@@ -66,16 +68,16 @@ template <typename T> T ulp_distance(const T &a, const T &b) {
   if (a == b) {
     return 0;
   }
-  if (std::isnan(a) || std::isnan(b)) {
+  if (ca::isnan(a) || ca::isnan(b)) {
     return std::numeric_limits<T>::quiet_NaN();
   }
-  if (std::isinf(a) || std::isinf(b)) {
+  if (ca::isinf(a) || ca::isinf(b)) {
     return std::numeric_limits<T>::infinity();
   }
   return ((b >= a) ? b - a : a - b);
 }
 
-template <typename T, cassian::EnableIfIsVector<T> = 0>
+template <typename T, ca::EnableIfIsVector<T> = 0>
 auto get_max_element(const T &vector) {
   const auto it =
       std::max_element(vector.begin(), vector.begin() + T::vector_size);
@@ -84,25 +86,25 @@ auto get_max_element(const T &vector) {
   }
   return *it;
 }
-template <typename T, cassian::EnableIfIsScalar<T> = 0>
+template <typename T, ca::EnableIfIsScalar<T> = 0>
 auto get_max_element(const T &scalar) {
   return scalar;
 }
 
-template <typename T, cassian::EnableIfIsVector<T> = 0>
+template <typename T, ca::EnableIfIsVector<T> = 0>
 constexpr auto get_vector_width() {
   return T::vector_size;
 }
-template <typename T, cassian::EnableIfIsScalar<T> = 0>
+template <typename T, ca::EnableIfIsScalar<T> = 0>
 constexpr auto get_vector_width() {
   return 1;
 }
 
 template <typename T>
-std::vector<cassian::scalar_type_v<T>>
-get_ulp_values(const std::vector<T> &input_a, const std::vector<T> &input_b,
-               const Function &function) {
-  using scalar_type = cassian::scalar_type_v<T>;
+std::vector<ca::scalar_type_v<T>> get_ulp_values(const std::vector<T> &input_a,
+                                                 const std::vector<T> &input_b,
+                                                 const Function &function) {
+  using scalar_type = ca::scalar_type_v<T>;
   constexpr scalar_type vector_width = get_vector_width<T>();
   constexpr auto epsilon = std::numeric_limits<scalar_type>::epsilon();
   const auto size = input_a.size();
@@ -176,25 +178,24 @@ get_ulp_values(const std::vector<T> &input_a, const std::vector<T> &input_b,
   }
 }
 
-template <typename T, cassian::EnableIfIsVector<T> = 0>
+template <typename T, ca::EnableIfIsVector<T> = 0>
 auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
     for (auto k = 0; k < T::vector_size; k++) {
-      randomized_input[j][k] =
-          std::nextafter(input[j - 1][k],
-                         std::numeric_limits<cassian::scalar_type_v<T>>::max());
+      randomized_input[j][k] = ca::nextafter(
+          input[j - 1][k], std::numeric_limits<ca::scalar_type_v<T>>::max());
     }
   }
   return randomized_input;
 }
 
-template <typename T, cassian::EnableIfIsScalar<T> = 0>
+template <typename T, ca::EnableIfIsScalar<T> = 0>
 auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
-    randomized_input[j] = std::nextafter(
-        input[j - 1], std::numeric_limits<cassian::scalar_type_v<T>>::max());
+    randomized_input[j] = ca::nextafter(
+        input[j - 1], std::numeric_limits<ca::scalar_type_v<T>>::max());
   }
   return randomized_input;
 }

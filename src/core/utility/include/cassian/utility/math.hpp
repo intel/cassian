@@ -8,6 +8,7 @@
 #ifndef CASSIAN_UTILITY_MATH_HPP
 #define CASSIAN_UTILITY_MATH_HPP
 
+#include <cassian/fp_types/math.hpp>
 #include <cassian/vector/vector.hpp>
 #include <cmath>
 #include <limits>
@@ -74,12 +75,12 @@ scalar_type_v<T> distance(const T &a, const T &b) {
   for (int i = 0; i < T::vector_size; i++) {
     result += std::pow(a[i] - b[i], 2);
   }
-  return std::sqrt(result);
+  return cassian::sqrt(result);
 }
 
 template <typename T, EnableIfIsScalar<T> = 0>
 T distance(const T &a, const T &b) {
-  return std::abs(a - b);
+  return cassian::abs(a - b);
 }
 
 /**
@@ -93,11 +94,11 @@ scalar_type_v<T> length(const T &a) {
   for (int i = 0; i < T::vector_size; i++) {
     length += std::pow(a[i], 2);
   }
-  return std::sqrt(length);
+  return cassian::sqrt(length);
 }
 
 template <typename T, EnableIfIsScalar<T> = 0> T length(const T &a) {
-  return std::sqrt(std::pow(a, 2));
+  return cassian::sqrt(std::pow(a, 2));
 }
 
 /**
@@ -109,7 +110,7 @@ template <typename T, EnableIfIsScalar<T> = 0> T length(const T &a) {
 template <typename T, EnableIfIsVector<T> = 0> T normalize(const T &a) {
   using scalar_type = scalar_type_v<T>;
   for (auto i = 0; i < T::vector_size; i++) {
-    if (std::isnan(a[i])) {
+    if (cassian::isnan(a[i])) {
       return T(std::numeric_limits<scalar_type>::quiet_NaN());
     }
   }
@@ -129,7 +130,7 @@ template <typename T, EnableIfIsVector<T> = 0> T normalize(const T &a) {
   if (norm == 0.0) {
     return result;
   }
-  norm = std::sqrt(norm);
+  norm = cassian::sqrt(norm);
   for (size_t i = 0; i < T::vector_size; i++) {
     result[i] /= norm;
   }
@@ -137,7 +138,7 @@ template <typename T, EnableIfIsVector<T> = 0> T normalize(const T &a) {
 }
 
 template <typename T, EnableIfIsScalar<T> = 0> T normalize(const T &a) {
-  if (std::isnan(a)) {
+  if (cassian::isnan(a)) {
     return std::numeric_limits<T>::quiet_NaN();
   }
   if (std::isinf(a)) {

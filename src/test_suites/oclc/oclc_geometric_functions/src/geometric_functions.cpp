@@ -101,7 +101,7 @@ void run_section(const T &oclc_function, const std::vector<INPUT_TYPE> &input_a,
       input_a, input_b, build_options, config);
   REQUIRE_THAT(result, (UlpComparator<OUTPUT_TYPE, INPUT_TYPE,
                                       cassian::scalar_type_v<INPUT_TYPE>>(
-                           reference_vector, input_a, input_b,
+                           result, reference_vector, input_a, input_b,
                            oclc_function.get_function())));
 }
 

@@ -10,6 +10,7 @@
 
 #include "cassian/logging/logging.hpp"
 #include <bitset>
+#include <cassian/fp_types/math.hpp>
 #include <cassian/random/random.hpp>
 #include <cassian/utility/math.hpp>
 #include <cassian/utility/utility.hpp>
@@ -24,6 +25,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+namespace ca = cassian;
 
 enum class OutputType { scalar, vector };
 constexpr std::initializer_list<Function> two_arg_functions = {
@@ -71,17 +73,17 @@ public:
     const auto seed = 0;
     switch (function) {
     case Function::dot:
-      return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
-               cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
+      return {{ca::generate_value<INPUT_TYPE>(min, max, seed),
+               ca::generate_value<INPUT_TYPE>(min, max, seed)}};
     case Function::cross:
-      return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
-               cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
+      return {{ca::generate_value<INPUT_TYPE>(min, max, seed),
+               ca::generate_value<INPUT_TYPE>(min, max, seed)}};
     case Function::distance:
-      return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
-               cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
+      return {{ca::generate_value<INPUT_TYPE>(min, max, seed),
+               ca::generate_value<INPUT_TYPE>(min, max, seed)}};
     case Function::fast_distance:
-      return {{cassian::generate_value<INPUT_TYPE>(min, max, seed),
-               cassian::generate_value<INPUT_TYPE>(min, max, seed)}};
+      return {{ca::generate_value<INPUT_TYPE>(min, max, seed),
+               ca::generate_value<INPUT_TYPE>(min, max, seed)}};
     case Function::normalize:
       return {{INPUT_TYPE(min)}, {INPUT_TYPE(max)}};
     case Function::fast_normalize:
@@ -113,8 +115,8 @@ public:
                 std::vector<INPUT_TYPE>(work_size, INPUT_TYPE(inf))}}};
     case Function::normalize: {
       auto vector_with_nan =
-          cassian::generate_vector<INPUT_TYPE>(work_size, min, max, seed);
-      if constexpr (cassian::is_vector_v<INPUT_TYPE>) {
+          ca::generate_vector<INPUT_TYPE>(work_size, min, max, seed);
+      if constexpr (ca::is_vector_v<INPUT_TYPE>) {
         for (int i = 0; i < work_size; ++i) {
           vector_with_nan[i][0] = std::numeric_limits<SCALAR_TYPE>::quiet_NaN();
         }
@@ -129,8 +131,8 @@ public:
     }
     case Function::fast_normalize: {
       auto vector_with_nan =
-          cassian::generate_vector<INPUT_TYPE>(work_size, min, max, seed);
-      if constexpr (cassian::is_vector_v<INPUT_TYPE>) {
+          ca::generate_vector<INPUT_TYPE>(work_size, min, max, seed);
+      if constexpr (ca::is_vector_v<INPUT_TYPE>) {
         for (int i = 0; i < work_size; ++i) {
           vector_with_nan[i][0] = std::numeric_limits<SCALAR_TYPE>::quiet_NaN();
         }
@@ -185,11 +187,11 @@ public:
                       const INPUT_TYPE &input_value_b = INPUT_TYPE(0)) const {
     switch (this->get_function()) {
     case Function::normalize:
-      return cassian::normalize(input_value_a);
+      return ca::normalize(input_value_a);
     case Function::fast_normalize:
-      return cassian::normalize(input_value_a);
+      return ca::normalize(input_value_a);
     case Function::cross:
-      return cassian::cross_product(input_value_a, input_value_b);
+      return ca::cross_product(input_value_a, input_value_b);
     default:
       throw UnknownFunctionException(
           Catch::StringMaker<Function>::convert(this->get_function()) +
@@ -212,15 +214,15 @@ public:
                       const INPUT_TYPE &input_value_b = INPUT_TYPE(0)) const {
     switch (this->get_function()) {
     case Function::dot: {
-      return cassian::dot_product(input_value_a, input_value_b);
+      return ca::dot_product(input_value_a, input_value_b);
     case Function::distance:
-      return cassian::distance(input_value_a, input_value_b);
+      return ca::distance(input_value_a, input_value_b);
     case Function::fast_distance:
-      return cassian::distance(input_value_a, input_value_b);
+      return ca::distance(input_value_a, input_value_b);
     case Function::length:
-      return cassian::length(input_value_a);
+      return ca::length(input_value_a);
     case Function::fast_length:
-      return cassian::length(input_value_a);
+      return ca::length(input_value_a);
     default:
       throw UnknownFunctionException(
           Catch::StringMaker<Function>::convert(this->get_function()) +
@@ -230,9 +232,9 @@ public:
   }
 };
 
-template <typename T, typename cassian::EnableIfIsVector<T> = 0>
+template <typename T, typename ca::EnableIfIsVector<T> = 0>
 bool match_results(const T &result, const T &reference,
-                   const cassian::scalar_type_v<T> &ulp_value,
+                   const ca::scalar_type_v<T> &ulp_value,
                    const Function &function) {
   for (auto i = 0; i < result.size(); i++) {
     if (!match_results(result[i], reference[i], ulp_value, function)) {
@@ -242,10 +244,10 @@ bool match_results(const T &result, const T &reference,
   return true;
 }
 
-template <typename T, typename cassian::EnableIfIsScalar<T> = 0>
+template <typename T, typename ca::EnableIfIsScalar<T> = 0>
 bool match_results(const T &result, const T &reference, const T &ulp_value,
                    const Function &function) {
-  if (std::isnan(result) && std::isnan(reference)) {
+  if (ca::isnan(result) && ca::isnan(reference)) {
     return true;
   }
   if (function == Function::dot || function == Function::cross) {
@@ -265,15 +267,17 @@ bool match_results(const T &result, const T &reference, const T &ulp_value,
 template <typename OUTPUT_TYPE, typename INPUT_TYPE, typename SCALAR_TYPE>
 class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
   std::vector<OUTPUT_TYPE> reference;
+  std::vector<OUTPUT_TYPE> result;
   Function function;
   std::vector<SCALAR_TYPE> ulp_values;
 
 public:
   UlpComparator<OUTPUT_TYPE, INPUT_TYPE, SCALAR_TYPE>(
+      const std::vector<OUTPUT_TYPE> &result,
       const std::vector<OUTPUT_TYPE> &reference,
       const std::vector<INPUT_TYPE> &input_a,
       const std::vector<INPUT_TYPE> &input_b, const Function &function)
-      : reference(reference), function(function) {
+      : result(result), reference(reference), function(function) {
     ulp_values = get_ulp_values(input_a, input_b, function);
   }
 
@@ -286,7 +290,24 @@ public:
     return true;
   }
   std::string describe() const override {
-    return "\nreference: " + input_to_string(reference);
+    auto ulp_diffs = result;
+    std::stringstream os;
+    os.precision(std::numeric_limits<double>::max_digits10);
+    os << '{';
+    for (auto i = 0; i < result.size(); i++) {
+      if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
+        os << '{';
+        for (int j = 0; j < result[i].size(); j++) {
+          os << ulp_distance(result[i][j], reference[i][j]) << ", ";
+        }
+        os << '}';
+      } else {
+        os << ulp_distance(result[i], reference[i]) << ", ";
+      }
+    }
+    os << '}';
+    return "\nreference: " + input_to_string(reference) +
+           "\nULP distance: " + os.str();
   }
 };
 
