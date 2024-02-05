@@ -10,6 +10,7 @@
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/utility/utility.hpp>
 #include <common.hpp>
+#include <stdexcept>
 #include <test_config.hpp>
 
 std::string to_string(FunctionType function_type) {
@@ -124,14 +125,16 @@ std::string to_string(ComparisonResult comparison_result) {
   }
 }
 
-bool to_bool(ComparisonResult comparison_result) {
+std::vector<int32_t> to_bool_vector(ComparisonResult comparison_result,
+                                    int size) {
   switch (comparison_result) {
   case ComparisonResult::success:
-    return true;
+    return std::vector<int32_t>(size, 1);
   case ComparisonResult::failure:
-    return false;
+    return std::vector<int32_t>(size, 0);
+  default:
+    throw std::logic_error("Invalid ComparisonResult");
   }
-  return false;
 }
 
 int get_local_work_size(const int global_work_size,

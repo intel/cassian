@@ -75,7 +75,8 @@ enum class ComparisonResult { success, failure };
 std::string to_string(ComparisonResult comparison_result);
 const std::vector<ComparisonResult> comparison_results_all = {
     ComparisonResult::success, ComparisonResult::failure};
-bool to_bool(ComparisonResult comparison_result);
+std::vector<int32_t> to_bool_vector(ComparisonResult comparison_result,
+                                    int size);
 
 class UnknownOperationException : public std::runtime_error {
   using std::runtime_error::runtime_error;

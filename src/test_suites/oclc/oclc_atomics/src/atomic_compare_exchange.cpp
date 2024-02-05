@@ -120,7 +120,7 @@ std::string get_build_options(const int local_work_size,
 template <typename T> struct Output {
   std::vector<T> value;
   std::vector<T> fetched;
-  bool result = false;
+  std::vector<int32_t> result;
 };
 
 template <typename T>
@@ -144,7 +144,8 @@ Output<T> run_kernel(const ca::Kernel &kernel, const int global_work_size,
   runtime->write_buffer_from_vector(desired_buffer, input.desired);
   buffers.push_back(desired_buffer);
 
-  ca::Buffer result_buffer = runtime->create_buffer(sizeof(bool));
+  ca::Buffer result_buffer =
+      runtime->create_buffer(sizeof(int32_t) * global_work_size);
   buffers.push_back(result_buffer);
 
   for (size_t i = 0; i < buffers.size(); ++i) {
@@ -156,7 +157,7 @@ Output<T> run_kernel(const ca::Kernel &kernel, const int global_work_size,
   Output<T> output;
   output.value = runtime->read_buffer_to_vector<T>(value_buffer);
   output.fetched = runtime->read_buffer_to_vector<T>(expected_buffer);
-  runtime->read_buffer(result_buffer, &output.result);
+  output.result = runtime->read_buffer_to_vector<int32_t>(result_buffer);
 
   for (auto &buffer : buffers) {
     runtime->release_buffer(buffer);
@@ -183,7 +184,9 @@ template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
   test_case.runtime->release_kernel(kernel);
 
   REQUIRE_THAT(output.fetched, Catch::Equals(test_case.input.value));
-  REQUIRE(output.result == to_bool(test_case.comparison_result));
+  REQUIRE_THAT(output.result,
+               Catch::Equals(to_bool_vector(test_case.comparison_result,
+                                            test_case.global_work_size)));
 
   if (test_case.comparison_result == ComparisonResult::failure) {
     REQUIRE_THAT(output.value, Catch::Equals(test_case.input.value));

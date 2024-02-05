@@ -12,7 +12,7 @@
 
 __attribute__((reqd_work_group_size(WORK_GROUP_SIZE, 1, 1))) kernel void
 test_kernel(global DATA_TYPE *value, global DATA_TYPE *expected,
-            const global DATA_TYPE *desired, global bool *result) {
+            const global DATA_TYPE *desired, global int *result) {
   const size_t global_id = get_global_id(0);
   const size_t local_id = get_local_id(0);
 

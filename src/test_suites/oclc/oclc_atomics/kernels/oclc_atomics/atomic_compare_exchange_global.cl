@@ -12,7 +12,7 @@
 #pragma OPENCL EXTENSION cl_intel_spirv_subgroups : enable
 
 kernel void test_kernel(global ATOMIC_TYPE *value, global DATA_TYPE *expected,
-                        const global DATA_TYPE *desired, global bool *result) {
+                        const global DATA_TYPE *desired, global int *result) {
   const size_t global_id = get_global_id(0);
 
 #if COMPARISON_TYPE == weak
