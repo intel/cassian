@@ -860,6 +860,7 @@ void run_section(const T &oclc_function, INPUT &input,
       input, argument_2_output, argument_3_output,
       oclc_function.get_build_options(), config, oclc_function.get_is_store());
   if constexpr (T::get_is_native()) {
+    SUCCEED();
     return;
   }
   REQUIRE_THAT(result, UlpComparator<output_type>(result, reference_vector,
