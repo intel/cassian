@@ -957,8 +957,8 @@ template <> struct OpenCLCTfloat<1> {
   using host_type = Tfloat;
   using scalar_type = OpenCLCTfloat<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "int";
-  static constexpr char type_name[] = "tfloat";
+  static constexpr char device_type[] = "float";
+  static constexpr char type_name[] = "tfloat32";
   static constexpr char type_abbr[] = "tf32";
 };
 
@@ -966,8 +966,8 @@ template <> struct OpenCLCTfloat<2> {
   using host_type = Vector<Tfloat, 2>;
   using scalar_type = OpenCLCTfloat<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "int2";
-  static constexpr char type_name[] = "tfloat2";
+  static constexpr char device_type[] = "float2";
+  static constexpr char type_name[] = "tfloat322";
   static constexpr char type_abbr[] = "tf32";
 };
 
@@ -975,8 +975,8 @@ template <> struct OpenCLCTfloat<3> {
   using host_type = Vector<Tfloat, 3, 4>;
   using scalar_type = OpenCLCTfloat<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "int3";
-  static constexpr char type_name[] = "tfloat3";
+  static constexpr char device_type[] = "float3";
+  static constexpr char type_name[] = "tfloat323";
   static constexpr char type_abbr[] = "tf32";
 };
 
@@ -984,8 +984,8 @@ template <> struct OpenCLCTfloat<4> {
   using host_type = Vector<Tfloat, 4>;
   using scalar_type = OpenCLCTfloat<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "int4";
-  static constexpr char type_name[] = "tfloat4";
+  static constexpr char device_type[] = "float4";
+  static constexpr char type_name[] = "tfloat324";
   static constexpr char type_abbr[] = "tf32";
 };
 
@@ -993,8 +993,8 @@ template <> struct OpenCLCTfloat<8> {
   using host_type = Vector<Tfloat, 8>;
   using scalar_type = OpenCLCTfloat<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "int8";
-  static constexpr char type_name[] = "tfloat8";
+  static constexpr char device_type[] = "float8";
+  static constexpr char type_name[] = "tfloat328";
   static constexpr char type_abbr[] = "tf32";
 };
 
@@ -1002,8 +1002,8 @@ template <> struct OpenCLCTfloat<16> {
   using host_type = Vector<Tfloat, 16>;
   using scalar_type = OpenCLCTfloat<1>;
   using underlying_type = float;
-  static constexpr char device_type[] = "int16";
-  static constexpr char type_name[] = "tfloat16";
+  static constexpr char device_type[] = "float16";
+  static constexpr char type_name[] = "tfloat3216";
   static constexpr char type_abbr[] = "tf32";
 };
 
@@ -1346,14 +1346,39 @@ using clc_bfloat164_t = detail::OpenCLCBfloat16<4>;
  */
 using clc_bfloat168_t = detail::OpenCLCBfloat16<8>;
 /**
- * Wrapper for OpenCL C bfloat16_8 data type.
+ * Wrapper for OpenCL C bfloat16_16 data type.
  */
 using clc_bfloat1616_t = detail::OpenCLCBfloat16<16>;
 
 /**
- * Wrapper for OpenCL C tfloat data type.
+ * Wrapper for OpenCL C tfloat32 data type.
  */
 using clc_tfloat_t = detail::OpenCLCTfloat<1>;
+
+/**
+ * Wrapper for OpenCL C tfloat32_2 data type.
+ */
+using clc_tfloat2_t = detail::OpenCLCTfloat<2>;
+
+/**
+ * Wrapper for OpenCL C tfloat32_3 data type.
+ */
+using clc_tfloat3_t = detail::OpenCLCTfloat<3>;
+
+/**
+ * Wrapper for OpenCL C tfloat32_4 data type.
+ */
+using clc_tfloat4_t = detail::OpenCLCTfloat<4>;
+
+/**
+ * Wrapper for OpenCL C tfloat32_8 data type.
+ */
+using clc_tfloat8_t = detail::OpenCLCTfloat<8>;
+
+/**
+ * Wrapper for OpenCL C tfloat32_16 data type.
+ */
+using clc_tfloat16_t = detail::OpenCLCTfloat<16>;
 
 /**
  * Wrapper for OpenCL C bool data type.
