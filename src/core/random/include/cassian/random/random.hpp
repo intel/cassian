@@ -185,6 +185,14 @@ template <>
 half generate_value<half>(const half min, const half max, const int seed);
 
 /**
+ * Generate random quiet NaN.
+ *
+ * @param[in] seed Random seed.
+ * @returns random quiet NaN.
+ */
+float generate_random_quiet_nan(const int seed);
+
+/**
  * Generate random value.
  *
  * @param[in] seed Random seed.
