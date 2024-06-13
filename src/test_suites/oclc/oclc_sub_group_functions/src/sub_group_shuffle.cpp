@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -18,18 +18,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_shuffle", "", GenericTestTypes,
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_shuffle";
+  std::string test_func_name = "sub_group_shuffle";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -40,18 +40,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_shuffle_common_offset", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_shuffle_common_offset";
+  std::string test_func_name = "sub_group_shuffle_common_offset";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -63,21 +63,20 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_shuffle_down", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
-  std::string func_name = "sub_group_shuffle_down";
+  std::string test_func_name = "sub_group_shuffle_down";
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name,
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name,
                                        max_delta_size);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name,
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name,
                                        max_delta_size);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name,
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name,
                                        max_delta_size);
   }
 }
@@ -89,21 +88,20 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_shuffle_up", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
-  std::string func_name = "sub_group_shuffle_up";
+  std::string test_func_name = "sub_group_shuffle_up";
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name,
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name,
                                        max_delta_size);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name,
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name,
                                        max_delta_size);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name,
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name,
                                        max_delta_size);
   }
 }
@@ -115,19 +113,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_shuffle_mixed", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-
+  std::string test_func_name = "sub_group_shuffle_mixed";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
-  std::string func_name = "sub_group_shuffle_mixed";
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -138,19 +135,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_shuffle_xor", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-
+  std::string test_func_name = "sub_group_shuffle_xor";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
-  std::string func_name = "sub_group_shuffle_xor";
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -13,8 +13,7 @@ namespace ca = cassian;
 namespace {
 
 template <typename TEST_TYPE, size_t N>
-void test_num_subgroup(const TestConfig &config) {
-  const std::string name = "num_sub_group";
+void test_num_subgroup(const TestConfig &config, const std::string &name) {
   ca::Runtime *runtime = config.runtime();
   const std::string program_type = config.program_type();
 
@@ -35,11 +34,10 @@ void test_num_subgroup(const TestConfig &config) {
   TestArguments arg2(input_data_values.data(),
                      input_data_values.size() * sizeof(uint32_t),
                      input_data_values.size());
-  test_description.kernel_name = get_kernel_name(name);
+  test_description.kernel_name = "test_kernel_" + name;
   test_description.kernel_file_name =
       "kernels/oclc_sub_group_functions/" + name + ".cl";
-  test_description.kernel_func_name = name;
-
+  test_description.kernel_func_names = std::vector{name};
   test_description.test_args.push_back(arg1);
   test_description.test_args.push_back(arg2);
 
@@ -61,15 +59,21 @@ template <typename T> std::string test_name() {
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("num_sub_group", "", OneTestType,
                                     test_name<TestType>) {
   const TestConfig &config = get_test_config();
-
+  std::string test_func_name = "num_sub_group";
   ca::Requirements requirements;
   requirements.arithmetic_type<TestType>();
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
-  SECTION("1D") { test_num_subgroup<TestType, 1>(get_test_config()); }
-  SECTION("2D") { test_num_subgroup<TestType, 2>(get_test_config()); }
-  SECTION("3D") { test_num_subgroup<TestType, 3>(get_test_config()); }
+  SECTION("1D") {
+    test_num_subgroup<TestType, 1>(get_test_config(), test_func_name);
+  }
+  SECTION("2D") {
+    test_num_subgroup<TestType, 2>(get_test_config(), test_func_name);
+  }
+  SECTION("3D") {
+    test_num_subgroup<TestType, 3>(get_test_config(), test_func_name);
+  }
 }
 
 } // namespace

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -13,7 +13,8 @@ namespace ca = cassian;
 namespace {
 
 template <typename TEST_TYPE, size_t N>
-void test_subgroup_size(const TestConfig &config) {
+void test_subgroup_size(const TestConfig &config,
+                        const std::vector<std::string> &names) {
   const std::string name = "sub_group_size";
   ca::Runtime *runtime = config.runtime();
   const std::string program_type = config.program_type();
@@ -36,11 +37,11 @@ void test_subgroup_size(const TestConfig &config) {
     TestArguments arg2(input_data_values.data(),
                        input_data_values.size() * sizeof(uint32_t),
                        input_data_values.size());
-    test_description.kernel_name = get_kernel_name(name);
+    std::string func1_name = names[0];
+    test_description.kernel_name = "test_kernel_" + func1_name;
     test_description.kernel_file_name =
-        "kernels/oclc_sub_group_functions/" + name + ".cl";
-    test_description.kernel_func_name = name;
-
+        "kernels/oclc_sub_group_functions/" + func1_name + ".cl";
+    test_description.kernel_func_names = names;
     test_description.test_args.push_back(arg1);
     test_description.test_args.push_back(arg2);
 
@@ -61,10 +62,11 @@ void test_subgroup_size(const TestConfig &config) {
     TestArguments arg1(input_data_values.data(),
                        input_data_values.size() * sizeof(uint32_t),
                        input_data_values.size());
-    test_description.kernel_name = get_kernel_name(name + "_max_value");
+    std::string func1_name = names[0];
+    test_description.kernel_name = "test_kernel_" + func1_name + "_max_value";
     test_description.kernel_file_name =
-        "kernels/oclc_sub_group_functions/" + name + ".cl";
-    test_description.kernel_func_name = name + "_max_value";
+        "kernels/oclc_sub_group_functions/" + func1_name + ".cl";
+    test_description.kernel_func_names = names;
     test_description.test_args.push_back(arg1);
 
     const std::vector<std::vector<uint32_t>> outputs =
@@ -90,9 +92,17 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_size", "", OneTestType,
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
-  SECTION("1D") { test_subgroup_size<TestType, 1>(get_test_config()); }
-  SECTION("2D") { test_subgroup_size<TestType, 2>(get_test_config()); }
-  SECTION("3D") { test_subgroup_size<TestType, 3>(get_test_config()); }
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_size");
+  SECTION("1D") {
+    test_subgroup_size<TestType, 1>(get_test_config(), names_config);
+  }
+  SECTION("2D") {
+    test_subgroup_size<TestType, 2>(get_test_config(), names_config);
+  }
+  SECTION("3D") {
+    test_subgroup_size<TestType, 3>(get_test_config(), names_config);
+  }
 }
 
 } // namespace

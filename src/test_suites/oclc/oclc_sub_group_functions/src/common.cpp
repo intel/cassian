@@ -42,26 +42,6 @@ std::string function_type(const TestFunctionType &test_function_type) {
     return "";
   }
 }
-std::string create_func_name(TestFunctionType test_function_type,
-                             TestExtensionType test_extension_type) {
-  std::string func_name = "sub_group";
-  switch (test_extension_type) {
-  case block:
-  case block_image:
-    func_name = func_name + "_block_" + function_type(test_function_type);
-    break;
-  case media_block_image:
-    func_name += "_media_block_" + function_type(test_function_type);
-    break;
-  default:
-    break;
-  }
-  return func_name;
-}
-
-std::string get_kernel_name(const std::string &name) {
-  return "test_kernel_" + name;
-}
 
 std::string to_string(ca::ImageChannelOrder channel_order) {
   switch (channel_order) {

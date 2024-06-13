@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -18,18 +18,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_min", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_scan_inclusive_min";
+  std::string test_func_name = "sub_group_scan_inclusive_min";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -40,18 +40,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_max", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_scan_inclusive_max";
+  std::string test_func_name = "sub_group_scan_inclusive_max";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -62,18 +62,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_inclusive_add", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_scan_inclusive_add";
+  std::string test_func_name = "sub_group_scan_inclusive_add";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -84,18 +84,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_min", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_scan_exclusive_min";
+  std::string test_func_name = "sub_group_scan_exclusive_min";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -106,18 +106,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_max", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_scan_exclusive_max";
+  std::string test_func_name = "sub_group_scan_exclusive_max";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 
@@ -128,18 +128,18 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_scan_exclusive_add", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_scan_exclusive_add";
+  std::string test_func_name = "sub_group_scan_exclusive_add";
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_generic<TestType, 1>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 1>(get_test_config(), test_func_name);
   }
   SECTION("2D") {
-    test_subgroup_generic<TestType, 2>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 2>(get_test_config(), test_func_name);
   }
   SECTION("3D") {
-    test_subgroup_generic<TestType, 3>(get_test_config(), func_name);
+    test_subgroup_generic<TestType, 3>(get_test_config(), test_func_name);
   }
 }
 

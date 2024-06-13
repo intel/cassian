@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -26,15 +26,13 @@ namespace ca = cassian;
 
 enum TestExtensionType { generic, block, block_image, media_block_image };
 enum TestFunctionType { read_ft, write_ft, read_write_ft };
-std::string create_func_name(TestFunctionType test_function_type,
-                             TestExtensionType test_extension_type);
 ca::Kernel create_kernel(const std::string &path,
                          const std::string &kernel_name,
                          const std::string &build_options, ca::Runtime *runtime,
                          const std::string &program_type);
-std::string get_kernel_name(const std::string &name);
 std::string to_string(ca::ImageFormat image_format);
 std::string to_string(ca::ImageChannelOrder channel_order);
+
 struct ImageConfig {
   ca::ImageType type;
   ca::ImageDimensions dim;
@@ -67,7 +65,7 @@ struct TestArguments {
 template <typename T> struct TestCaseDescriptor {
   TestCaseDescriptor()
       : local_mem_size(0), kernel_name(""), kernel_file_name(""),
-        kernel_func_name(""), kernel_build_options(""),
+        kernel_func_names(std::vector<std::string>{}), kernel_build_options(""),
         change_prefix_for_types(false), change_prefix_for_all_types(false),
         delta_size(0), test_extension_type(generic),
         test_function_type(read_ft), block_width(1), block_height(1),
@@ -78,7 +76,7 @@ template <typename T> struct TestCaseDescriptor {
   uint32_t delta_size;
   std::string kernel_name;
   std::string kernel_file_name;
-  std::string kernel_func_name;
+  std::vector<std::string> kernel_func_names;
   std::string kernel_build_options;
   bool change_prefix_for_types;
   bool change_prefix_for_all_types;
@@ -91,19 +89,20 @@ template <typename T> struct TestCaseDescriptor {
   // image_descriptor common for all kernel args
   ImageConfig image_config;
 
-  std::string get_build_options(std::string func_name) {
+  std::string get_build_options() {
     switch (test_extension_type) {
     case block:
     case block_image:
     case media_block_image:
-      return get_build_options_block(func_name);
+      return get_build_options_block();
     default:
-      return get_build_options_generic(func_name);
+      return get_build_options_generic();
     }
   };
 
 private:
-  std::string get_build_options_generic(std::string func_name) {
+  std::string get_build_options_generic() {
+    std::string func_name = kernel_func_names[0];
     if (change_prefix_for_all_types) {
       func_name = "intel_" + func_name;
     } else if (change_prefix_for_types) {
@@ -173,19 +172,12 @@ private:
     return build_options;
   };
 
-  std::string get_build_options_block(std::string func_name) {
-
-    std::string part_func_name;
-    std::string func_name1;
+  std::string get_build_options_block() {
+    std::string func_name1 = kernel_func_names[0];
     std::string func_name2;
-
-    std::size_t pos = func_name.find("read_write");
-    if (pos != std::string::npos) {
-      part_func_name = func_name.substr(0, pos);
-      func_name1 = "intel_" + part_func_name + "read";
-      func_name2 = "intel_" + part_func_name + "write";
-    } else {
-      func_name1 = "intel_" + func_name;
+    func_name1 = "intel_" + func_name1;
+    if (kernel_func_names.size() > 1) {
+      func_name2 = "intel_" + kernel_func_names[1];
     }
 
     std::string vec_size = "1";
@@ -195,30 +187,24 @@ private:
     size_t var_size = sizeof(scalar_type_check);
     if (var_size == 4) {
       func_name1 = func_name1 + "_ui";
-      if (pos != std::string::npos)
-        func_name2 = func_name2 + "_ui";
+      func_name2 = func_name2 + "_ui";
     } else if (var_size == 1) {
       func_name1 = func_name1 + "_uc";
-      if (pos != std::string::npos)
-        func_name2 = func_name2 + "_uc";
+      func_name2 = func_name2 + "_uc";
       input_data_type = "uchar";
     } else if (var_size == 2) {
       func_name1 = func_name1 + "_us";
-      if (pos != std::string::npos)
-        func_name2 = func_name2 + "_us";
+      func_name2 = func_name2 + "_us";
       input_data_type = "ushort";
     } else if (var_size == 8) {
       func_name1 = func_name1 + "_ul";
-      if (pos != std::string::npos)
-        func_name2 = func_name2 + "_ul";
+      func_name2 = func_name2 + "_ul";
       input_data_type = "ulong";
     }
 
     if constexpr (ca::is_vector_v<vector_type_check>) {
       func_name1 = func_name1 + std::to_string(vector_type_check::vector_size);
-      if (pos != std::string::npos)
-        func_name2 =
-            func_name2 + std::to_string(vector_type_check::vector_size);
+      func_name2 = func_name2 + std::to_string(vector_type_check::vector_size);
       vec_size = std::to_string(vector_type_check::vector_size);
     }
 
@@ -325,8 +311,7 @@ run_test(TestCaseDescriptor<TEST_TYPE> test_description,
          std::array<size_t, N> global_work_size,
          const std::array<size_t, N> local_work_size, ca::Runtime *runtime,
          const std::string program_type) {
-  std::string build_options =
-      test_description.get_build_options(test_description.kernel_func_name);
+  std::string build_options = test_description.get_build_options();
   ca::logging::debug() << "Running test with build options: " << build_options
                        << "\n";
   const ca::Kernel kernel = create_kernel(test_description.kernel_file_name,
@@ -416,12 +401,10 @@ calculate_work_groups_num(std::array<size_t, N> &global_work_size,
 }
 
 template <typename TEST_TYPE, size_t N>
-void test_subgroup_generic(const TestConfig &config,
-                           const std::string func_name,
+void test_subgroup_generic(const TestConfig &config, const std::string &name,
                            const uint32_t max_delta_size = 1) {
   ca::Runtime *runtime = config.runtime();
   const std::string program_type = config.program_type();
-
   const size_t global_work_size_per_dimension = config.work_size();
   std::array<size_t, N> global_work_size = {};
   std::array<size_t, N> local_work_size = {};
@@ -430,18 +413,26 @@ void test_subgroup_generic(const TestConfig &config,
   calculate_dimensions(global_work_size, local_work_size,
                        global_work_size_total, global_work_size_per_dimension,
                        runtime);
-
+  std::string name_to_set = name;
+  std::size_t pos = name_to_set.find("negative");
+  if (pos != std::string::npos) {
+    name_to_set = name_to_set.substr(0, pos - 1);
+  }
   for (uint32_t delta_size = 1; delta_size <= max_delta_size; delta_size++) {
     std::vector<uint32_t> input_data_values(global_work_size_total, 1);
     TestCaseDescriptor<TEST_TYPE> test_description;
     TestArguments arg1(input_data_values.data(),
                        input_data_values.size() * sizeof(uint32_t),
                        input_data_values.size());
-    test_description.kernel_name = get_kernel_name(func_name);
+
+    test_description.kernel_name = "test_kernel_" + name_to_set;
     test_description.kernel_file_name =
-        "kernels/oclc_sub_group_functions/" + func_name + ".cl";
-    test_description.kernel_func_name = func_name;
+        "kernels/oclc_sub_group_functions/" + name_to_set + ".cl";
+    test_description.kernel_func_names = std::vector{name};
     test_description.change_prefix_for_all_types = false;
+    if (name_to_set == "sub_group_broadcast") {
+      test_description.change_prefix_for_types = true;
+    }
     test_description.delta_size = delta_size;
     test_description.test_args.push_back(arg1);
 

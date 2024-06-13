@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -53,13 +53,19 @@ std::vector<std::tuple<ca::ImageChannelOrder, ca::ImageFormat>> image_formats{
 template <typename TEST_TYPE>
 void print_test_info(TestExtensionType test_extension_type,
                      TestCaseDescriptor<TEST_TYPE> test_description) {
+  std::string function_to_print = test_description.kernel_func_names[0];
+  if (test_description.kernel_func_names.size() == 2) {
+    function_to_print =
+        function_to_print + " " + test_description.kernel_func_names[1];
+  }
+
   if (test_extension_type == media_block_image) {
     ca::logging::info() << "Testing image format: "
                         << to_string(test_description.image_config.format)
                         << ", channel order: "
                         << to_string(test_description.image_config.order)
                         << ", datatype: " << TEST_TYPE::device_type
-                        << ", function: " << test_description.kernel_func_name
+                        << ", function: " << function_to_print
                         << ", block width: " << test_description.block_width
                         << ", block height: " << test_description.block_height
                         << ", subgroup size: "
@@ -70,16 +76,15 @@ void print_test_info(TestExtensionType test_extension_type,
                         << ", channel order: "
                         << to_string(test_description.image_config.order)
                         << ", datatype: " << TEST_TYPE::device_type
-                        << ", function: " << test_description.kernel_func_name
-                        << "\n";
+                        << ", function: " << function_to_print << "\n";
   } else {
     ca::logging::info() << "Testing datatype: " << TEST_TYPE::device_type
-                        << ", function: " << test_description.kernel_func_name
-                        << "\n";
+                        << ", function: " << function_to_print << "\n";
   }
 }
 template <typename TEST_TYPE, size_t N>
 void test_subgroup_block(const TestConfig &config,
+                         const std::vector<std::string> &names,
                          const TestExtensionType test_extension_type,
                          const TestFunctionType test_function_type) {
   ca::Runtime *runtime = config.runtime();
@@ -110,19 +115,29 @@ void test_subgroup_block(const TestConfig &config,
     }
   }
   using scalar_type = typename TEST_TYPE::scalar_type::host_type;
-  std::string func_name =
-      create_func_name(test_function_type, test_extension_type);
 
-  std::string image_postfix;
+  bool image_case = false;
+  std::vector<std::string> modified_names;
+  modified_names = names;
+  for (auto &func_name : modified_names) {
+    std::size_t pos = func_name.find("image");
+    if (pos != std::string::npos) {
+      func_name = func_name.substr(0, pos - 1);
+    }
+  }
+  std::string func1_name = modified_names[0];
+  if (test_function_type == read_write_ft) {
+    func1_name += "_write";
+  }
   if (test_extension_type == block_image ||
       test_extension_type == media_block_image) {
-    image_postfix = "_image";
+    func1_name += "_image";
   }
 
-  test_description.kernel_name = get_kernel_name(func_name) + image_postfix;
+  test_description.kernel_name = "test_kernel_" + func1_name;
   test_description.kernel_file_name =
-      "kernels/oclc_sub_group_functions/" + func_name + image_postfix + ".cl";
-  test_description.kernel_func_name = func_name;
+      "kernels/oclc_sub_group_functions/" + func1_name + ".cl";
+  test_description.kernel_func_names = modified_names;
   test_description.test_extension_type = test_extension_type;
   test_description.test_function_type = test_function_type;
   std::vector<scalar_type> input_data_values(global_work_size_total, 0);
@@ -299,18 +314,22 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_block_read", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_block_read";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_block_read");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_block<TestType, 1>(get_test_config(), block, read_ft);
+    test_subgroup_block<TestType, 1>(get_test_config(), names_config, block,
+                                     read_ft);
   }
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), block, read_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config, block,
+                                     read_ft);
   }
   SECTION("3D") {
-    test_subgroup_block<TestType, 3>(get_test_config(), block, read_ft);
+    test_subgroup_block<TestType, 3>(get_test_config(), names_config, block,
+                                     read_ft);
   }
 }
 
@@ -322,18 +341,22 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_block_write", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_block_write";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_block_write");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_block<TestType, 1>(get_test_config(), block, write_ft);
+    test_subgroup_block<TestType, 1>(get_test_config(), names_config, block,
+                                     write_ft);
   }
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), block, write_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config, block,
+                                     write_ft);
   }
   SECTION("3D") {
-    test_subgroup_block<TestType, 3>(get_test_config(), block, write_ft);
+    test_subgroup_block<TestType, 3>(get_test_config(), names_config, block,
+                                     write_ft);
   }
 }
 
@@ -345,18 +368,24 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_block_read_write", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_block_read_write";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_block_read");
+  names_config.emplace_back("sub_group_block_write");
+
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("1D") {
-    test_subgroup_block<TestType, 1>(get_test_config(), block, read_write_ft);
+    test_subgroup_block<TestType, 1>(get_test_config(), names_config, block,
+                                     read_write_ft);
   }
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), block, read_write_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config, block,
+                                     read_write_ft);
   }
   SECTION("3D") {
-    test_subgroup_block<TestType, 3>(get_test_config(), block, read_write_ft);
+    test_subgroup_block<TestType, 3>(get_test_config(), names_config, block,
+                                     read_write_ft);
   }
 }
 
@@ -368,13 +397,15 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_block_read_image", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_block_read_image";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_block_read_image");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), block_image, read_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config,
+                                     block_image, read_ft);
   }
 }
 
@@ -386,13 +417,15 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_block_write_image", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_block_write_image";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_block_write_image");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), block_image, write_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config,
+                                     block_image, write_ft);
   }
 }
 
@@ -404,14 +437,16 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_block_read_write_image", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_block_read_write_image";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_block_read_image");
+  names_config.emplace_back("sub_group_block_write_image");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
 
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), block_image,
-                                     read_write_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config,
+                                     block_image, read_write_ft);
   }
 }
 
@@ -423,15 +458,17 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_media_block_read_image", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_media_block_read_image";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_media_block_read_image");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), media_block_image,
-                                     read_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config,
+                                     media_block_image, read_ft);
   }
 }
+
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_media_block_write_image", "",
                                     MediaBlockFunctionTestTypes,
                                     test_name<TestType>) {
@@ -440,13 +477,14 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_media_block_write_image", "",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_media_block_write_image";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_media_block_write_image");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), media_block_image,
-                                     write_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config,
+                                     media_block_image, write_ft);
   }
 }
 
@@ -458,13 +496,15 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("sub_group_media_block_read_write_image",
   using scalar_type = typename TestType::scalar_type;
   ca::Requirements requirements;
   requirements.arithmetic_type<scalar_type>();
-  std::string func_name = "sub_group_media_block_read_write_image";
+  std::vector<std::string> names_config;
+  names_config.emplace_back("sub_group_media_block_read_image");
+  names_config.emplace_back("sub_group_media_block_write_image");
   if (ca::should_skip_test(requirements, *config.runtime())) {
     return;
   }
   SECTION("2D") {
-    test_subgroup_block<TestType, 2>(get_test_config(), media_block_image,
-                                     read_write_ft);
+    test_subgroup_block<TestType, 2>(get_test_config(), names_config,
+                                     media_block_image, read_write_ft);
   }
 }
 
