@@ -58,7 +58,7 @@ public:
   using input_type_2 = typename INPUT_TYPE_2::host_type;
   using input_type_3 = typename INPUT_TYPE_3::host_type;
   using scalar_type_1 = typename INPUT_TYPE_1::scalar_type::host_type;
-  using scalar_type_2 = typename INPUT_TYPE_1::scalar_type::host_type;
+  using scalar_type_2 = typename INPUT_TYPE_2::scalar_type::host_type;
 
   static constexpr auto function = FUNCTION;
   static constexpr auto arg_num = ARG_NUM;
@@ -213,9 +213,9 @@ template <class T> constexpr auto get_gentype_values() {
                            generate_value<input_type_2>());
   } else if constexpr (T::function == Function::atan2pi) {
     static_assert(std::is_same_v<input_type_1, input_type_2>);
-    const auto lower_than_zero =
-        generate_value<input_type_1>(-std::numeric_limits<scalar_type_1>::max(),
-                                     scalar_type_1(0), {scalar_type_1(0)});
+    const auto lower_than_zero = generate_value<input_type_1>(
+        std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(0),
+        {scalar_type_1(0)});
     const auto higher_than_zero = generate_value<input_type_1>(
         scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
         {scalar_type_1(0)});
@@ -300,9 +300,9 @@ template <class T> constexpr auto get_gentype_values() {
     const auto higher_than_zero = generate_value<input_type_1>(
         scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
         {scalar_type_1(0)});
-    const auto lower_than_zero =
-        generate_value<input_type_1>(-std::numeric_limits<scalar_type_1>::max(),
-                                     scalar_type_1(0), {scalar_type_1(0)});
+    const auto lower_than_zero = generate_value<input_type_1>(
+        std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(0),
+        {scalar_type_1(0)});
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
     values.add_edge_case(input_type_1(0.0F), higher_than_zero);
@@ -323,38 +323,33 @@ template <class T> constexpr auto get_gentype_values() {
     const auto higher_than_zero = generate_value<input_type_1>(
         scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
         {scalar_type_1(0)});
-    const auto lower_than_zero =
-        generate_value<input_type_1>(std::numeric_limits<scalar_type_1>::min(),
-                                     scalar_type_1(0), {scalar_type_1(0)});
+    const auto lower_than_zero = generate_value<input_type_1>(
+        std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(0),
+        {scalar_type_1(0)});
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     const auto finite = generate_value<input_type_2>(
-        std::numeric_limits<scalar_type_2>::min(),
-        std::numeric_limits<scalar_type_2>::max(),
-        {std::numeric_limits<scalar_type_2>::infinity()});
+        std::numeric_limits<scalar_type_2>::lowest(),
+        std::numeric_limits<scalar_type_2>::max());
     values.add_random_case(higher_equal_zero, generate_value<input_type_2>());
     values.add_edge_case(
-        generate_value<input_type_1>(
-            scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
-            {scalar_type_1(0), std::numeric_limits<scalar_type_1>::infinity()}),
+        generate_value<input_type_1>(scalar_type_1(0),
+                                     std::numeric_limits<scalar_type_1>::max(),
+                                     {scalar_type_1(0)}),
         input_type_2(0.0F));
     values.add_edge_case(
-        generate_value<input_type_1>(
-            scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
-            {scalar_type_1(0), std::numeric_limits<scalar_type_1>::infinity()}),
+        generate_value<input_type_1>(scalar_type_1(0),
+                                     std::numeric_limits<scalar_type_1>::max(),
+                                     {scalar_type_1(0)}),
         input_type_2(-0.0F));
-    values.add_edge_case(input_type_1(0.0F),
-                         generate_value<input_type_2>(
-                             -std::numeric_limits<scalar_type_2>::infinity(),
-                             scalar_type_2(0),
-                             {scalar_type_2(0),
-                              std::numeric_limits<scalar_type_2>::infinity()}));
-    values.add_edge_case(input_type_1(-0.0F),
-                         generate_value<input_type_2>(
-                             -std::numeric_limits<scalar_type_2>::infinity(),
-                             scalar_type_2(0),
-                             {scalar_type_2(0),
-                              std::numeric_limits<scalar_type_2>::infinity()}));
+    values.add_edge_case(
+        input_type_1(0.0F),
+        generate_value<input_type_2>(-std::numeric_limits<scalar_type_2>::max(),
+                                     scalar_type_2(0), {scalar_type_2(0)}));
+    values.add_edge_case(
+        input_type_1(-0.0F),
+        generate_value<input_type_2>(-std::numeric_limits<scalar_type_2>::max(),
+                                     scalar_type_2(0), {scalar_type_2(0)}));
     values.add_edge_case(input_type_1(0.0F), -infinity);
     values.add_edge_case(input_type_1(-0.0F), -infinity);
     values.add_edge_case(input_type_1(0.0F), higher_than_zero);
@@ -394,9 +389,9 @@ template <class T> constexpr auto get_gentype_values() {
         input_type_1(std::ceil(generate_value<scalar_type_1>(
             scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
             {scalar_type_1(0)})));
-    const auto int_lower_than_zero = input_type_1(std::ceil(
-        generate_value<scalar_type_1>(std::numeric_limits<scalar_type_1>::min(),
-                                      scalar_type_1(0), {scalar_type_1(0)})));
+    const auto int_lower_than_zero =
+        input_type_1(std::ceil(generate_value<scalar_type_1>(
+            std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(-1))));
 
     values.add_random_case(generate_value<input_type_1>());
     values.add_edge_case(input_type_1(0.0F));
@@ -435,9 +430,9 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(even_number + input_type_1(0.5F));
     values.add_edge_case(odd_number + input_type_1(0.5F));
   } else if constexpr (T::function == Function::lgamma_r) {
-    const auto int_lower_than_zero = input_type_1(std::ceil(
-        generate_value<scalar_type_1>(std::numeric_limits<scalar_type_1>::min(),
-                                      scalar_type_1(0), {scalar_type_1(0)})));
+    const auto int_lower_than_zero =
+        input_type_1(std::ceil(generate_value<scalar_type_1>(
+            std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(-1))));
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
     values.add_edge_case(input_type_1(0.0F), generate_value<input_type_2>());
@@ -460,7 +455,7 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(infinity, generate_value<input_type_2>());
   } else if constexpr (T::function == Function::remainder) {
     const auto domain = generate_value<input_type_1>(
-        -std::numeric_limits<scalar_type_1>::max(),
+        std::numeric_limits<scalar_type_1>::lowest(),
         std::numeric_limits<scalar_type_1>::max(), {scalar_type_1(0)});
     values.add_random_case(generate_value<input_type_1>(), domain);
   } else if constexpr (T::function == Function::powr) {
@@ -472,9 +467,11 @@ template <class T> constexpr auto get_gentype_values() {
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     const auto lower_than_zero = generate_value<input_type_2>(
-        std::numeric_limits<scalar_type_2>::min(), 0);
+        std::numeric_limits<scalar_type_2>::lowest(), scalar_type_2(0),
+        {scalar_type_2(0)});
     const auto higher_than_zero = generate_value<input_type_2>(
-        scalar_type_2(0.0F), -std::numeric_limits<scalar_type_2>::min());
+        scalar_type_2(0), std::numeric_limits<scalar_type_2>::max(),
+        {scalar_type_2(0)});
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
     values.add_edge_case(generate_value<input_type_1>(), input_type_2(0.0F));
@@ -509,11 +506,14 @@ template <class T> constexpr auto get_gentype_values() {
                              1); // odd number
   } else if constexpr (T::function == Function::rootn) {
     const auto lower_than_zero = generate_value<input_type_2>(
-        std::numeric_limits<scalar_type_2>::min(), scalar_type_2(0));
+        std::numeric_limits<scalar_type_2>::lowest(), scalar_type_2(0),
+        {scalar_type_2(0)});
     const auto lower_than_zero_1 = generate_value<input_type_1>(
-        std::numeric_limits<scalar_type_1>::min(), scalar_type_1(0));
+        std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(0),
+        {scalar_type_1(0)});
     const auto higher_than_zero = generate_value<input_type_2>(
-        scalar_type_2(0.0F), -std::numeric_limits<scalar_type_2>::min());
+        scalar_type_2(0), std::numeric_limits<scalar_type_2>::max(),
+        {scalar_type_2(0)});
     const auto to_even = generate_value<input_type_2>();
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
@@ -542,9 +542,9 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(generate_value<input_type_1>(), input_type_2(0.0F));
   } else if constexpr (T::function == Function::correctly_rounded_sqrt) {
     values.add_random_case(generate_value<input_type_1>(
-        0, std::numeric_limits<scalar_type_1>::max()));
+        scalar_type_1(0), std::numeric_limits<scalar_type_1>::max()));
     values.add_edge_case(
-        input_type_1(std::numeric_limits<scalar_type_1>::min()));
+        input_type_1(std::numeric_limits<scalar_type_1>::lowest()));
   } else {
     if constexpr (T::arg_num == 2) {
       values.add_random_case(generate_value<input_type_1>(),
