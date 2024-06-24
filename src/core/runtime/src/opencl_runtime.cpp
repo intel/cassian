@@ -750,6 +750,14 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     }
     return false;
   }
+  case Feature::integer_dp4a: {
+    return (get_device_property(DeviceProperty::dot_product_capabilities) &
+            CL_DEVICE_INTEGER_DOT_PRODUCT_INPUT_4x8BIT_KHR) != 0;
+  }
+  case Feature::integer_dp4a_packed: {
+    return (get_device_property(DeviceProperty::dot_product_capabilities) &
+            CL_DEVICE_INTEGER_DOT_PRODUCT_INPUT_4x8BIT_PACKED_KHR) != 0;
+  }
   default:
     return false;
   }
@@ -842,6 +850,13 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     return static_cast<int>(
         cl_get_device_property_at_index<cl_device_fp_config>(
             devices_[0], CL_DEVICE_DOUBLE_FP_CONFIG, 0));
+  case DeviceProperty::dot_product_capabilities:
+    if (extensions_.count("cl_khr_integer_dot_product") != 0U) {
+      return static_cast<int>(cl_get_device_property_at_index<
+                              cl_device_integer_dot_product_capabilities_khr>(
+          devices_[0], CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR, 0));
+    }
+    return 0;
   default:
     throw RuntimeException("Failed to find device property");
   }

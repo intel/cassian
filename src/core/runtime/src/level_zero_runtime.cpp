@@ -1045,6 +1045,11 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
                      std::end(device_compute_properties.subGroupSizes),
                      32) != std::end(device_compute_properties.subGroupSizes);
   }
+  case Feature::integer_dp4a: {
+    return (get_device_property(DeviceProperty::dot_product_capabilities) &
+            ZE_DEVICE_MODULE_FLAG_DP4A) != 0;
+  }
+
   default:
     return false;
   }

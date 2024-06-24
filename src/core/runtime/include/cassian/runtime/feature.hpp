@@ -49,7 +49,9 @@ enum class Feature {
   intel_required_subgroup_size,
   simd8,
   simd16,
-  simd32
+  simd32,
+  integer_dp4a,
+  integer_dp4a_packed
 };
 
 /**

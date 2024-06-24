@@ -33,7 +33,8 @@ enum class DeviceProperty {
   fp64_atomics_capabilities,
   fp16_atomics_capabilities,
   fp32_config,
-  fp64_config
+  fp64_config,
+  dot_product_capabilities
 };
 
 } // namespace cassian

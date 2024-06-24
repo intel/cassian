@@ -74,6 +74,10 @@ std::string to_string(const Feature feature) {
     return "simd16";
   case Feature::simd32:
     return "simd32";
+  case Feature::integer_dp4a:
+    return "integer_dp4a";
+  case Feature::integer_dp4a_packed:
+    return "integer_dp4a_packed";
   default:
     return "unknown";
   }
