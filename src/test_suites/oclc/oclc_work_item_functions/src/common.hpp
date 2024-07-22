@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -8,13 +8,19 @@
 #ifndef CASSIAN_OCLC_WORK_ITEM_FUNCTIONS_COMMON_HPP
 #define CASSIAN_OCLC_WORK_ITEM_FUNCTIONS_COMMON_HPP
 
+#include <cassian/runtime/feature.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/test_harness/test_harness.hpp>
 #include <common.hpp>
 #include <string>
+#include <test_config.hpp>
 
 namespace ca = cassian;
 
 int suggest_work_size(const std::string &type);
+std::string get_build_options(const std::string &simd);
+ca::Feature parse_simd(const std::string &simd);
+bool should_skip(const TestConfig &config);
 
 template <size_t N>
 std::array<size_t, N> get_max_group_size(ca::Runtime *runtime) {

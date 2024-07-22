@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -15,19 +15,23 @@
 #include <memory>
 #include <string>
 
-class TestConfig : public cassian::TestConfigBase {
+namespace ca = cassian;
+
+class TestConfig : public ca::TestConfigBase {
 public:
-  explicit TestConfig(const cassian::CommandLineParser &parser);
+  explicit TestConfig(const ca::CommandLineParser &parser);
 
   size_t work_size() const;
+  std::string simd() const;
 
 private:
   size_t work_size_ = 0;
+  std::string simd_;
 };
 
 const TestConfig &get_test_config();
 void set_test_config(const TestConfig &config);
 
-void add_test_arguments(cassian::CommandLineParser *parser);
+void add_test_arguments(ca::CommandLineParser *parser);
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -20,15 +20,6 @@
 namespace ca = cassian;
 
 namespace {
-
-ca::Kernel create_kernel(const std::string &path,
-                         const std::string &kernel_name, ca::Runtime *runtime,
-                         const std::string &program_type) {
-  const std::string source = ca::load_text_file(ca::get_asset(path));
-  const std::string build_options;
-  return runtime->create_kernel(kernel_name, source, build_options,
-                                program_type);
-}
 
 std::string get_kernel_name(const size_t n) {
   return "test_kernel_" + std::to_string(n);
@@ -102,9 +93,11 @@ template <size_t N> void test_get_num_groups(const TestConfig &config) {
   const std::string program_type = config.program_type();
 
   const std::string kernel_name = get_kernel_name(N);
+  const std::string path = "kernels/oclc_work_item_functions/get_num_groups.cl";
+  const std::string source = ca::load_text_file(ca::get_asset(path));
+  const std::string build_options = get_build_options(config.simd());
   const ca::Kernel kernel =
-      create_kernel("kernels/oclc_work_item_functions/get_num_groups.cl",
-                    kernel_name, runtime, program_type);
+      runtime->create_kernel(kernel_name, source, build_options, program_type);
 
   const size_t global_work_size_per_dimension = config.work_size();
   std::array<size_t, N> global_work_size = {};
@@ -125,9 +118,14 @@ template <size_t N> void test_get_num_groups(const TestConfig &config) {
 }
 
 TEST_CASE("get_num_groups", "") {
-  SECTION("1D") { test_get_num_groups<1>(get_test_config()); }
-  SECTION("2D") { test_get_num_groups<2>(get_test_config()); }
-  SECTION("3D") { test_get_num_groups<3>(get_test_config()); }
+  const TestConfig &config = get_test_config();
+  if (should_skip(config)) {
+    return;
+  }
+
+  SECTION("1D") { test_get_num_groups<1>(config); }
+  SECTION("2D") { test_get_num_groups<2>(config); }
+  SECTION("3D") { test_get_num_groups<3>(config); }
 }
 
 } // namespace

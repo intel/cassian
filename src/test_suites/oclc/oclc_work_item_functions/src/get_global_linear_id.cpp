@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -20,15 +20,6 @@
 namespace ca = cassian;
 
 namespace {
-
-ca::Kernel create_kernel(const std::string &path,
-                         const std::string &kernel_name, ca::Runtime *runtime,
-                         const std::string &program_type) {
-  const std::string source = ca::load_text_file(ca::get_asset(path));
-  const std::string build_options = "-cl-std=CL3.0";
-  return runtime->create_kernel(kernel_name, source, build_options,
-                                program_type);
-}
 
 template <size_t N>
 std::vector<uint32_t> run_kernel(const ca::Kernel &kernel,
@@ -90,9 +81,13 @@ void test_get_global_linear_id(const TestConfig &config,
                                const std::string &kernel_name) {
   ca::Runtime *runtime = config.runtime();
   const std::string program_type = config.program_type();
+  const std::string path =
+      "kernels/oclc_work_item_functions/get_global_linear_id.cl";
+  const std::string source = ca::load_text_file(ca::get_asset(path));
+  const std::string build_options =
+      get_build_options(config.simd()) + " -cl-std=CL3.0";
   const ca::Kernel kernel =
-      create_kernel("kernels/oclc_work_item_functions/get_global_linear_id.cl",
-                    kernel_name, runtime, program_type);
+      runtime->create_kernel(kernel_name, source, build_options, program_type);
 
   const size_t global_work_size_per_dimension = config.work_size();
   std::array<size_t, N> global_work_size = {};
@@ -113,15 +108,14 @@ void test_get_global_linear_id(const TestConfig &config,
 }
 
 TEST_CASE("get_global_linear_id", "") {
-  SECTION("1D") {
-    test_get_global_linear_id<1>(get_test_config(), "test_kernel");
+  const TestConfig &config = get_test_config();
+  if (should_skip(config)) {
+    return;
   }
-  SECTION("2D") {
-    test_get_global_linear_id<2>(get_test_config(), "test_kernel");
-  }
-  SECTION("3D") {
-    test_get_global_linear_id<3>(get_test_config(), "test_kernel");
-  }
+
+  SECTION("1D") { test_get_global_linear_id<1>(config, "test_kernel"); }
+  SECTION("2D") { test_get_global_linear_id<2>(config, "test_kernel"); }
+  SECTION("3D") { test_get_global_linear_id<3>(config, "test_kernel"); }
 }
 
 } // namespace

@@ -1,12 +1,15 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
 #include <common.hpp>
+#include <sstream>
 #include <string>
+
+namespace ca = cassian;
 
 int suggest_work_size(const std::string &type) {
   const int default_size = 64;
@@ -19,4 +22,36 @@ int suggest_work_size(const std::string &type) {
     return max_size;
   }
   return default_size;
+}
+
+ca::Feature parse_simd(const std::string &simd) {
+  if (simd == "8") {
+    return ca::Feature::simd8;
+  }
+  if (simd == "16") {
+    return ca::Feature::simd16;
+  }
+  if (simd == "32") {
+    return ca::Feature::simd32;
+  }
+  return ca::Feature{};
+}
+
+std::string get_build_options(const std::string &simd) {
+  if (simd == "8") {
+    return " -D SIMD=8";
+  }
+  if (simd == "16") {
+    return " -D SIMD=16";
+  }
+  if (simd == "32") {
+    return " -D SIMD=32";
+  }
+  return "";
+}
+
+bool should_skip(const TestConfig &config) {
+  ca::Requirements requirements;
+  requirements.feature(parse_simd(config.simd()));
+  return ca::should_skip_test(requirements, *config.runtime());
 }

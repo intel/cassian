@@ -12,6 +12,7 @@ list(
   "src/main.cpp"
   "src/common.cpp"
   "src/test_config.cpp"
+  "src/get_work_item_once.cpp"
   "src/get_work_dim.cpp"
   "src/get_global_id.cpp"
   "src/get_local_id.cpp"
@@ -27,6 +28,7 @@ list(
 list(
   APPEND
   KERNELS
+  "kernels/oclc_work_item_functions/get_work_item_once.cl"
   "kernels/oclc_work_item_functions/get_work_dim.cl"
   "kernels/oclc_work_item_functions/get_global_id.cl"
   "kernels/oclc_work_item_functions/get_local_id.cl"
