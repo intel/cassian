@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -289,12 +289,83 @@ Half abs(Half value) { return Half::encode(value.decode() & ~(1 << 15)); }
 
 Half sqrt(Half value) { return Half(std::sqrt(static_cast<float>(value))); }
 
+Half acos(Half value) { return Half(std::acos(static_cast<float>(value))); }
+
+Half acosh(Half value) { return Half(std::acosh(static_cast<float>(value))); }
+
+Half sin(Half value) { return Half(std::sin(static_cast<float>(value))); }
+
+Half sinh(Half value) { return Half(std::sinh(static_cast<float>(value))); }
+
+Half asin(Half value) { return Half(std::asin(static_cast<float>(value))); }
+
+Half asinh(Half value) { return Half(std::asinh(static_cast<float>(value))); }
+
+Half tan(Half value) { return Half(std::tan(static_cast<float>(value))); }
+
+Half tanh(Half value) { return Half(std::tanh(static_cast<float>(value))); }
+
+Half atan(Half value) { return Half(std::atan(static_cast<float>(value))); }
+
+Half atanh(Half value) { return Half(std::atanh(static_cast<float>(value))); }
+
+Half atan2(Half value_a, Half value_b) {
+  return Half(
+      std::atan2(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half cbrt(Half value) { return Half(std::cbrt(static_cast<float>(value))); }
+
+Half copysign(Half value_a, Half value_b) {
+  return Half(
+      std::copysign(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half cos(Half value) { return Half(std::cos(static_cast<float>(value))); }
+
+Half cosh(Half value) { return Half(std::cosh(static_cast<float>(value))); }
+
+Half fabs(Half value) { return Half(std::fabs(static_cast<float>(value))); }
+
+Half tgamma(Half value) { return Half(std::tgamma(static_cast<float>(value))); }
+
+Half fmod(Half value_a, Half value_b) {
+  return Half(
+      std::fmod(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half fmax(Half value_a, Half value_b) {
+  return Half(
+      std::fmax(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half fmin(Half value_a, Half value_b) {
+  return Half(
+      std::fmin(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half pow(Half value_a, Half value_b) {
+  return Half(
+      std::pow(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half pow(Half value_a, int value_b) {
+  return Half(std::pow(static_cast<float>(value_a), value_b));
+}
+
+Half remainder(Half value_a, Half value_b) {
+  return Half(
+      std::remainder(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
 Half nextafter(const Half from, const Half to) {
   return (from < to)
              ? Half(from + std::numeric_limits<Half>::epsilon())
              : (from > to ? Half(from - std::numeric_limits<Half>::epsilon())
                           : Half(to));
 }
+
+Half rint(Half value) { return Half(std::rint(static_cast<float>(value))); }
 
 Half floor(Half value) { return Half(std::floor(static_cast<float>(value))); }
 
@@ -303,6 +374,51 @@ Half ceil(Half value) { return Half(std::ceil(static_cast<float>(value))); }
 Half trunc(Half value) { return Half(std::trunc(static_cast<float>(value))); }
 
 Half round(Half value) { return Half(std::round(static_cast<float>(value))); }
+
+Half ilogb(Half value) {
+  return Half(static_cast<float>(std::ilogb(static_cast<float>(value))));
+}
+
+Half erfc(Half value) { return Half(std::erfc(static_cast<float>(value))); }
+
+Half erf(Half value) { return Half(std::erf(static_cast<float>(value))); }
+
+Half exp(Half value) { return Half(std::exp(static_cast<float>(value))); }
+
+Half exp2(Half value) { return Half(std::exp2(static_cast<float>(value))); }
+
+Half expm1(Half value) { return Half(std::expm1(static_cast<float>(value))); }
+
+Half fdim(Half value_a, Half value_b) {
+  return Half(
+      std::fdim(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half fma(Half value_a, Half value_b, Half value_c) {
+  return Half(std::fma(static_cast<float>(value_a), static_cast<float>(value_b),
+                       static_cast<float>(value_c)));
+}
+
+Half ldexp(Half value_a, int value_b) {
+  return Half(std::ldexp(static_cast<float>(value_a), value_b));
+}
+
+Half hypot(Half value_a, Half value_b) {
+  return Half(
+      std::hypot(static_cast<float>(value_a), static_cast<float>(value_b)));
+}
+
+Half lgamma(Half value) { return Half(std::lgamma(static_cast<float>(value))); }
+
+Half log(Half value) { return Half(std::log(static_cast<float>(value))); }
+
+Half log2(Half value) { return Half(std::log2(static_cast<float>(value))); }
+
+Half log10(Half value) { return Half(std::log10(static_cast<float>(value))); }
+
+Half log1p(Half value) { return Half(std::log1p(static_cast<float>(value))); }
+
+Half logb(Half value) { return Half(std::logb(static_cast<float>(value))); }
 
 Half nearbyint(Half value) {
   return Half(std::nearbyint(static_cast<float>(value)));

@@ -97,32 +97,14 @@ using hypot =
 template <typename T>
 using lgamma = OclcFunction<Function::lgamma, 1,
                             calculate_lgamma<typename T::host_type>, T>;
-template <typename T>
-using log =
-    OclcFunction<Function::log, 1, calculate_log<typename T::host_type>, T>;
-template <typename T>
-using log2 =
-    OclcFunction<Function::log2, 1, calculate_log2<typename T::host_type>, T>;
-template <typename T>
-using log10 =
-    OclcFunction<Function::log10, 1, calculate_log10<typename T::host_type>, T>;
-template <typename T>
-using log1p =
-    OclcFunction<Function::log1p, 1, calculate_log1p<typename T::host_type>, T>;
-template <typename T>
-using logb =
-    OclcFunction<Function::logb, 1, calculate_logb<typename T::host_type>, T>;
-template <typename T>
-using powr =
-    OclcFunction<Function::powr, 2, calculate_powr<typename T::host_type>, T>;
 
-using Gentype = ca::TupleConcat<ca::TypesFloat, ca::TypesDouble>::type;
+using Gentype =
+    ca::TupleConcat<ca::TypesFloat, ca::TypesDouble, ca::TypesHalf>::type;
 
 using GentypeFunctions =
     FunctionProduct<Gentype, sin, sinh, sinpi, tan, tanh, tanpi, tgamma, trunc,
                     erfc, erf, exp, exp2, exp10, expm1, fabs, fdim, floor, fma,
-                    fmax, fmin, fmod, hypot, lgamma, log, log2, log10, log1p,
-                    logb, powr>::type;
+                    fmax, fmin, fmod, hypot, lgamma>::type;
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("functions", "", GentypeFunctions,
                                     test_name_with_function<TestType>) {

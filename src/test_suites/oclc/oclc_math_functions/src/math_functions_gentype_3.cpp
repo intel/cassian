@@ -28,6 +28,24 @@ namespace ca = cassian;
 
 namespace {
 
+template <typename T>
+using log =
+    OclcFunction<Function::log, 1, calculate_log<typename T::host_type>, T>;
+template <typename T>
+using log2 =
+    OclcFunction<Function::log2, 1, calculate_log2<typename T::host_type>, T>;
+template <typename T>
+using log10 =
+    OclcFunction<Function::log10, 1, calculate_log10<typename T::host_type>, T>;
+template <typename T>
+using log1p =
+    OclcFunction<Function::log1p, 1, calculate_log1p<typename T::host_type>, T>;
+template <typename T>
+using logb =
+    OclcFunction<Function::logb, 1, calculate_logb<typename T::host_type>, T>;
+template <typename T>
+using powr =
+    OclcFunction<Function::powr, 2, calculate_powr<typename T::host_type>, T>;
 template <typename T,
           typename INT = typename cassian::detail::OpenCLCInt<T::vector_size>>
 using ldexp = OclcFunction<
@@ -53,10 +71,11 @@ using pown =
                  calculate_pown<typename T::host_type, typename INT::host_type>,
                  T, AddressSpace::clc_global, T, INT>;
 
-using Gentype = ca::TupleConcat<ca::TypesFloat, ca::TypesDouble>::type;
+using Gentype =
+    ca::TupleConcat<ca::TypesFloat, ca::TypesDouble, ca::TypesHalf>::type;
 
-using GentypeFunctions =
-    FunctionProduct<Gentype, ldexp, nan, rootn, pown>::type;
+using GentypeFunctions = FunctionProduct<Gentype, log, log2, log10, log1p, logb,
+                                         powr, ldexp, nan, rootn, pown>::type;
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("functions", "", GentypeFunctions,
                                     test_name_with_function<TestType>) {

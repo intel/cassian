@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2024 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -81,6 +81,15 @@ public:
    * @returns value converted to T
    */
   template <typename T> explicit operator T() const { return cast<T>(); }
+
+  /**
+   * Assign operator.
+   */
+  template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+  Half &operator=(T value) {
+    *this = Half(static_cast<float>(value));
+    return *this;
+  }
 
   /**
    * Logical not operator.
@@ -693,9 +702,89 @@ Half sqrt(Half value);
  */
 Half nextafter(const Half from, const Half to);
 
+Half acos(Half value);
+
+Half acosh(Half value);
+
+Half sin(Half value);
+
+Half sinh(Half value);
+
+Half asin(Half value);
+
+Half asinh(Half value);
+
+Half tan(Half value);
+
+Half tanh(Half value);
+
+Half atan(Half value);
+
+Half atan2(Half value_a, Half value_b);
+
+Half atanh(Half value);
+
+Half cbrt(Half value);
+
+Half copysign(Half value_a, Half value_b);
+
+Half cos(Half value);
+
+Half cosh(Half value);
+
+Half fabs(Half value);
+
+Half tgamma(Half value);
+
+Half fmod(Half value_a, Half value_b);
+
+Half fmax(Half value_a, Half value_b);
+
+Half fmin(Half value_a, Half value_b);
+
+Half pow(Half value_a, Half value_b);
+
+Half pow(Half value_a, int value_b);
+
+Half remainder(Half value_a, Half value_b);
+
+Half rint(Half value);
+
 Half trunc(Half value);
 
 Half round(Half value);
+
+Half ilogb(Half value);
+
+Half erfc(Half value);
+
+Half erf(Half value);
+
+Half exp(Half value);
+
+Half exp2(Half value);
+
+Half expm1(Half value);
+
+Half fdim(Half value_a, Half value_b);
+
+Half fma(Half value_a, Half value_b, Half value_c);
+
+Half ldexp(Half value_a, int value_b);
+
+Half hypot(Half value_a, Half value_b);
+
+Half lgamma(Half value);
+
+Half log(Half value);
+
+Half log2(Half value);
+
+Half log10(Half value);
+
+Half log1p(Half value);
+
+Half logb(Half value);
 
 Half floor(Half value);
 

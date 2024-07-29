@@ -111,7 +111,8 @@ template <typename T>
 using rsqrt =
     OclcFunction<Function::rsqrt, 1, calculate_rsqrt<typename T::host_type>, T>;
 
-using Gentype = ca::TupleConcat<ca::TypesFloat, ca::TypesDouble>::type;
+using Gentype =
+    ca::TupleConcat<ca::TypesFloat, ca::TypesDouble, ca::TypesHalf>::type;
 
 using GentypeFunctions =
     FunctionProduct<Gentype, acos, acosh, acospi, asin, asinh, asinpi, atan,

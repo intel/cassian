@@ -173,39 +173,44 @@ template <class T> constexpr auto get_gentype_values() {
 
   MathInputValues<T> values = {};
   if constexpr (T::function == Function::acos) {
-    values.add_random_case(generate_value<input_type_1>(-1, 1));
+    values.add_random_case(
+        generate_value<input_type_1>(scalar_type_1(-1), scalar_type_1(1)));
   } else if constexpr (T::function == Function::asinpi) {
     const auto higher_than_one = generate_value<input_type_1>(
         scalar_type_1(1.0), std::numeric_limits<scalar_type_1>::max());
-    values.add_random_case(generate_value<input_type_1>(-1, 1));
-    values.add_edge_case(input_type_1(0.0F));
-    values.add_edge_case(input_type_1(-0.0F));
+    values.add_random_case(
+        generate_value<input_type_1>(scalar_type_1(-1), scalar_type_1(1)));
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)));
     values.add_edge_case(higher_than_one);
   } else if constexpr (T::function == Function::acosh) {
     values.add_random_case(generate_value<input_type_1>(
-        1, std::numeric_limits<scalar_type_1>::max()));
+        scalar_type_1(1), std::numeric_limits<scalar_type_1>::max()));
   } else if constexpr (T::function == Function::acospi) {
     const auto higher_than_one = generate_value<input_type_1>(
         scalar_type_1(1.0), std::numeric_limits<scalar_type_1>::max(),
         {scalar_type_1(1.0)});
-    values.add_random_case(generate_value<input_type_1>(-1, 1));
-    values.add_edge_case(input_type_1(1));
+    values.add_random_case(
+        generate_value<input_type_1>(scalar_type_1(-1), scalar_type_1(1)));
+    values.add_edge_case(input_type_1(scalar_type_1(1)));
     values.add_edge_case(higher_than_one);
   } else if constexpr (T::function == Function::cospi) {
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(input_type_1(0));
-    values.add_edge_case(input_type_1(-0));
-    values.add_edge_case(
-        input_type_1(std::ceil(generate_value<scalar_type_1>()) + 0.5F));
+    values.add_edge_case(input_type_1(scalar_type_1(0)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0)));
+    values.add_edge_case(input_type_1(
+        ca::ceil(generate_value<scalar_type_1>() + scalar_type_1(0.5F))));
     values.add_edge_case(
         input_type_1(std::numeric_limits<scalar_type_1>::infinity()));
   } else if constexpr (T::function == Function::ceil) {
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(generate_value<input_type_1>(-1, 0, {-1, 0}));
+    values.add_edge_case(
+        generate_value<input_type_1>(scalar_type_1(-1), scalar_type_1(0),
+                                     {scalar_type_1(-1), scalar_type_1(0)}));
   } else if constexpr (T::function == Function::atanpi) {
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(input_type_1(0));
-    values.add_edge_case(input_type_1(-0));
+    values.add_edge_case(input_type_1(scalar_type_1(0)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0)));
     values.add_edge_case(
         input_type_1(std::numeric_limits<input_type_1>::infinity()));
   } else if constexpr (T::function == Function::atan2) {
@@ -223,18 +228,22 @@ template <class T> constexpr auto get_gentype_values() {
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
-    values.add_edge_case(input_type_1(0), input_type_2(0.0F));
-    values.add_edge_case(input_type_1(0), input_type_2(-0.0F));
-    values.add_edge_case(input_type_1(0), lower_than_zero);
-    values.add_edge_case(input_type_1(0), higher_than_zero);
-    values.add_edge_case(input_type_1(-0), input_type_2(0.0F));
-    values.add_edge_case(input_type_1(-0), input_type_2(-0.0F));
-    values.add_edge_case(input_type_1(-0), lower_than_zero);
-    values.add_edge_case(input_type_1(-0), higher_than_zero);
-    values.add_edge_case(lower_than_zero, input_type_2(0));
-    values.add_edge_case(higher_than_zero, input_type_2(0));
-    values.add_edge_case(lower_than_zero, input_type_2(-0));
-    values.add_edge_case(higher_than_zero, input_type_2(-0));
+    values.add_edge_case(input_type_1(scalar_type_1(0)),
+                         input_type_2(scalar_type_1(0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(0)),
+                         input_type_2(scalar_type_1(-0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(0)), lower_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(0)), higher_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(-0)),
+                         input_type_2(scalar_type_1(0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0)),
+                         input_type_2(scalar_type_1(-0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0)), lower_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(-0)), higher_than_zero);
+    values.add_edge_case(lower_than_zero, input_type_2(scalar_type_1(0)));
+    values.add_edge_case(higher_than_zero, input_type_2(scalar_type_1(0)));
+    values.add_edge_case(lower_than_zero, input_type_2(scalar_type_1(-0)));
+    values.add_edge_case(higher_than_zero, input_type_2(scalar_type_1(-0)));
     values.add_edge_case(higher_than_zero, -infinity);
     values.add_edge_case(higher_than_zero, infinity);
     values.add_edge_case(infinity, generate_value<input_type_2>());
@@ -244,11 +253,13 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
   } else if constexpr (T::function == Function::atanh) {
-    values.add_random_case(generate_value<input_type_1>(-1, 1, {-1, 1}));
+    values.add_random_case(
+        generate_value<input_type_1>(scalar_type_1(-1), scalar_type_1(1),
+                                     {scalar_type_1(-1), scalar_type_1(1)}));
   } else if constexpr (T::function == Function::sqrt ||
                        T::function == Function::half_sqrt) {
     values.add_random_case(generate_value<input_type_1>(
-        0, std::numeric_limits<scalar_type_1>::max()));
+        scalar_type_1(0), std::numeric_limits<scalar_type_1>::max()));
   } else if constexpr (T::function == Function::fma ||
                        T::function == Function::mad) {
     values.add_random_case(generate_value<input_type_1>(),
@@ -284,10 +295,10 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
     values.add_edge_case(
-        input_type_1(0.0F),
+        input_type_1(scalar_type_1(0.0F)),
         input_type_2(std::numeric_limits<scalar_type_2>::quiet_NaN()));
     values.add_edge_case(
-        input_type_1(-0.0F),
+        input_type_1(scalar_type_1(0.0F)),
         input_type_2(std::numeric_limits<scalar_type_2>::quiet_NaN()));
   } else if constexpr (T::function == Function::exp10 ||
                        T::function == Function::half_exp10) {
@@ -305,16 +316,16 @@ template <class T> constexpr auto get_gentype_values() {
         {scalar_type_1(0)});
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
-    values.add_edge_case(input_type_1(0.0F), higher_than_zero);
-    values.add_edge_case(input_type_1(0.0F), lower_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), higher_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), lower_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)), higher_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)), lower_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)), higher_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)), lower_than_zero);
   } else if constexpr (T::function == Function::pow) {
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(input_type_1(0.0F), -infinity);
-    values.add_edge_case(input_type_1(-0.0F), -infinity);
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)), -infinity);
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)), -infinity);
   } else if constexpr (T::function == Function::powr ||
                        T::function == Function::half_powr) {
 
@@ -336,34 +347,38 @@ template <class T> constexpr auto get_gentype_values() {
         generate_value<input_type_1>(scalar_type_1(0),
                                      std::numeric_limits<scalar_type_1>::max(),
                                      {scalar_type_1(0)}),
-        input_type_2(0.0F));
+        input_type_2(scalar_type_1(0.0F)));
     values.add_edge_case(
         generate_value<input_type_1>(scalar_type_1(0),
                                      std::numeric_limits<scalar_type_1>::max(),
                                      {scalar_type_1(0)}),
-        input_type_2(-0.0F));
+        input_type_2(scalar_type_1(-0.0F)));
     values.add_edge_case(
-        input_type_1(0.0F),
+        input_type_1(scalar_type_1(0.0F)),
         generate_value<input_type_2>(-std::numeric_limits<scalar_type_2>::max(),
                                      scalar_type_2(0), {scalar_type_2(0)}));
     values.add_edge_case(
-        input_type_1(-0.0F),
+        input_type_1(scalar_type_1(-0.0F)),
         generate_value<input_type_2>(-std::numeric_limits<scalar_type_2>::max(),
                                      scalar_type_2(0), {scalar_type_2(0)}));
-    values.add_edge_case(input_type_1(0.0F), -infinity);
-    values.add_edge_case(input_type_1(-0.0F), -infinity);
-    values.add_edge_case(input_type_1(0.0F), higher_than_zero);
-    values.add_edge_case(input_type_1(-0.0F), higher_than_zero);
-    values.add_edge_case(input_type_1(1.0F), finite);
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)), -infinity);
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)), -infinity);
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)), higher_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)), higher_than_zero);
+    values.add_edge_case(input_type_1(scalar_type_1(1.0F)), finite);
     values.add_edge_case(higher_than_zero, generate_value<input_type_2>());
-    values.add_edge_case(input_type_1(-0.0F), input_type_2(0.0F));
-    values.add_edge_case(input_type_1(0.0F), input_type_2(-0.0F));
-    values.add_edge_case(input_type_1(-0.0F), input_type_2(-0.0F));
-    values.add_edge_case(input_type_1(0.0F), input_type_2(0.0F));
-    values.add_edge_case(infinity, input_type_2(0.0F));
-    values.add_edge_case(infinity, input_type_2(-0.0F));
-    values.add_edge_case(input_type_1(1.0F), -infinity);
-    values.add_edge_case(input_type_1(1.0F), infinity);
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
+                         input_type_2(scalar_type_1(0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
+                         input_type_2(scalar_type_1(-0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
+                         input_type_2(scalar_type_1(-0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
+                         input_type_2(scalar_type_1(0.0F)));
+    values.add_edge_case(infinity, input_type_2(scalar_type_1(0.0F)));
+    values.add_edge_case(infinity, input_type_2(scalar_type_1(-0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(1.0F)), -infinity);
+    values.add_edge_case(input_type_1(scalar_type_1(1.0F)), infinity);
     values.add_edge_case(
         generate_value<input_type_1>(),
         input_type_2(std::numeric_limits<scalar_type_2>::quiet_NaN()));
@@ -374,7 +389,7 @@ template <class T> constexpr auto get_gentype_values() {
     const auto less_than_zero = generate_value<input_type_1>(
         scalar_type_1(-0.5), scalar_type_1(0), {scalar_type_1(0)});
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(input_type_1(-0.5F));
+    values.add_edge_case(input_type_1(scalar_type_1(-0.5F)));
     values.add_edge_case(less_than_zero);
   } else if constexpr (T::function == Function::round) {
     const auto less_than_zero =
@@ -386,16 +401,16 @@ template <class T> constexpr auto get_gentype_values() {
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     const auto int_higher_than_zero =
-        input_type_1(std::ceil(generate_value<scalar_type_1>(
+        input_type_1(ca::ceil(generate_value<scalar_type_1>(
             scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
             {scalar_type_1(0)})));
     const auto int_lower_than_zero =
-        input_type_1(std::ceil(generate_value<scalar_type_1>(
+        input_type_1(ca::ceil(generate_value<scalar_type_1>(
             std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(-1))));
 
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(input_type_1(0.0F));
-    values.add_edge_case(input_type_1(-0.0F));
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)));
     values.add_edge_case(int_lower_than_zero);
     values.add_edge_case(int_higher_than_zero);
     values.add_edge_case(infinity);
@@ -420,18 +435,18 @@ template <class T> constexpr auto get_gentype_values() {
         input_type_1(generate_value<int>() * scalar_type_1(2));
     const auto odd_number = input_type_1(
         generate_value<int>() * scalar_type_1(2) + scalar_type_1(1));
-    values.add_random_case(
-        generate_value<input_type_1>(-0.5 + 0.05, 0.5 - 0.05));
-    values.add_edge_case(input_type_1(0.0F));
-    values.add_edge_case(input_type_1(1.0F));
+    values.add_random_case(generate_value<input_type_1>(
+        scalar_type_1(-0.5 + 0.05), scalar_type_1(0.5 - 0.05)));
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(1.0F)));
     values.add_edge_case(infinity);
     values.add_edge_case(even_number);
     values.add_edge_case(odd_number);
-    values.add_edge_case(even_number + input_type_1(0.5F));
-    values.add_edge_case(odd_number + input_type_1(0.5F));
+    values.add_edge_case(even_number + input_type_1(scalar_type_1(0.5F)));
+    values.add_edge_case(odd_number + input_type_1(scalar_type_1(0.5F)));
   } else if constexpr (T::function == Function::lgamma_r) {
     const auto int_lower_than_zero =
-        input_type_1(std::ceil(generate_value<scalar_type_1>(
+        input_type_1(ca::ceil(generate_value<scalar_type_1>(
             std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(-1))));
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
@@ -440,7 +455,7 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(int_lower_than_zero, generate_value<input_type_2>());
   } else if constexpr (T::function == Function::trunc) {
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(input_type_1(0.5F));
+    values.add_edge_case(input_type_1(scalar_type_1(0.5F)));
   } else if constexpr (T::function == Function::sincos) {
     values.add_random_case(generate_value<input_type_1>(-1, 1),
                            generate_value<input_type_2>(-1, 1));
@@ -475,33 +490,33 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
     values.add_edge_case(generate_value<input_type_1>(), input_type_2(0.0F));
-    values.add_edge_case(input_type_1(0), input_type_2(0));
+    values.add_edge_case(input_type_1(scalar_type_1(0)), input_type_2(0));
     values.add_edge_case(
         input_type_1(std::numeric_limits<scalar_type_1>::quiet_NaN()),
         input_type_2(0));
     values.add_edge_case(input_type_1(infinity), input_type_2(0));
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          (lower_than_zero - (lower_than_zero % 2)) +
                              1); // odd number
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          lower_than_zero -
                              (lower_than_zero % 2)); // even number
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          higher_than_zero -
                              (higher_than_zero % 2)); // even number
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          (higher_than_zero - (higher_than_zero % 2)) +
                              1); // odd number
-    values.add_edge_case(input_type_1(-0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
                          (lower_than_zero - (lower_than_zero % 2)) +
                              1); // odd number
-    values.add_edge_case(input_type_1(-0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
                          lower_than_zero -
                              (lower_than_zero % 2)); // even number
-    values.add_edge_case(input_type_1(-0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
                          higher_than_zero -
                              (higher_than_zero % 2)); // even number
-    values.add_edge_case(input_type_1(-0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
                          (higher_than_zero - (higher_than_zero % 2)) +
                              1); // odd number
   } else if constexpr (T::function == Function::rootn) {
@@ -517,25 +532,25 @@ template <class T> constexpr auto get_gentype_values() {
     const auto to_even = generate_value<input_type_2>();
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          lower_than_zero -
                              (lower_than_zero % 2)); // even number v
-    values.add_edge_case(input_type_1(-0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
                          lower_than_zero -
                              (lower_than_zero % 2)); // even number v
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          (lower_than_zero - (lower_than_zero % 2)) +
                              1); // odd number v
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          higher_than_zero -
                              (higher_than_zero % 2)); // even number v
-    values.add_edge_case(input_type_1(-0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
                          higher_than_zero -
                              (higher_than_zero % 2)); // even number v
-    values.add_edge_case(input_type_1(0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)),
                          (higher_than_zero - (higher_than_zero % 2)) +
                              1); // odd number v
-    values.add_edge_case(input_type_1(-0.0F),
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)),
                          (higher_than_zero - (higher_than_zero % 2)) +
                              1); // odd number v
     values.add_edge_case(lower_than_zero_1, to_even - (to_even % 2));
@@ -591,11 +606,11 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::frexp:
   case Function::remquo:
   case Function::modf:
-    return std::vector<scalar_type>(work_size, 0.0F);
+    return std::vector<scalar_type>(work_size, scalar_type(0.0F));
   case Function::log1p:
   case Function::cbrt:
   case Function::rsqrt: {
-    constexpr scalar_type ulp = 2.0F * epsilon;
+    scalar_type ulp = scalar_type(2.0F * epsilon);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -609,7 +624,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::lgamma:
   case Function::log:
   case Function::log2: {
-    constexpr scalar_type ulp = 3.0F * epsilon;
+    scalar_type ulp = scalar_type(3.0F * epsilon);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -625,7 +640,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::sin:
   case Function::sinpi:
   case Function::sincos: {
-    constexpr scalar_type ulp = 4.0F * epsilon;
+    scalar_type ulp = scalar_type(4.0F * epsilon);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -636,14 +651,14 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::atanpi:
   case Function::tan:
   case Function::tanh: {
-    constexpr scalar_type ulp = 5.0F * epsilon;
+    scalar_type ulp = scalar_type(5.0F * epsilon);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
   case Function::atan2:
   case Function::atan2pi:
   case Function::tanpi: {
-    constexpr scalar_type ulp = 6.0F * epsilon;
+    scalar_type ulp = scalar_type(6.0F * epsilon);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -654,7 +669,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::pown:
   case Function::powr:
   case Function::tgamma: {
-    constexpr scalar_type ulp = 16.0F * epsilon;
+    scalar_type ulp = scalar_type(16.0F * epsilon);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -687,7 +702,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::half_tan:
   case Function::half_sqrt:
   case Function::lgamma_r: {
-    constexpr scalar_type ulp = 8192.0F * epsilon;
+    scalar_type ulp = scalar_type(8192.0F * epsilon);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
