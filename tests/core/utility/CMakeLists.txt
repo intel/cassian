@@ -4,7 +4,8 @@
 # SPDX-License-Identifier: MIT
 #
 
-add_executable(test_utility src/main.cpp src/utility.cpp src/math.cpp)
+add_executable(test_utility src/main.cpp src/utility.cpp src/math.cpp
+                            src/comparators.cpp)
 
 target_include_directories(
   test_utility PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)

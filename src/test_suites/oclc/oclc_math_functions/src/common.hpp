@@ -37,14 +37,6 @@ namespace ca = cassian;
 
 int suggest_work_size(const std::string &type);
 
-enum class RequirementType : uint32_t {
-  error_value,
-  ulp_value,
-  value_range,
-  any,
-  undefined
-};
-
 class UnknownFunctionException : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
@@ -75,21 +67,6 @@ T generate_value(const ca::scalar_type_v<T> &min,
 template <typename T> T generate_value() {
   const auto max = std::numeric_limits<ca::scalar_type_v<T>>::max();
   return ca::generate_value<T>(-max, max, 0);
-}
-
-template <typename T> T ulp_distance(const T &a, const T &b) {
-  if (a == b) {
-    return static_cast<T>(0);
-  }
-  if constexpr (!std::is_integral_v<T>) {
-    if (ca::isnan(a) || ca::isnan(b)) {
-      return std::numeric_limits<T>::quiet_NaN();
-    }
-    if (ca::isinf(a) || ca::isinf(b)) {
-      return std::numeric_limits<T>::infinity();
-    }
-  }
-  return ca::abs(a - b);
 }
 
 template <typename T>
@@ -195,17 +172,6 @@ auto randomize_input(const std::vector<T> &input) {
         input[j - 1], std::numeric_limits<ca::scalar_type_v<T>>::max());
   }
   return randomized_input;
-}
-
-template <typename T> std::string input_to_string(const std::vector<T> &input) {
-  std::stringstream ss;
-  ss << "{";
-  for (const auto &input_val : input) {
-    ss << ca::to_string<T>(input_val) << ", ";
-  }
-  ss.seekp(-2, std::ios_base::end);
-  ss << "}";
-  return ss.str();
 }
 
 template <typename T> bool powr_special_case(T input_a, T input_b) {

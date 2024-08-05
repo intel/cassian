@@ -10,6 +10,7 @@
 
 #include <cassian/fp_types/math.hpp>
 #include <cassian/logging/logging.hpp>
+#include <cassian/utility/comparators.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 #include <cmath>
@@ -610,7 +611,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::log1p:
   case Function::cbrt:
   case Function::rsqrt: {
-    scalar_type ulp = scalar_type(2.0F * epsilon);
+    scalar_type ulp = scalar_type(2.0F);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -624,7 +625,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::lgamma:
   case Function::log:
   case Function::log2: {
-    scalar_type ulp = scalar_type(3.0F * epsilon);
+    scalar_type ulp = scalar_type(3.0F);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -640,7 +641,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::sin:
   case Function::sinpi:
   case Function::sincos: {
-    scalar_type ulp = scalar_type(4.0F * epsilon);
+    scalar_type ulp = scalar_type(4.0F);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -651,14 +652,14 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::atanpi:
   case Function::tan:
   case Function::tanh: {
-    scalar_type ulp = scalar_type(5.0F * epsilon);
+    scalar_type ulp = scalar_type(5.0F);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
   case Function::atan2:
   case Function::atan2pi:
   case Function::tanpi: {
-    scalar_type ulp = scalar_type(6.0F * epsilon);
+    scalar_type ulp = scalar_type(6.0F);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -669,7 +670,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::pown:
   case Function::powr:
   case Function::tgamma: {
-    scalar_type ulp = scalar_type(16.0F * epsilon);
+    scalar_type ulp = scalar_type(16.0F);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -702,7 +703,7 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
   case Function::half_tan:
   case Function::half_sqrt:
   case Function::lgamma_r: {
-    scalar_type ulp = scalar_type(8192.0F * epsilon);
+    scalar_type ulp = scalar_type(8192.0F);
     std::vector<scalar_type> ulp_values(work_size, ulp);
     return ulp_values;
   }
@@ -711,12 +712,6 @@ std::vector<cassian::scalar_type_v<T>> get_ulp_values(const Function &function,
         Catch::StringMaker<Function>::convert(function) + " uninitialized");
   }
 }
-
-template <typename T> struct PrecisionRequirement {
-  RequirementType type = RequirementType::ulp_value;
-  T value = static_cast<T>(0);
-  T value2 = static_cast<T>(0);
-};
 
 template <typename OUTPUT_TYPE, typename INPUT_TYPE_1, typename INPUT_TYPE_2>
 std::vector<PrecisionRequirement<cassian::scalar_type_v<OUTPUT_TYPE>>>
@@ -735,7 +730,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::acos: {
     PrecisionRequirement<scalar_type_output> requirement;
     requirement.type = RequirementType::ulp_value;
-    requirement.value = 4096.0F * epsilon;
+    requirement.value = 4096.0F;
     requirements.emplace_back(requirement);
     if constexpr (cassian::is_vector_v<INPUT_TYPE_1>) {
       for (auto k = 1; k < INPUT_TYPE_1::vector_size; k++) {
@@ -752,12 +747,11 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
 
     if constexpr (cassian::is_vector_v<INPUT_TYPE_1>) {
       for (auto k = 0; k < INPUT_TYPE_1::vector_size; k++) {
-        requirement.value =
-            (3.0F + std::floor(std::fabs(2 * input_a[k]))) * epsilon;
+        requirement.value = (3.0F + std::floor(std::fabs(2 * input_a[k])));
         requirements.emplace_back(requirement);
       }
     } else {
-      requirement.value = (3.0F + std::floor(std::fabs(2 * input_a))) * epsilon;
+      requirement.value = (3.0F + std::floor(std::fabs(2 * input_a)));
       requirements.emplace_back(requirement);
     }
     return requirements;
@@ -778,7 +772,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::acosh: {
     PrecisionRequirement<scalar_type> requirement;
     requirement.type = RequirementType::ulp_value;
-    requirement.value = 8192.0F * epsilon;
+    requirement.value = 8192.0F;
     requirements.emplace_back(requirement);
     if constexpr (cassian::is_vector_v<INPUT_TYPE_1>) {
       for (auto k = 1; k < INPUT_TYPE_1::vector_size; k++) {
@@ -798,7 +792,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
         requirement.value = std::pow(2.0F, -21);
       } else {
         requirement.type = RequirementType::ulp_value;
-        requirement.value = 3.0F * epsilon;
+        requirement.value = 3.0F;
       }
       requirements.emplace_back(requirement);
     };
@@ -819,7 +813,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
       PrecisionRequirement<scalar_type> requirement;
       if (x >= -1 && x <= 1) {
         requirement.type = RequirementType::ulp_value;
-        requirement.value = 8192.0F * epsilon;
+        requirement.value = 8192.0F;
       } else {
         requirement.type = RequirementType::undefined;
       }
@@ -889,7 +883,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
       PrecisionRequirement<scalar_type> requirement;
       if (x >= -88 && x <= 88) {
         requirement.type = RequirementType::ulp_value;
-        requirement.value = 8192.0F * epsilon;
+        requirement.value = 8192.0F;
       } else {
         requirement.type = RequirementType::undefined;
       }
@@ -917,7 +911,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
         requirement.type = RequirementType::undefined;
       } else {
         requirement.type = RequirementType::ulp_value;
-        requirement.value = 8192.0F * epsilon;
+        requirement.value = 8192.0F;
       }
       requirements.emplace_back(requirement);
     };
@@ -949,7 +943,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
           requirement.type = RequirementType::undefined;
         } else {
           requirement.type = RequirementType::ulp_value;
-          requirement.value = 8192.0F * epsilon;
+          requirement.value = 8192.0F;
         }
       }
       requirements.emplace_back(requirement);
@@ -977,7 +971,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
         requirement.type = RequirementType::undefined;
       } else {
         requirement.type = RequirementType::ulp_value;
-        requirement.value = 8192.0F * epsilon;
+        requirement.value = 8192.0F;
       }
       requirements.emplace_back(requirement);
     };
@@ -1005,7 +999,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
           requirement.type = RequirementType::undefined;
         } else {
           requirement.type = RequirementType::ulp_value;
-          requirement.value = 8192.0F * epsilon;
+          requirement.value = 8192.0F;
         }
       } else {
         requirement.type = RequirementType::undefined;
@@ -1032,216 +1026,6 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
         Catch::StringMaker<Function>::convert(function) + " uninitialized");
   }
 }
-
-template <typename TYPE> bool match_range(TYPE result, TYPE start, TYPE end) {
-  return result >= start && result <= end;
-}
-
-template <typename T, typename cassian::EnableIfIsScalar<T> = 0>
-bool match_results_error_value(const T &result, const T &reference,
-                               T error_value) {
-
-  if constexpr (!std::is_integral_v<T>) {
-    if (std::isnan(result) && std::isnan(reference)) {
-      return true;
-    }
-  }
-  cassian::logging::debug()
-      << "result = " << cassian::to_string(result)
-      << "reference = " << cassian::to_string(reference)
-      << "error_value = " << cassian::to_string(error_value) << '\n';
-  return std::fabs(result - reference) <= error_value;
-}
-
-template <typename T, typename cassian::EnableIfIsVector<T> = 0>
-bool match_results_error_value(const T &result, const T &reference,
-                               const cassian::scalar_type_v<T> error_value) {
-
-  for (auto i = 0UL; i < static_cast<uint32_t>(result.size()); i++) {
-    if (!match_results_error_value(result[i], reference[i], error_value)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-template <typename T, typename cassian::EnableIfIsScalar<T> = 0>
-bool match_results(const T &result, const T &reference, const T ulp_value) {
-  if constexpr (!std::is_integral_v<T>) {
-    if (cassian::isnan(result) && cassian::isnan(reference)) {
-      return true;
-    }
-  }
-  const auto ulp_dist = ulp_distance(result, reference);
-  return ulp_dist <= cassian::abs(result + reference) * ulp_value ||
-         ulp_dist < std::numeric_limits<T>::min();
-}
-
-template <typename T, typename cassian::EnableIfIsVector<T> = 0>
-bool match_results(const T &result, const T &reference,
-                   const cassian::scalar_type_v<T> ulp_value) {
-  for (auto i = 0UL; i < static_cast<uint32_t>(result.size()); i++) {
-    if (!match_results(result[i], reference[i], ulp_value)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-template <class OUTPUT_TYPE>
-class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
-  using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
-  std::vector<OUTPUT_TYPE> reference;
-  std::vector<scalar_type> ulp_values;
-  std::vector<OUTPUT_TYPE> result;
-
-public:
-  UlpComparator(const std::vector<OUTPUT_TYPE> &result,
-                const std::vector<OUTPUT_TYPE> &reference,
-                const std::vector<scalar_type> &ulp_values)
-      : reference(reference), result(result), ulp_values(ulp_values) {}
-
-  bool match(std::vector<OUTPUT_TYPE> const &result) const override {
-    for (auto i = 0U; i < result.size(); i++) {
-      if (!match_results(result[i], reference[i], ulp_values[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-  std::string describe() const override {
-    auto ulp_diffs = result;
-    std::stringstream os;
-    os.precision(std::numeric_limits<double>::max_digits10);
-    os << '{';
-    for (auto i = 0; i < result.size(); i++) {
-      if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
-        os << '{';
-        for (int j = 0; j < result[i].size(); j++) {
-          os << ulp_distance(result[i][j], reference[i][j]) << ", ";
-        }
-        os << '}';
-      } else {
-        os << ulp_distance(result[i], reference[i]) << ", ";
-      }
-    }
-    os << '}';
-    return "\nreference: " + input_to_string<OUTPUT_TYPE>(reference) +
-           "\nULP distance: " + os.str();
-  }
-};
-
-template <typename OUTPUT_TYPE, typename... INPUT_TYPES>
-class PrecisionComparator : public Catch::MatcherBase<OUTPUT_TYPE> {
-  OUTPUT_TYPE reference;
-  std::tuple<INPUT_TYPES...> inputs;
-  const std::vector<PrecisionRequirement<ca::scalar_type_v<OUTPUT_TYPE>>>
-      &requirement;
-
-public:
-  PrecisionComparator(
-      const OUTPUT_TYPE &reference,
-      const std::vector<PrecisionRequirement<ca::scalar_type_v<OUTPUT_TYPE>>>
-          &requirement,
-      INPUT_TYPES... inputs)
-      : reference(reference), requirement(requirement), inputs(inputs...) {
-    if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
-      assert(reference.size() == requirement.size());
-    } else {
-      assert(requirement.size() == 1);
-    }
-  }
-
-  bool match(const OUTPUT_TYPE &result) const override {
-    for (int req = 0; req < requirement.size(); req++) {
-      if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
-        switch (requirement[req].type) {
-        case RequirementType::error_value:
-          return match_results_error_value(result[req], reference[req],
-                                           requirement[req].value);
-        case RequirementType::ulp_value:
-          return match_results(result[req], reference[req],
-                               requirement[req].value);
-        case RequirementType::value_range:
-          return match_range(result[req], reference[req],
-                             requirement[req].value2);
-        case RequirementType::any:
-        case RequirementType::undefined:
-          return true;
-
-        default:
-          return false;
-        }
-      } else {
-        switch (requirement[0].type) {
-        case RequirementType::error_value:
-          return match_results_error_value(result, reference,
-                                           requirement[0].value);
-        case RequirementType::ulp_value:
-          return match_results(result, reference, requirement[0].value);
-        case RequirementType::value_range:
-          return match_range(result, requirement[0].value,
-                             requirement[0].value2);
-        case RequirementType::any:
-        case RequirementType::undefined:
-          return true;
-
-        default:
-          return false;
-        }
-      }
-    }
-  }
-
-  std::string describe() const override {
-    std::string description;
-    for (int req = 0; req < requirement.size(); req++) {
-      switch (requirement[req].type) {
-      case RequirementType::value_range:
-        description += "In Range {" + ca::to_string(requirement[req].value) +
-                       ", " + ca::to_string(requirement[req].value2) + "}";
-        break;
-      case RequirementType::error_value:
-        if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
-          description += "\nReference: " + ca::to_string(reference[req]);
-        } else {
-          description += "\nReference: " + ca::to_string(reference);
-        }
-        description +=
-            "\n Absolute Error within " + ca::to_string(requirement[req].value);
-        break;
-      case RequirementType::ulp_value:
-        if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
-          description += "\nReference: " + ca::to_string(reference[req]);
-        } else {
-          description += "\nReference: " + ca::to_string(reference);
-        }
-        description +=
-            "\n ULP Error within " + ca::to_string(requirement[req].value);
-        break;
-      case RequirementType::any:
-        description += "\nAny Value Pass";
-        break;
-      default:
-      case RequirementType::undefined:
-        description += "\nRequirement Undefined";
-        break;
-      }
-      description += "\n";
-    }
-    description +=
-        "\n" + inputs_to_string(
-                   inputs, std::make_index_sequence<sizeof...(INPUT_TYPES)>());
-    return description;
-  }
-
-private:
-  template <size_t... I>
-  std::string inputs_to_string(std::tuple<INPUT_TYPES...> in,
-                               std::index_sequence<I...> /*unused*/) const {
-    return "Inputs: " + ((ca::to_string(std::get<I>(in)) + ",") + ...);
-  }
-};
 
 template <typename T_1, typename T_2, typename T_3> struct Input {
   std::vector<T_1> input_a;

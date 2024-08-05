@@ -10,7 +10,8 @@ list(
   "include/cassian/utility/utility.hpp"
   "include/cassian/utility/version.hpp"
   "include/cassian/utility/metaprogramming.hpp"
-  "include/cassian/utility/math.hpp")
+  "include/cassian/utility/math.hpp"
+  "include/cassian/utility/comparators.hpp")
 list(APPEND PRIVATE_HEADERS "src/version_config.hpp")
 list(APPEND SOURCES "src/utility.cpp" "src/version.cpp"
      "${PROJECT_BINARY_DIR}/generated/version_config.cpp")
@@ -29,8 +30,8 @@ target_include_directories(
 
 target_link_libraries(
   utility
-  PUBLIC cassian::vector
-  PRIVATE cassian::logging)
+  PUBLIC cassian::vector cassian::logging
+  PRIVATE Catch2::Catch2)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION
                                                  VERSION_LESS 9.1)
