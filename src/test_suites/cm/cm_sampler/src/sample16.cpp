@@ -359,7 +359,7 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
     } else {
       REQUIRE_THAT(ref, Catch::Equals(res));
     }
-    REQUIRE(nullmask[0] == 0);
+    REQUIRE(nullmask[0] == 0xffffU);
   }
 }
 
