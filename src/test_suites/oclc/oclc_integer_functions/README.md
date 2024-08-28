@@ -12,7 +12,7 @@ OpenCL C functionality.
 * Goal: Verify that device output value from integer functions are the same as values calculated on the host.
 * Description: Get the device return value from OpenCL C function and compare it with the value returned on the host.
 * Tested functions:
-  * `abs`, `abs_diff`, `add_sat`, `hadd`, `rhadd`, `clamp`, `clz`, `ctz`(TODO), `mad_hi`(TODO), `mad_sat`(TODO), `max`(TODO), `min`(TODO), `mul_hi`(TODO), `rotate`(TODO), `sub_sat`(TODO), `upsample`, `popcount`(TODO), `mad24`(TODO), `mul24`(TODO),
+  * `abs`, `abs_diff`, `add_sat`, `hadd`, `rhadd`, `clamp`, `clz`, `ctz`, `mad_hi`, `mad_sat`, `max`, `min`, `mul_hi`, `rotate`, `sub_sat`, `upsample`, `popcount`, `mad24`, `mul24`,
 * Input values(TODO: implement more granular logic):
   * Simple input from domain
 
