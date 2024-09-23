@@ -27,7 +27,7 @@ extern "C" _GENX_MAIN_ void kernel(svmptr_t out [[type("svmptr_t")]],
   cm_svm_block_read(ubuf, u);
   cm_svm_block_read(vbuf, v);
 
-  vector<int16_t, 1> nullmask;
+  vector<uint16_t, 1> nullmask;
 
   sample16(result, nullmask, channel_mask, image, sampler, u, v);
 
