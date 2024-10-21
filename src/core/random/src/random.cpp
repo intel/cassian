@@ -76,8 +76,14 @@ float generate_value<float>(const float min, const float max, const int seed) {
     }
   }
 
-  std::uniform_real_distribution<float> distribution(min2, max2);
-  return distribution(engine);
+  constexpr int64_t precision = static_cast<int64_t>(1e7);
+  const int64_t int_min = static_cast<int64_t>(min2 * precision);
+  const int64_t int_max = static_cast<int64_t>(max2 * precision);
+
+  std::uniform_int_distribution<int64_t> distribution(int_min, int_max);
+  int64_t random_int = distribution(engine);
+
+  return static_cast<float>(random_int) / precision;
 }
 
 template <>
@@ -127,8 +133,14 @@ double generate_value<double>(const double min, const double max,
     }
   }
 
-  std::uniform_real_distribution<double> distribution(min2, max2);
-  return distribution(engine);
+  constexpr int64_t precision = static_cast<int64_t>(1e15);
+  const int64_t int_min = static_cast<int64_t>(min2 * precision);
+  const int64_t int_max = static_cast<int64_t>(max2 * precision);
+
+  std::uniform_int_distribution<int64_t> distribution(int_min, int_max);
+  int64_t random_int = distribution(engine);
+
+  return static_cast<double>(random_int) / precision;
 }
 
 template <>
