@@ -61,23 +61,21 @@ float generate_value<float>(const float min, const float max, const int seed) {
     return min;
   }
 
-  float min2 = min;
-  float max2 = max;
+  std::uniform_int_distribution<uint32_t> distribution(0, UINT32_MAX);
+  uint32_t random_bits = distribution(engine);
 
-  if (max - min > std::numeric_limits<float>::max()) {
-    // Divide the range into two sub-ranges
-    const float mid_point = min2 / 2.0F + max2 / 2.0F;
-    std::uniform_int_distribution<int> choose_range(0, 1);
-
-    if (choose_range(engine) == 0) {
-      max2 = mid_point;
-    } else {
-      min2 = mid_point;
-    }
+  float random_float =
+      static_cast<float>(random_bits) / static_cast<float>(UINT32_MAX);
+  float result = 0.0F;
+  if (min < 0 && max > 0) {
+    float positive_part = random_float * max;
+    float negative_part = (1.0F - random_float) * min;
+    result = positive_part + negative_part;
+  } else {
+    result = min + random_float * (max - min);
   }
 
-  std::uniform_real_distribution<float> distribution(min2, max2);
-  return distribution(engine);
+  return result;
 }
 
 template <>
@@ -112,23 +110,21 @@ double generate_value<double>(const double min, const double max,
     return min;
   }
 
-  double min2 = min;
-  double max2 = max;
+  std::uniform_int_distribution<uint64_t> distribution(0, UINT64_MAX);
+  uint64_t random_bits = distribution(engine);
 
-  if (max - min > std::numeric_limits<double>::max()) {
-    // Divide the range into two sub-ranges
-    const double mid_point = min2 / 2.0 + max2 / 2.0;
-    std::uniform_int_distribution<int> choose_range(0, 1);
-
-    if (choose_range(engine) == 0) {
-      max2 = mid_point;
-    } else {
-      min2 = mid_point;
-    }
+  double random_double =
+      static_cast<double>(random_bits) / static_cast<double>(UINT64_MAX);
+  double result = 0.0;
+  if (min < 0 && max > 0) {
+    double positive_part = random_double * max;
+    double negative_part = (1.0 - random_double) * min;
+    result = positive_part + negative_part;
+  } else {
+    result = min + random_double * (max - min);
   }
 
-  std::uniform_real_distribution<double> distribution(min2, max2);
-  return distribution(engine);
+  return result;
 }
 
 template <>

@@ -201,7 +201,7 @@ float generate_random_quiet_nan(const int seed);
  */
 template <typename T, typename cassian::EnableIfIsScalar<T> = 0>
 T generate_value(const int seed) {
-  const T min = std::numeric_limits<T>::min();
+  const T min = std::numeric_limits<T>::lowest();
   const T max = std::numeric_limits<T>::max();
   return generate_value(min, max, seed);
 }
@@ -214,7 +214,7 @@ T generate_value(const int seed) {
 template <typename T, typename cassian::EnableIfIsVector<T> = 0>
 T generate_value(const int seed) {
   using scalar_type = scalar_type_v<T>;
-  const scalar_type min = std::numeric_limits<scalar_type>::min();
+  const scalar_type min = std::numeric_limits<scalar_type>::lowest();
   const scalar_type max = std::numeric_limits<scalar_type>::max();
   return generate_value<T>(min, max, seed);
 }
