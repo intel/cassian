@@ -140,7 +140,15 @@ public:
       ss << " -DINPUT_TYPE_2=" << INPUT_TYPE_2::device_type;
       ss << " -DINPUT_TYPE_3=" << INPUT_TYPE_3::device_type;
     }
-    ss << " -DADDRESS_SPACE=" << get_address_space();
+    if (get_address_space() == "private") {
+      ss << " -DUSE_PRIVATE";
+      // Private is forbidden in kernel args. Use global instead of private
+      // Inside the kernel then assigne global value to private variable;
+      ss << " -DADDRESS_SPACE=global";
+    } else {
+      ss << " -DADDRESS_SPACE=" << get_address_space();
+    }
+
     if (function_string == "correctly_rounded_sqrt") {
       ss << " -DFUNCTION=sqrt -cl-fp32-correctly-rounded-divide-sqrt";
     } else {

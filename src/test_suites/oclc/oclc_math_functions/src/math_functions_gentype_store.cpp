@@ -77,6 +77,10 @@ struct Test {
       run_multiple_test_sections(
           FunctionAlias<TestType, AddressSpace::clc_local>());
     }
+    SECTION("private") {
+      run_multiple_test_sections(
+          FunctionAlias<TestType, AddressSpace::clc_private>());
+    }
   }
 };
 
