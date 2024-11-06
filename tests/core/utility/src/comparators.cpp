@@ -14,16 +14,16 @@ TEST_CASE("PrecisionComparator matches scalar result for all requirement types",
   double result_outside_all = 20.0;
 
   double error_value = 1.0;
-  PrecisionRequirement<double> error_requirement{RequirementType::error_value,
-                                                 error_value};
+  PrecisionRequirement<double> error_requirement{
+      PrecisionRequirementType::error_value, error_value};
   PrecisionComparator<double> error_comparator(reference, error_requirement);
 
   REQUIRE(error_comparator.match(result));
   REQUIRE(!error_comparator.match(result_outside_all));
 
   double ulp_value = 1.0;
-  PrecisionRequirement<double> ulp_requirement{RequirementType::ulp_value,
-                                               ulp_value};
+  PrecisionRequirement<double> ulp_requirement{
+      PrecisionRequirementType::ulp_value, ulp_value};
   PrecisionComparator<double> ulp_comparator(reference, ulp_requirement);
 
   REQUIRE(ulp_comparator.match(result));
@@ -31,8 +31,8 @@ TEST_CASE("PrecisionComparator matches scalar result for all requirement types",
 
   double min_value = 9.0;
   double max_value = 11.0;
-  PrecisionRequirement<double> range_requirement{RequirementType::value_range,
-                                                 min_value, max_value};
+  PrecisionRequirement<double> range_requirement{
+      PrecisionRequirementType::value_range, min_value, max_value};
   PrecisionComparator<double> range_comparator(reference, range_requirement);
 
   REQUIRE(range_comparator.match(result));
@@ -48,7 +48,8 @@ TEST_CASE("PrecisionComparator matches vector result for all requirement types",
   double error_value = 1.0;
   std::vector<PrecisionRequirement<double>> error_requirements(
       reference.size(),
-      PrecisionRequirement<double>{RequirementType::error_value, error_value});
+      PrecisionRequirement<double>{PrecisionRequirementType::error_value,
+                                   error_value});
   PrecisionComparator<ca::Vector<double, 3>> error_comparator(
       reference, error_requirements);
 
@@ -57,8 +58,8 @@ TEST_CASE("PrecisionComparator matches vector result for all requirement types",
 
   double ulp_value = 1.0;
   std::vector<PrecisionRequirement<double>> ulp_requirements(
-      reference.size(),
-      PrecisionRequirement<double>{RequirementType::ulp_value, ulp_value});
+      reference.size(), PrecisionRequirement<double>{
+                            PrecisionRequirementType::ulp_value, ulp_value});
   PrecisionComparator<ca::Vector<double, 3>> ulp_comparator(reference,
                                                             ulp_requirements);
 
@@ -69,8 +70,8 @@ TEST_CASE("PrecisionComparator matches vector result for all requirement types",
   double max_value = 21.0;
   std::vector<PrecisionRequirement<double>> range_requirements(
       reference.size(),
-      PrecisionRequirement<double>{RequirementType::value_range, min_value,
-                                   max_value});
+      PrecisionRequirement<double>{PrecisionRequirementType::value_range,
+                                   min_value, max_value});
   PrecisionComparator<ca::Vector<double, 3>> range_comparator(
       reference, range_requirements);
 

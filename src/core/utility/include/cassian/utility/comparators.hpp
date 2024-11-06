@@ -11,7 +11,7 @@
 
 namespace ca = cassian;
 
-enum class RequirementType : uint32_t {
+enum class PrecisionRequirementType : uint32_t {
   error_value,
   ulp_value,
   value_range,
@@ -20,7 +20,7 @@ enum class RequirementType : uint32_t {
 };
 
 template <typename T> struct PrecisionRequirement {
-  RequirementType type = RequirementType::ulp_value;
+  PrecisionRequirementType type = PrecisionRequirementType::ulp_value;
   T value = static_cast<T>(0);
   T value2 = static_cast<T>(0);
 };
@@ -119,21 +119,21 @@ public:
     if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
       for (int req = 0; req < requirements.size() && check == true; req++) {
         switch (requirements[req].type) {
-        case RequirementType::error_value:
+        case PrecisionRequirementType::error_value:
           check = match_results_error_value(result[req], reference[req],
                                             requirements[req].value);
           break;
-        case RequirementType::ulp_value:
+        case PrecisionRequirementType::ulp_value:
           check = match_results_ulp(result[req], reference[req],
                                     requirements[req].value);
           break;
-        case RequirementType::value_range:
+        case PrecisionRequirementType::value_range:
           check = match_range(result[req], requirements[req].value,
                               requirements[req].value2);
           break;
-        case RequirementType::any:
+        case PrecisionRequirementType::any:
           break;
-        case RequirementType::undefined:
+        case PrecisionRequirementType::undefined:
           check = true;
           break;
         default:
@@ -143,18 +143,18 @@ public:
     } else {
       for (const auto &req : requirements) {
         switch (req.type) {
-        case RequirementType::error_value:
+        case PrecisionRequirementType::error_value:
           check = match_results_error_value(result, reference, req.value);
           break;
-        case RequirementType::ulp_value:
+        case PrecisionRequirementType::ulp_value:
           check = match_results_ulp(result, reference, req.value);
           break;
-        case RequirementType::value_range:
+        case PrecisionRequirementType::value_range:
           check = match_range(result, req.value, req.value2);
           break;
-        case RequirementType::any:
+        case PrecisionRequirementType::any:
           break;
-        case RequirementType::undefined:
+        case PrecisionRequirementType::undefined:
           check = true;
           break;
         default:
@@ -173,11 +173,11 @@ public:
     for (size_t req_index = 0; req_index < requirements.size(); ++req_index) {
       const auto &req = requirements[req_index];
       switch (req.type) {
-      case RequirementType::value_range:
+      case PrecisionRequirementType::value_range:
         description << "In Range {" << ca::to_string(req.value) << ", "
                     << ca::to_string(req.value2) << "}";
         break;
-      case RequirementType::error_value:
+      case PrecisionRequirementType::error_value:
         if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
           description << "\nReference[" << req_index
                       << "]: " << ca::to_string(reference[req_index]);
@@ -186,7 +186,7 @@ public:
         }
         description << " Absolute Error within " << ca::to_string(req.value);
         break;
-      case RequirementType::ulp_value:
+      case PrecisionRequirementType::ulp_value:
         if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
           description << "\nReference[" << req_index
                       << "]: " << ca::to_string(reference[req_index]);
@@ -195,7 +195,7 @@ public:
         }
         description << " ULP Error within " << ca::to_string(req.value);
         break;
-      case RequirementType::any:
+      case PrecisionRequirementType::any:
         description << "\nAny Value Pass";
         break;
       default:

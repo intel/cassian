@@ -729,7 +729,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::atan:
   case Function::acos: {
     PrecisionRequirement<scalar_type_output> requirement;
-    requirement.type = RequirementType::ulp_value;
+    requirement.type = PrecisionRequirementType::ulp_value;
     requirement.value = 4096.0F;
     requirements.emplace_back(requirement);
     if constexpr (cassian::is_vector_v<INPUT_TYPE_1>) {
@@ -743,7 +743,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::exp2:
   case Function::exp: {
     PrecisionRequirement<scalar_type> requirement;
-    requirement.type = RequirementType::ulp_value;
+    requirement.type = PrecisionRequirementType::ulp_value;
 
     if constexpr (cassian::is_vector_v<INPUT_TYPE_1>) {
       for (auto k = 0; k < INPUT_TYPE_1::vector_size; k++) {
@@ -771,7 +771,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::acospi:
   case Function::acosh: {
     PrecisionRequirement<scalar_type> requirement;
-    requirement.type = RequirementType::ulp_value;
+    requirement.type = PrecisionRequirementType::ulp_value;
     requirement.value = 8192.0F;
     requirements.emplace_back(requirement);
     if constexpr (cassian::is_vector_v<INPUT_TYPE_1>) {
@@ -788,10 +788,10 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
     auto give_requirement = [&requirements, epsilon](scalar_type x) {
       PrecisionRequirement<scalar_type> requirement;
       if (x >= 0.5F && x <= 2.0F) {
-        requirement.type = RequirementType::error_value;
+        requirement.type = PrecisionRequirementType::error_value;
         requirement.value = std::pow(2.0F, -21);
       } else {
-        requirement.type = RequirementType::ulp_value;
+        requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 3.0F;
       }
       requirements.emplace_back(requirement);
@@ -812,10 +812,10 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
     auto give_requirement = [&requirements, epsilon](scalar_type x) {
       PrecisionRequirement<scalar_type> requirement;
       if (x >= -1 && x <= 1) {
-        requirement.type = RequirementType::ulp_value;
+        requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 8192.0F;
       } else {
-        requirement.type = RequirementType::undefined;
+        requirement.type = PrecisionRequirementType::undefined;
       }
       requirements.emplace_back(requirement);
     };
@@ -836,10 +836,10 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
     auto give_requirement = [&requirements](scalar_type x) {
       PrecisionRequirement<scalar_type> requirement;
       if (x >= -M_PI && x <= M_PI) {
-        requirement.type = RequirementType::error_value;
+        requirement.type = PrecisionRequirementType::error_value;
         requirement.value = std::pow(2.0F, -11);
       } else {
-        requirement.type = RequirementType::any;
+        requirement.type = PrecisionRequirementType::any;
       }
       requirements.emplace_back(requirement);
     };
@@ -859,10 +859,10 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
     auto give_requirement = [&requirements](scalar_type x) {
       PrecisionRequirement<scalar_type> requirement;
       if (x >= -1 && x <= 1) {
-        requirement.type = RequirementType::error_value;
+        requirement.type = PrecisionRequirementType::error_value;
         requirement.value = std::pow(2.0F, -11);
       } else {
-        requirement.type = RequirementType::any;
+        requirement.type = PrecisionRequirementType::any;
       }
       requirements.emplace_back(requirement);
     };
@@ -882,10 +882,10 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
     auto give_requirement = [&requirements, epsilon](scalar_type x) {
       PrecisionRequirement<scalar_type> requirement;
       if (x >= -88 && x <= 88) {
-        requirement.type = RequirementType::ulp_value;
+        requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 8192.0F;
       } else {
-        requirement.type = RequirementType::undefined;
+        requirement.type = PrecisionRequirementType::undefined;
       }
       requirements.emplace_back(requirement);
     };
@@ -908,9 +908,9 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
 
       if ((x == 0 && y == 0) || (x < 0 && std::floor(y) != y) ||
           (x < 0 && (y < -y_range || y > y_range))) {
-        requirement.type = RequirementType::undefined;
+        requirement.type = PrecisionRequirementType::undefined;
       } else {
-        requirement.type = RequirementType::ulp_value;
+        requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 8192.0F;
       }
       requirements.emplace_back(requirement);
@@ -937,12 +937,12 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
       scalar_type y_range = std::pow(2.0F, 24);
 
       if (std::floor(y) != y) {
-        requirement.type = RequirementType::undefined;
+        requirement.type = PrecisionRequirementType::undefined;
       } else {
         if (x == 0 && y == 0) {
-          requirement.type = RequirementType::undefined;
+          requirement.type = PrecisionRequirementType::undefined;
         } else {
-          requirement.type = RequirementType::ulp_value;
+          requirement.type = PrecisionRequirementType::ulp_value;
           requirement.value = 8192.0F;
         }
       }
@@ -968,9 +968,9 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
                                                      scalar_type_t2 y) {
       PrecisionRequirement<scalar_type> requirement;
       if (x > 0 && y != 0) {
-        requirement.type = RequirementType::undefined;
+        requirement.type = PrecisionRequirementType::undefined;
       } else {
-        requirement.type = RequirementType::ulp_value;
+        requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 8192.0F;
       }
       requirements.emplace_back(requirement);
@@ -996,13 +996,13 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
       PrecisionRequirement<scalar_type> requirement;
       if (x >= 0) {
         if (x == 0 && y == 0) {
-          requirement.type = RequirementType::undefined;
+          requirement.type = PrecisionRequirementType::undefined;
         } else {
-          requirement.type = RequirementType::ulp_value;
+          requirement.type = PrecisionRequirementType::ulp_value;
           requirement.value = 8192.0F;
         }
       } else {
-        requirement.type = RequirementType::undefined;
+        requirement.type = PrecisionRequirementType::undefined;
       }
       requirements.emplace_back(requirement);
     };
