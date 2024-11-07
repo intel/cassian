@@ -174,7 +174,7 @@ public:
       const auto &req = requirements[req_index];
       switch (req.type) {
       case PrecisionRequirementType::value_range:
-        description << "In Range {" << ca::to_string(req.value) << ", "
+        description << "In range {" << ca::to_string(req.value) << ", "
                     << ca::to_string(req.value2) << "}";
         break;
       case PrecisionRequirementType::error_value:
@@ -184,7 +184,7 @@ public:
         } else {
           description << "\nReference: " << ca::to_string(reference);
         }
-        description << " Absolute Error within " << ca::to_string(req.value);
+        description << " Absolute error within " << ca::to_string(req.value);
         break;
       case PrecisionRequirementType::ulp_value:
         if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
@@ -193,13 +193,13 @@ public:
         } else {
           description << "\nReference: " << ca::to_string(reference);
         }
-        description << " ULP Error within " << ca::to_string(req.value);
+        description << " ULP error within " << ca::to_string(req.value);
         break;
       case PrecisionRequirementType::any:
-        description << "\nAny Value Pass";
+        description << "\nAny value pass";
         break;
       default:
-        description << "\nRequirement Undefined";
+        description << "\nRequirement undefined";
         break;
       }
       if (req_index < requirements.size() - 1) {
@@ -269,7 +269,7 @@ public:
       }
     }
     os << '}';
-    return "\nreference: " + input_to_string<OUTPUT_TYPE>(reference) +
+    return "\nReference: " + input_to_string<OUTPUT_TYPE>(reference) +
            "\nULP distance: " + os.str();
   }
 };
