@@ -94,6 +94,15 @@ TEST_CASE("generate_value") {
         REQUIRE(output <= max);
       }
     }
+    SECTION("float max range") {
+      const float min = std::numeric_limits<float>::lowest();
+      const float max = std::numeric_limits<float>::max();
+      for (int i = 0; i < iterations; ++i) {
+        const float output = ca::generate_value(min, max, seed);
+        REQUIRE(output >= min);
+        REQUIRE(output <= max);
+      }
+    }
     SECTION("float with exceptions - left endpoint") {
       const float float_max = std::numeric_limits<float>::max();
       const float left_endpoint = 0.123456789F;
@@ -128,6 +137,43 @@ TEST_CASE("generate_value") {
         REQUIRE(output == right_endpoint);
       }
     }
+    SECTION("float with exceptions - left endpoint (extreme values)") {
+      const float float_max = std::numeric_limits<float>::max();
+      const float float_lowest = std::numeric_limits<float>::lowest();
+      const float left_endpoint = float_lowest;
+      const float middle = std::nextafter(left_endpoint, float_max);
+      const float right_endpoint = std::nextafter(middle, float_max);
+      for (int i = 0; i < iterations; ++i) {
+        const float output = ca::generate_value(left_endpoint, right_endpoint,
+                                                seed, {right_endpoint, middle});
+        REQUIRE(output == left_endpoint);
+      }
+    }
+    SECTION("float with exceptions - middle (extreme values)") {
+      const float float_max = std::numeric_limits<float>::max();
+      const float float_lowest = std::numeric_limits<float>::lowest();
+      const float left_endpoint = float_lowest;
+      const float middle = std::nextafter(left_endpoint, float_max);
+      const float right_endpoint = std::nextafter(middle, float_max);
+      for (int i = 0; i < iterations; ++i) {
+        const float output =
+            ca::generate_value(left_endpoint, right_endpoint, seed,
+                               {left_endpoint, right_endpoint});
+        REQUIRE(output == middle);
+      }
+    }
+    SECTION("float with exceptions - right endpoint (extreme values)") {
+      const float float_max = std::numeric_limits<float>::max();
+      const float float_lowest = std::numeric_limits<float>::lowest();
+      const float left_endpoint = float_lowest;
+      const float middle = std::nextafter(left_endpoint, float_max);
+      const float right_endpoint = std::nextafter(middle, float_max);
+      for (int i = 0; i < iterations; ++i) {
+        const float output = ca::generate_value(left_endpoint, right_endpoint,
+                                                seed, {left_endpoint, middle});
+        REQUIRE(output == right_endpoint);
+      }
+    }
     SECTION("double") {
       const double min = 10.1;
       const double max = 11.5;
@@ -137,6 +183,16 @@ TEST_CASE("generate_value") {
         REQUIRE(output <= max);
       }
     }
+    SECTION("double max range") {
+      const double min = -std::numeric_limits<double>::max();
+      const double max = std::numeric_limits<double>::max();
+      for (int i = 0; i < iterations; ++i) {
+        const double output = ca::generate_value(min, max, seed);
+        REQUIRE(output >= min);
+        REQUIRE(output <= max);
+      }
+    }
+
     SECTION("double with exceptions - left endpoint") {
       const double double_max = std::numeric_limits<double>::max();
       const double left_endpoint = 0.123456789;
@@ -163,6 +219,43 @@ TEST_CASE("generate_value") {
     SECTION("double with exceptions - right endpoint") {
       const double double_max = std::numeric_limits<double>::max();
       const double left_endpoint = 0.123456789;
+      const double middle = std::nextafter(left_endpoint, double_max);
+      const double right_endpoint = std::nextafter(middle, double_max);
+      for (int i = 0; i < iterations; ++i) {
+        const double output = ca::generate_value(left_endpoint, right_endpoint,
+                                                 seed, {left_endpoint, middle});
+        REQUIRE(output == right_endpoint);
+      }
+    }
+    SECTION("double with exceptions - left endpoint (extreme values)") {
+      const double double_max = std::numeric_limits<double>::max();
+      const double double_lowest = std::numeric_limits<double>::lowest();
+      const double left_endpoint = double_lowest;
+      const double middle = std::nextafter(left_endpoint, double_max);
+      const double right_endpoint = std::nextafter(middle, double_max);
+      for (int i = 0; i < iterations; ++i) {
+        const double output = ca::generate_value(
+            left_endpoint, right_endpoint, seed, {right_endpoint, middle});
+        REQUIRE(output == left_endpoint);
+      }
+    }
+    SECTION("double with exceptions - middle (extreme values)") {
+      const double double_max = std::numeric_limits<double>::max();
+      const double double_lowest = std::numeric_limits<double>::lowest();
+      const double left_endpoint = double_lowest;
+      const double middle = std::nextafter(left_endpoint, double_max);
+      const double right_endpoint = std::nextafter(middle, double_max);
+      for (int i = 0; i < iterations; ++i) {
+        const double output =
+            ca::generate_value(left_endpoint, right_endpoint, seed,
+                               {left_endpoint, right_endpoint});
+        REQUIRE(output == middle);
+      }
+    }
+    SECTION("double with exceptions - right endpoint (extreme values)") {
+      const double double_max = std::numeric_limits<double>::max();
+      const double double_lowest = std::numeric_limits<double>::lowest();
+      const double left_endpoint = double_lowest;
       const double middle = std::nextafter(left_endpoint, double_max);
       const double right_endpoint = std::nextafter(middle, double_max);
       for (int i = 0; i < iterations; ++i) {
