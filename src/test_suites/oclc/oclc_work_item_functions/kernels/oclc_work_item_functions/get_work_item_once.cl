@@ -18,7 +18,7 @@ test_kernel_global(global atomic_int *output) {
     }
     global_id += temp;
   }
-  atomic_fetch_add(&output[local_id], 1);
+  atomic_fetch_add(&output[global_id], 1);
 };
 
 #ifdef SIMD
