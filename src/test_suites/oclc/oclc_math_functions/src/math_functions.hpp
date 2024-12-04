@@ -1116,22 +1116,25 @@ void run_section(const T &oclc_function, INPUT &input,
   using input_a_type = typename T::input_type_1;
   using input_b_type = typename T::input_type_2;
   using input_c_type = typename T::input_type_3;
+  using reference_type = replace_fp_with_double_t<output_type>;
+  using reference_type2 = replace_fp_with_double_t<input_b_type>;
+  using reference_type3 = replace_fp_with_double_t<input_c_type>;
   using scalar_type_1 = typename T::scalar_type_1;
   const auto work_size = config.work_size();
 
-  auto reference_vector = std::vector<output_type>(work_size);
-  auto reference_vector_2 = std::vector<input_b_type>(
+  auto reference_vector = std::vector<reference_type>(work_size);
+  auto reference_vector_2 = std::vector<reference_type2>(
       work_size); // vector for reference values returned by function argument
-  auto reference_vector_3 = std::vector<input_c_type>(work_size);
+  auto reference_vector_3 = std::vector<reference_type3>(work_size);
   for (auto j = 0; j < work_size; j++) {
     if constexpr (T::arg_num == 3) {
       reference_vector[j] = T::calculate_reference(
           input.input_a[j], input.input_b[j], input.input_c[j]);
-      reference_vector_3[j] = input.input_c[j];
+      reference_vector_3[j] = static_cast<reference_type3>(input.input_c[j]);
     } else if constexpr (T::arg_num == 2) {
       reference_vector[j] =
           T::calculate_reference(input.input_a[j], input.input_b[j]);
-      reference_vector_2[j] = input.input_b[j];
+      reference_vector_2[j] = static_cast<reference_type2>(input.input_b[j]);
     } else {
       reference_vector[j] = T::calculate_reference(input.input_a[j]);
     }
@@ -1146,20 +1149,20 @@ void run_section(const T &oclc_function, INPUT &input,
     SUCCEED();
     return;
   }
-  REQUIRE_THAT(result, UlpComparator<output_type>(result, reference_vector,
-                                                  get_ulp_values<output_type>(
-                                                      T::function, work_size)));
+  REQUIRE_THAT(result, UlpComparator(result, reference_vector,
+                                     get_ulp_values<output_type>(T::function,
+                                                                 work_size)));
   if (oclc_function.get_is_store() && T::arg_num == 2) {
-    REQUIRE_THAT(argument_2_output,
-                 UlpComparator<input_b_type>(
-                     argument_2_output, reference_vector_2,
-                     get_ulp_values<input_b_type>(T::function, work_size)));
+    REQUIRE_THAT(
+        argument_2_output,
+        UlpComparator(argument_2_output, reference_vector_2,
+                      get_ulp_values<input_b_type>(T::function, work_size)));
   }
   if (oclc_function.get_is_store() && T::arg_num == 3) {
-    REQUIRE_THAT(argument_3_output,
-                 UlpComparator<input_c_type>(
-                     argument_3_output, reference_vector_3,
-                     get_ulp_values<input_c_type>(T::function, work_size)));
+    REQUIRE_THAT(
+        argument_3_output,
+        UlpComparator(argument_3_output, reference_vector_3,
+                      get_ulp_values<input_c_type>(T::function, work_size)));
   }
 }
 
@@ -1175,7 +1178,8 @@ void run_section_relaxed(const T &oclc_function, INPUT &input,
   using scalar_type_2 = typename T::scalar_type_2;
   const auto work_size = config.work_size();
 
-  auto reference_vector = std::vector<output_type>(work_size);
+  auto reference_vector =
+      std::vector<replace_fp_with_double_t<output_type>>(work_size);
   auto reference_vector_2 = std::vector<input_b_type>(
       work_size); // vector for reference values returned by function argument
   auto reference_vector_3 = std::vector<input_c_type>(work_size);
@@ -1209,11 +1213,12 @@ void run_section_relaxed(const T &oclc_function, INPUT &input,
                                            input.input_b[i]);
 
     if constexpr (T::arg_num == 1) {
-      REQUIRE_THAT(result[i], PrecisionComparator(reference_vector[i], req,
-                                                  input.input_a[i]));
+      REQUIRE_THAT(result[i],
+                   PrecisionComparator(result[i], reference_vector[i], req,
+                                       input.input_a[i]));
     } else {
       REQUIRE_THAT(result[i],
-                   PrecisionComparator(reference_vector[i], req,
+                   PrecisionComparator(result[i], reference_vector[i], req,
                                        input.input_a[i], input.input_b[i]));
     }
   }

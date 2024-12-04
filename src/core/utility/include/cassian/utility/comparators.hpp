@@ -4,6 +4,7 @@
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/utility/utility.hpp>
 #include <catch2/catch.hpp>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -36,42 +37,62 @@ template <typename T> std::string input_to_string(const std::vector<T> &input) {
   return ss.str();
 }
 
-template <typename T> T ulp_distance(const T &a, const T &b) {
-  if (a == b) {
-    return static_cast<T>(0);
+template <typename RESULT_TYPE, typename REFERENCE_TYPE>
+REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
+                                      REFERENCE_TYPE reference) {
+  if constexpr (!ca::is_floating_point_v<RESULT_TYPE>) {
+    static_assert(std::is_same_v<RESULT_TYPE, REFERENCE_TYPE>);
+    return ca::abs(reference - result);
   }
-  if constexpr (!std::is_integral_v<T>) {
-    if (ca::isnan(a) || ca::isnan(b)) {
-      return std::numeric_limits<T>::quiet_NaN();
-    }
-    if (ca::isinf(a) || ca::isinf(b)) {
-      return std::numeric_limits<T>::infinity();
-    }
+  int reference_frexp_exponent;
+  REFERENCE_TYPE normalized_fraction =
+      std::frexp(reference, &reference_frexp_exponent);
+  const int reference_exponent = reference_frexp_exponent - 1;
+  const int min_exponent = std::numeric_limits<RESULT_TYPE>::min_exponent - 1;
+  const int mantissa_length = std::numeric_limits<RESULT_TYPE>::digits;
+  int ulp_exponent;
+  if (normalized_fraction != 0.5) {
+    ulp_exponent =
+        std::max(reference_exponent, min_exponent) - mantissa_length + 1;
+  } else {
+    ulp_exponent =
+        std::max(reference_exponent - 1, min_exponent) - mantissa_length + 1;
   }
-  return ca::abs(a - b);
+  const REFERENCE_TYPE absolute_distance = std::fabs(reference - result);
+  const REFERENCE_TYPE ulp_distance =
+      std::scalbn(absolute_distance, -ulp_exponent);
+  return ulp_distance;
 }
 
-template <typename T>
-bool match_results_ulp(const T &result, const T &reference, const T ulp_value) {
-  if (!std::is_integral_v<T> && cassian::isnan(result) &&
-      cassian::isnan(reference)) {
-    return true;
+template <typename RESULT_TYPE, typename REFERENCE_TYPE>
+bool match_results_ulp(const RESULT_TYPE &result,
+                       const REFERENCE_TYPE &reference,
+                       const RESULT_TYPE ulp_value) {
+  // this if constexpr is needed for msvc compatibility, isnan doesn't work with
+  // integers
+  if constexpr (ca::is_floating_point_v<RESULT_TYPE>) {
+    if (cassian::isnan(result) && cassian::isnan(reference)) {
+      return true;
+    }
+    if (result == static_cast<RESULT_TYPE>(reference)) {
+      return true;
+    }
   }
-  const auto ulp_dist = ulp_distance(result, reference);
-  const auto ulp = ulp_value * std::numeric_limits<T>::epsilon();
-  return ulp_dist <= cassian::abs(result + reference) * ulp ||
-         ulp_dist < std::numeric_limits<T>::min();
+  const auto ulp_distance = calculate_ulp_distance(result, reference);
+  return false;
 }
 
 template <typename TYPE> bool match_range(TYPE result, TYPE start, TYPE end) {
   return result >= start && result <= end;
 }
 
-template <typename T, typename cassian::EnableIfIsScalar<T> = 0>
-bool match_results_error_value(const T &result, const T &reference,
-                               T error_value) {
+template <typename RESULT_TYPE, typename REFERENCE_TYPE,
+          typename cassian::EnableIfIsScalar<RESULT_TYPE> = 0>
+bool match_results_error_value(const RESULT_TYPE &result,
+                               const REFERENCE_TYPE &reference,
+                               RESULT_TYPE error_value) {
 
-  if constexpr (!std::is_integral_v<T>) {
+  if constexpr (!std::is_integral_v<RESULT_TYPE>) {
     if (ca::isnan(result) && ca::isnan(reference)) {
       return true;
     }
@@ -80,44 +101,52 @@ bool match_results_error_value(const T &result, const T &reference,
       << "result = " << cassian::to_string(result)
       << "reference = " << cassian::to_string(reference)
       << "error_value = " << cassian::to_string(error_value) << '\n';
-  return fabs(static_cast<float>(result) - static_cast<float>(reference)) <=
-         static_cast<float>(error_value);
+  return fabs(static_cast<REFERENCE_TYPE>(result) -
+              static_cast<REFERENCE_TYPE>(reference)) <=
+         static_cast<REFERENCE_TYPE>(error_value);
 }
 
-template <typename OUTPUT_TYPE, typename... INPUT_TYPES>
-class PrecisionComparator : public Catch::MatcherBase<OUTPUT_TYPE> {
-  OUTPUT_TYPE reference;
+template <typename RESULT_TYPE, typename REFERENCE_TYPE,
+          typename... INPUT_TYPES>
+class PrecisionComparator : public Catch::MatcherBase<RESULT_TYPE> {
+  RESULT_TYPE result;
+  REFERENCE_TYPE reference;
   std::tuple<INPUT_TYPES...> inputs;
-  std::vector<PrecisionRequirement<ca::scalar_type_v<OUTPUT_TYPE>>>
+  std::vector<PrecisionRequirement<ca::scalar_type_v<RESULT_TYPE>>>
       requirements;
 
 public:
   PrecisionComparator(
-      const OUTPUT_TYPE &reference,
-      const PrecisionRequirement<ca::scalar_type_v<OUTPUT_TYPE>> &requirement,
+      const RESULT_TYPE &result, const REFERENCE_TYPE &reference,
+      const PrecisionRequirement<ca::scalar_type_v<RESULT_TYPE>> &requirement,
       INPUT_TYPES... inputs)
-      : reference(reference), inputs(inputs...), requirements{requirement} {
-    static_assert(!cassian::is_vector_v<OUTPUT_TYPE>,
-                  "OUTPUT_TYPE must be a scalar type.");
+      : result(result), reference(reference),
+        inputs(inputs...), requirements{requirement} {
+    static_assert(!cassian::is_vector_v<REFERENCE_TYPE>,
+                  "REFERENCE_TYPE must be a scalar type.");
   }
 
   PrecisionComparator(
-      const OUTPUT_TYPE &reference,
-      const std::vector<PrecisionRequirement<ca::scalar_type_v<OUTPUT_TYPE>>>
+      const RESULT_TYPE &result, const REFERENCE_TYPE &reference,
+      const std::vector<PrecisionRequirement<ca::scalar_type_v<RESULT_TYPE>>>
           &requirement,
       INPUT_TYPES... inputs)
-      : reference(reference), requirements(requirement), inputs(inputs...) {
-    if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
+      : result(result), reference(reference), requirements(requirement),
+        inputs(inputs...) {
+    if constexpr (cassian::is_vector_v<RESULT_TYPE>) {
       assert(reference.size() == requirement.size());
     } else {
       assert(requirement.size() == 1);
     }
   }
 
-  bool match(const OUTPUT_TYPE &result) const override {
+  bool match(const RESULT_TYPE &result) const override {
     bool check = true;
-    if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
+    if constexpr (cassian::is_vector_v<RESULT_TYPE>) {
       for (int req = 0; req < requirements.size() && check == true; req++) {
+        if (result[req] == static_cast<RESULT_TYPE>(reference[req])) {
+          continue;
+        }
         switch (requirements[req].type) {
         case PrecisionRequirementType::error_value:
           check = match_results_error_value(result[req], reference[req],
@@ -142,6 +171,9 @@ public:
       }
     } else {
       for (const auto &req : requirements) {
+        if (result == static_cast<RESULT_TYPE>(reference)) {
+          continue;
+        }
         switch (req.type) {
         case PrecisionRequirementType::error_value:
           check = match_results_error_value(result, reference, req.value);
@@ -178,7 +210,7 @@ public:
                     << ca::to_string(req.value2) << "}";
         break;
       case PrecisionRequirementType::error_value:
-        if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
+        if constexpr (ca::is_vector_v<RESULT_TYPE>) {
           description << "\nReference[" << req_index
                       << "]: " << ca::to_string(reference[req_index]);
         } else {
@@ -187,13 +219,20 @@ public:
         description << " Absolute error within " << ca::to_string(req.value);
         break;
       case PrecisionRequirementType::ulp_value:
-        if constexpr (ca::is_vector_v<OUTPUT_TYPE>) {
+        if constexpr (ca::is_vector_v<RESULT_TYPE>) {
           description << "\nReference[" << req_index
-                      << "]: " << ca::to_string(reference[req_index]);
+                      << "]: " << ca::to_string(reference[req_index])
+                      << "\n ULP error "
+                      << calculate_ulp_distance(result[req_index],
+                                                reference[req_index])
+                      << " within " << ca::to_string(req.value);
         } else {
-          description << "\nReference: " << ca::to_string(reference);
+          description << "\nReference: " << ca::to_string(reference)
+                      << "\n ULP error "
+                      << calculate_ulp_distance(result, reference) << " within "
+                      << ca::to_string(req.value);
         }
-        description << " ULP error within " << ca::to_string(req.value);
+
         break;
       case PrecisionRequirementType::any:
         description << "\nAny value pass";
@@ -222,16 +261,16 @@ private:
   }
 };
 
-template <class OUTPUT_TYPE>
+template <class OUTPUT_TYPE, class REFERENCE_TYPE>
 class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
   using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
-  std::vector<OUTPUT_TYPE> reference;
+  std::vector<REFERENCE_TYPE> reference;
   std::vector<scalar_type> ulp_values;
   std::vector<OUTPUT_TYPE> result;
 
 public:
   UlpComparator(const std::vector<OUTPUT_TYPE> &result,
-                const std::vector<OUTPUT_TYPE> &reference,
+                const std::vector<REFERENCE_TYPE> &reference,
                 const std::vector<scalar_type> &ulp_values)
       : reference(reference), result(result), ulp_values(ulp_values) {}
   bool match(std::vector<OUTPUT_TYPE> const &result) const override {
@@ -261,15 +300,15 @@ public:
       if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
         os << '{';
         for (int j = 0; j < result[i].size(); j++) {
-          os << ulp_distance(result[i][j], reference[i][j]) << ", ";
+          os << calculate_ulp_distance(result[i][j], reference[i][j]) << ", ";
         }
         os << '}';
       } else {
-        os << ulp_distance(result[i], reference[i]) << ", ";
+        os << calculate_ulp_distance(result[i], reference[i]) << ", ";
       }
     }
     os << '}';
-    return "\nReference: " + input_to_string<OUTPUT_TYPE>(reference) +
+    return "\nReference: " + input_to_string<REFERENCE_TYPE>(reference) +
            "\nULP distance: " + os.str();
   }
 };
