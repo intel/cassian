@@ -499,7 +499,7 @@ public:
   /**
    * number of radix digits
    */
-  static constexpr int digits = 10;
+  static constexpr int digits = 11;
 
   /**
    * number of decimal digits
@@ -520,7 +520,7 @@ public:
    * one more than the smallest negative power of the radix that is a valid
    * normalized floating-point value
    */
-  static constexpr int min_exponent = -126;
+  static constexpr int min_exponent = -125;
 
   /**
    * the smallest negative power of ten that is a valid normalized
