@@ -79,6 +79,9 @@ bool match_results_ulp(const RESULT_TYPE &result,
     }
   }
   const auto ulp_distance = calculate_ulp_distance(result, reference);
+  if (ulp_distance <= static_cast<REFERENCE_TYPE>(ulp_value)) {
+    return true;
+  }
   return false;
 }
 
