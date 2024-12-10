@@ -249,13 +249,17 @@ public:
       }
     }
 
-    description << "\n" << inputs_to_string(inputs);
+    description << "\n"
+                << inputs_to_string(
+                       inputs,
+                       std::make_index_sequence<sizeof...(INPUT_TYPES)>());
     return description.str();
   }
 
 private:
   template <size_t... I>
-  std::string inputs_to_string(std::tuple<INPUT_TYPES...> in) const {
+  std::string inputs_to_string(std::tuple<INPUT_TYPES...> in,
+                               std::index_sequence<I...> /*unused*/) const {
     if constexpr (sizeof...(I) == 0) {
       return "Inputs: None";
     } else {
