@@ -1045,9 +1045,9 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
                      std::end(device_compute_properties.subGroupSizes),
                      32) != std::end(device_compute_properties.subGroupSizes);
   }
-  case Feature::integer_dp4a: {
-    return (get_device_property(DeviceProperty::dot_product_capabilities) &
-            ZE_DEVICE_MODULE_FLAG_DP4A) != 0;
+  case Feature::integer_dp4a:
+  case Feature::integer_dp4a_packed: {
+    return (device_module_properties.flags & ZE_DEVICE_MODULE_FLAG_DP4A) != 0;
   }
 
   default:
@@ -1135,6 +1135,10 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
     return static_cast<int>(float_atomic_ext_properties.fp32Flags);
   case DeviceProperty::fp64_atomics_capabilities:
     return static_cast<int>(float_atomic_ext_properties.fp64Flags);
+  case DeviceProperty::dot_product_capabilities:
+    // Level Zero doesn't support granular dp4a capabilities
+    return static_cast<int>(
+        (device_module_properties.flags & ZE_DEVICE_MODULE_FLAG_DP4A) != 0);
   default:
     throw RuntimeException("Failed to find device property");
   }
