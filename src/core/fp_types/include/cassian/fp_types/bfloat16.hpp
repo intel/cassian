@@ -578,7 +578,7 @@ public:
    * difference between 1.0 and the next representable value
    */
   static cassian::Bfloat16 epsilon() {
-    return cassian::Bfloat16(std::numeric_limits<float>::epsilon());
+    return cassian::Bfloat16::encode(0x3c00);
   }
   /**
    * maximum rounding error
