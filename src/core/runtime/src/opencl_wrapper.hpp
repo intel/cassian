@@ -36,37 +36,37 @@ public:
   OpenCLWrapper &operator=(const OpenCLWrapper &) = delete;
   OpenCLWrapper &operator=(OpenCLWrapper &&) = delete;
 
-  cl_api_clGetPlatformIDs clGetPlatformIDs = nullptr;
-  cl_api_clGetDeviceIDs clGetDeviceIDs = nullptr;
-  cl_api_clGetDeviceInfo clGetDeviceInfo = nullptr;
-  cl_api_clCreateContext clCreateContext = nullptr;
-  cl_api_clCreateCommandQueueWithProperties clCreateCommandQueueWithProperties =
+  clGetPlatformIDs_t *clGetPlatformIDs = nullptr;
+  clGetDeviceIDs_t *clGetDeviceIDs = nullptr;
+  clGetDeviceInfo_t *clGetDeviceInfo = nullptr;
+  clCreateContext_t *clCreateContext = nullptr;
+  clCreateCommandQueueWithProperties_t *clCreateCommandQueueWithProperties =
       nullptr;
-  cl_api_clCreateBuffer clCreateBuffer = nullptr;
-  cl_api_clCreateImage clCreateImage = nullptr;
-  cl_api_clReleaseMemObject clReleaseMemObject = nullptr;
-  cl_api_clCreateProgramWithSource clCreateProgramWithSource = nullptr;
-  cl_api_clCreateProgramWithIL clCreateProgramWithIL = nullptr;
-  cl_api_clReleaseProgram clReleaseProgram = nullptr;
-  cl_api_clBuildProgram clBuildProgram = nullptr;
-  cl_api_clGetProgramBuildInfo clGetProgramBuildInfo = nullptr;
-  cl_api_clCreateKernel clCreateKernel = nullptr;
-  cl_api_clReleaseKernel clReleaseKernel = nullptr;
-  cl_api_clSetKernelArg clSetKernelArg = nullptr;
-  cl_api_clFinish clFinish = nullptr;
-  cl_api_clEnqueueReadBuffer clEnqueueReadBuffer = nullptr;
-  cl_api_clEnqueueWriteBuffer clEnqueueWriteBuffer = nullptr;
-  cl_api_clEnqueueNDRangeKernel clEnqueueNDRangeKernel = nullptr;
-  cl_api_clEnqueueReadImage clEnqueueReadImage = nullptr;
-  cl_api_clEnqueueWriteImage clEnqueueWriteImage = nullptr;
-  cl_api_clReleaseContext clReleaseContext = nullptr;
-  cl_api_clReleaseCommandQueue clReleaseCommandQueue = nullptr;
-  cl_api_clCreateSampler clCreateSampler = nullptr;
-  cl_api_clReleaseSampler clReleaseSampler = nullptr;
-  cl_api_clCompileProgram clCompileProgram = nullptr;
-  cl_api_clLinkProgram clLinkProgram = nullptr;
-  cl_api_clGetProgramInfo clGetProgramInfo = nullptr;
-  cl_api_clCreateSubDevices clCreateSubDevices = nullptr;
+  clCreateBuffer_t *clCreateBuffer = nullptr;
+  clCreateImage_t *clCreateImage = nullptr;
+  clReleaseMemObject_t *clReleaseMemObject = nullptr;
+  clCreateProgramWithSource_t *clCreateProgramWithSource = nullptr;
+  clCreateProgramWithIL_t *clCreateProgramWithIL = nullptr;
+  clReleaseProgram_t *clReleaseProgram = nullptr;
+  clBuildProgram_t *clBuildProgram = nullptr;
+  clGetProgramBuildInfo_t *clGetProgramBuildInfo = nullptr;
+  clCreateKernel_t *clCreateKernel = nullptr;
+  clReleaseKernel_t *clReleaseKernel = nullptr;
+  clSetKernelArg_t *clSetKernelArg = nullptr;
+  clFinish_t *clFinish = nullptr;
+  clEnqueueReadBuffer_t *clEnqueueReadBuffer = nullptr;
+  clEnqueueWriteBuffer_t *clEnqueueWriteBuffer = nullptr;
+  clEnqueueNDRangeKernel_t *clEnqueueNDRangeKernel = nullptr;
+  clEnqueueReadImage_t *clEnqueueReadImage = nullptr;
+  clEnqueueWriteImage_t *clEnqueueWriteImage = nullptr;
+  clReleaseContext_t *clReleaseContext = nullptr;
+  clReleaseCommandQueue_t *clReleaseCommandQueue = nullptr;
+  clCreateSampler_t *clCreateSampler = nullptr;
+  clReleaseSampler_t *clReleaseSampler = nullptr;
+  clCompileProgram_t *clCompileProgram = nullptr;
+  clLinkProgram_t *clLinkProgram = nullptr;
+  clGetProgramInfo_t *clGetProgramInfo = nullptr;
+  clCreateSubDevices_t *clCreateSubDevices = nullptr;
 
 private:
   std::unique_ptr<Library> library_;
