@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2025 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
 #include <common.hpp>
+#include <cstdio>
 
 namespace ca = cassian;
 using ca::test::FlagsBuilder;
@@ -66,7 +67,16 @@ void intput_converter(OperandOrder operand, int simd_u, int simd_v, float a,
   case InputType::constant: {
     float in_scalar = ca::generate_value<float>(a, b, 0);
     std::fill(vec.begin(), vec.end(), in_scalar);
-    fb.define("INPUT" + std::to_string(num), std::to_string(in_scalar));
+    const std::size_t buffer_size = 32;
+    char float_chars[buffer_size]{};
+    // use snprintf because there is no viable alternative for used compiler
+    // versions
+    int written =
+        std::snprintf(float_chars, buffer_size, "%.20g", in_scalar); // NOLINT
+    if (written < 0 || written >= buffer_size) {
+      throw std::runtime_error("Value could not be written to supplied buffer");
+    }
+    fb.define("INPUT" + std::to_string(num), float_chars);
   } break;
   }
   fb.define(operand_to_flag(operand, input_type));
