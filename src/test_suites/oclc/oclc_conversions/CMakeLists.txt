@@ -14,11 +14,29 @@ list(
   "src/test_config.cpp"
   "src/implicit_conversion.cpp"
   "src/explicit_cast.cpp"
-  "src/explicit_conversion.cpp"
+  "src/explicit_conversion_vec1.cpp"
+  "src/explicit_conversion_vec2.cpp"
+  "src/explicit_conversion_vec3.cpp"
+  "src/explicit_conversion_vec4.cpp"
+  "src/explicit_conversion_vec8.cpp"
+  "src/explicit_conversion_vec16.cpp"
   "src/utility.hpp"
-  "src/union_reinterpretation.cpp"
-  "src/as_type_reinterpretation.cpp"
-  "src/pointer_cast.cpp")
+  "src/union_reinterpretation_vec1.cpp"
+  "src/union_reinterpretation_vec2.cpp"
+  "src/union_reinterpretation_vec3.cpp"
+  "src/union_reinterpretation_vec4.cpp"
+  "src/union_reinterpretation_vec8.cpp"
+  "src/union_reinterpretation_vec16.cpp"
+  "src/as_type_reinterpretation_1b.cpp"
+  "src/as_type_reinterpretation_2b.cpp"
+  "src/as_type_reinterpretation_4b.cpp"
+  "src/as_type_reinterpretation_8b.cpp"
+  "src/pointer_cast_vec1.cpp"
+  "src/pointer_cast_vec2.cpp"
+  "src/pointer_cast_vec3.cpp"
+  "src/pointer_cast_vec4.cpp"
+  "src/pointer_cast_vec8.cpp"
+  "src/pointer_cast_vec16.cpp")
 list(
   APPEND
   KERNELS

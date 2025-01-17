@@ -51,6 +51,23 @@ enum class OverflowHandling { overflow_default, overflow_saturation };
 std::string to_string(OverflowHandling overflow_handling);
 std::string function_suffix(OverflowHandling overflow_handling);
 
+template <typename TestType> auto generic_test_name() {
+  using from = typename TestType::from_type;
+  using to = typename TestType::to_type;
+
+  return std::string(from::type_name) + "->" + std::string(to::type_name);
+}
+
+template <typename TestType> auto explicit_conversion_test_name() {
+  using from = typename TestType::from_type;
+  using to = typename TestType::to_type;
+  constexpr auto rnd = TestType::rounding_mode;
+  constexpr auto sat = TestType::overflow_handling;
+
+  return std::string(from::type_name) + "->" + std::string(to::type_name) +
+         "/" + to_string(rnd) + "/" + to_string(sat);
+}
+
 class UnknownRoundingModeException : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
