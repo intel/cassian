@@ -620,6 +620,8 @@ Kernel LevelZeroRuntime::create_kernel(
     const std::string &build_options, const std::string &program_type,
     const std::optional<std::string> &spirv_options, bool quiet) {
   ze_result_t result = ZE_RESULT_SUCCESS;
+  logging::debug() << "Build options: " << build_options << '\n';
+  logging::debug() << "SPIR-V options: " << spirv_options.value_or("") << '\n';
   ze_module_handle_t module = ze_create_module(
       source, build_options, program_type, spirv_options, quiet);
 

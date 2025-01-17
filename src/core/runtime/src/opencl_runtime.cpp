@@ -441,6 +441,10 @@ Kernel OpenCLRuntime::create_kernel(
     }
   }
 
+  logging::debug() << "Build options: " << build_options << '\n';
+  logging::debug() << "SPIR-V options: " << spirv_options.value_or("") << '\n';
+  logging::debug() << "Final build options: " << options << '\n';
+
   result = wrapper_.clBuildProgram(program, 1, &devices_[0], options, nullptr,
                                    nullptr);
   if (result != CL_SUCCESS) {
