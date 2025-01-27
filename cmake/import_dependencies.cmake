@@ -13,7 +13,7 @@ if(BUILD_OCL)
   find_path(
     OpenCL_INCLUDE_DIR
     NAMES CL/cl_icd.h
-    PATHS ${OCL_ROOT}
+    HINTS ${OCL_ROOT}
     PATH_SUFFIXES "include")
 
   include(FindPackageHandleStandardArgs)
@@ -34,7 +34,7 @@ if(BUILD_L0)
   find_path(
     LevelZero_INCLUDE_DIR
     NAMES ze_api.h
-    PATHS ${L0_ROOT}
+    HINTS ${L0_ROOT}
     PATH_SUFFIXES "include" "include/level_zero")
 
   include(FindPackageHandleStandardArgs)
