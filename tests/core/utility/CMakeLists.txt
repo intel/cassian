@@ -5,7 +5,7 @@
 #
 
 add_executable(test_utility src/main.cpp src/utility.cpp src/math.cpp
-                            src/comparators.cpp)
+                            src/comparators.cpp src/metaprogramming.cpp)
 
 target_include_directories(
   test_utility PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
