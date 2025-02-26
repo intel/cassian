@@ -157,8 +157,9 @@ auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
     for (auto k = 0; k < T::vector_size; k++) {
-      randomized_input[j][k] = ca::nextafter(
-          input[j - 1][k], std::numeric_limits<ca::scalar_type_v<T>>::max());
+      randomized_input[j][k] =
+          ca::nextafter(randomized_input[j - 1][k],
+                        std::numeric_limits<ca::scalar_type_v<T>>::max());
     }
   }
   return randomized_input;
@@ -168,8 +169,9 @@ template <typename T, ca::EnableIfIsScalar<T> = 0>
 auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
-    randomized_input[j] = ca::nextafter(
-        input[j - 1], std::numeric_limits<ca::scalar_type_v<T>>::max());
+    randomized_input[j] =
+        ca::nextafter(randomized_input[j - 1],
+                      std::numeric_limits<ca::scalar_type_v<T>>::max());
   }
   return randomized_input;
 }
