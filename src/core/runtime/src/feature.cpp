@@ -78,6 +78,8 @@ std::string to_string(const Feature feature) {
     return "integer_dp4a";
   case Feature::integer_dp4a_packed:
     return "integer_dp4a_packed";
+  case Feature::non_uniform_work_group:
+    return "non_uniform_work_group";
   default:
     return "unknown";
   }

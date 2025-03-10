@@ -30,7 +30,7 @@ OpenCL C functionality.
 ### `get_global_size`
 * Status: DONE
 * Goal: Verify that `get_global_size` function works as expected.
-* Description: 
+* Description:
   * Run OpenCL C kernel that calls `get_global_size`.
   * Output is compared against reference values computed on the host.
 * Expectations: Returned value is the same as global work size passed to enqueue function.
@@ -40,13 +40,13 @@ OpenCL C functionality.
 ### `get_global_id`
 * Status: DONE
 * Goal: Verify that `get_global_id` function works as expected.
-* Description: 
+* Description:
   * Run OpenCL C kernel that calls `get_global_id`.
   * Output is compared against reference values computed on the host.
 * Expectations: Returned values contain all ids within enqueued global work size.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
-  
+
 #### `get_global_id - wrappers`
 * Status: DONE
 * Goal: Verify that outside the kernel `get_global_id` function works as expected.
@@ -85,6 +85,17 @@ OpenCL C functionality.
   * Run OpenCL C kernel that calls `get_local_id` in multiple work-groups.
   * Output is compared against reference values computed on the host.
 * Expectations: Returned values contain all ids within enqueued local work sizes.
+* Parameters:
+  * Dimensions: 1D, 2D, 3D.
+  * Work-group size: uniform, non-uniform.
+
+#### `get_local_id - complete`
+* Status: DONE
+* Goal: Verify that `get_local_id` function works as expected for all supported work sizes.
+* Description:
+  * Run OpenCL C kernel that calls `get_local_id`.
+  * Output is compared against reference values computed on the host.
+* Expectations: Returned values contain all ids within enqueued global work size.
 * Parameters:
   * Dimensions: 1D, 2D, 3D.
   

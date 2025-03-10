@@ -637,6 +637,9 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::image2d:
     return get_device_property(DeviceProperty::image) !=
            static_cast<int>(CL_FALSE);
+  case Feature::non_uniform_work_group:
+    return get_device_property(DeviceProperty::non_uniform_work_group) !=
+           static_cast<int>(CL_FALSE);
   case Feature::sampling:
     return get_device_property(DeviceProperty::max_num_samplers) != 0;
   case Feature::int64_atomics:
@@ -787,6 +790,9 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
   case DeviceProperty::image2d:
     return static_cast<int>(cl_get_device_property_at_index<cl_bool>(
         devices_[0], CL_DEVICE_IMAGE_SUPPORT, 0));
+  case DeviceProperty::non_uniform_work_group:
+    return static_cast<int>(cl_get_device_property_at_index<cl_bool>(
+        devices_[0], CL_DEVICE_NON_UNIFORM_WORK_GROUP_SUPPORT, 0));
   case DeviceProperty::max_local_memory_size:
     return static_cast<int>(cl_get_device_property_at_index<cl_ulong>(
         devices_[0], CL_DEVICE_LOCAL_MEM_SIZE, 0));

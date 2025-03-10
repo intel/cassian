@@ -1048,6 +1048,8 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
     return (device_module_properties.fp32flags &
             ZE_DEVICE_FP_FLAG_ROUNDED_DIVIDE_SQRT) != 0;
   }
+  case Feature::non_uniform_work_group:
+    return get_device_property(DeviceProperty::non_uniform_work_group) != 0;
   case Feature::intel_required_subgroup_size: {
     // At the moment there is no option to check for intel_reqd_sub_group_size
     // attribute in LevelZero, so it just checks for numSubGroupSizes
@@ -1162,6 +1164,8 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
     // Level Zero doesn't support granular dp4a capabilities
     return static_cast<int>(
         (device_module_properties.flags & ZE_DEVICE_MODULE_FLAG_DP4A) != 0);
+  case DeviceProperty::non_uniform_work_group:
+    return 0;
   default:
     throw RuntimeException("Failed to find device property");
   }

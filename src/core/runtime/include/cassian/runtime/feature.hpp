@@ -51,7 +51,8 @@ enum class Feature {
   simd16,
   simd32,
   integer_dp4a,
-  integer_dp4a_packed
+  integer_dp4a_packed,
+  non_uniform_work_group
 };
 
 /**

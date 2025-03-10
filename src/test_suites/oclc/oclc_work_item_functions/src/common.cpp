@@ -38,16 +38,17 @@ ca::Feature parse_simd(const std::string &simd) {
 }
 
 std::string get_build_options(const std::string &simd) {
+  std::string build_options = " -cl-std=CL3.0";
   if (simd == "8") {
-    return " -D SIMD=8";
+    build_options += " -D SIMD=8";
   }
   if (simd == "16") {
-    return " -D SIMD=16";
+    build_options += " -D SIMD=16";
   }
   if (simd == "32") {
-    return " -D SIMD=32";
+    build_options += " -D SIMD=32";
   }
-  return "";
+  return build_options;
 }
 
 bool should_skip(const TestConfig &config) {
