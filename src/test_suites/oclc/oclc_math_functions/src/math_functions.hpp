@@ -975,11 +975,12 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
     auto give_requirement = [&requirements, epsilon](scalar_type x,
                                                      scalar_type_t2 y) {
       PrecisionRequirement<scalar_type> requirement;
-      if (x > 0 && y != 0) {
-        requirement.type = PrecisionRequirementType::undefined;
-      } else {
+      if ((x > 0 && y != 0) || (x < 0 && (static_cast<int>(y) % 2 == 1)) ||
+          (x == 0 && y > 0)) {
         requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 8192.0F;
+      } else {
+        requirement.type = PrecisionRequirementType::undefined;
       }
       requirements.emplace_back(requirement);
     };

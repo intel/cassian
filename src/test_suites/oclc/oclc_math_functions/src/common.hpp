@@ -1141,32 +1141,59 @@ replace_fp_with_double_t<T> calculate_powr(const T &input_a, const T &input_b) {
 }
 
 template <typename T_1, typename T_2>
+replace_fp_with_double_t<T_1> calculate_rootn_impl(const T_1 &rad,
+                                                   const T_2 &index) {
+  double radicand = static_cast<double>(rad);
+  const double absRadicand = ca::abs(static_cast<double>(radicand));
+  bool indexIsOdd = index % 2;
+
+  if (ca::isnan(static_cast<double>(index)) ||
+      (ca::isnan(radicand) && !ca::isinf(static_cast<double>(index)))
+      // 7.5.1. Additional Requirements Beyond C99 TC2
+      // rootn(x, 0) returns a NaN.
+      // rootn(x, n) returns a NaN for x < 0 and n is even.
+      || index == 0 || (radicand < -0.0 && !indexIsOdd)) {
+    return static_cast<double>(std::numeric_limits<T_1>::quiet_NaN());
+  } else if (ca::isinf(static_cast<double>(index))) {
+    // no clear definition neither in OpenCL standard, nor in  IEEE 754,
+    // hence deriving from std::pow(radicand, 0)
+    // pow(base, +-0) returns 1 for any base, even when base is NaN.
+    //
+    // TODO: For the special case of rootn(0, inf) any output should be
+    // accepted, but we're alligning with stdlib definition for the sake of
+    // simplicity.
+    return 1.0;
+  } else if (ca::isinf(radicand)) {
+    return ca::copysign(
+        static_cast<double>(std::numeric_limits<T_1>::infinity()), radicand);
+  } else if (absRadicand == 0.0 && index > 0) {
+    // 7.5.1. Additional Requirements Beyond C99 TC2
+    // rootn(+-0, n) is +-0 for odd n > 0.
+    // rootn(+-0, n) is +0 for even n > 0.
+    return ca::copysign(0.0, indexIsOdd ? radicand : 1.0);
+  } else if (absRadicand == 0.0 && index < 0) {
+    // 7.5.1. Additional Requirements Beyond C99 TC2
+    // rootn(+-0, n) is +-inf for odd n < 0.
+    // rootn(+-0, n) is +inf for even n < 0.
+    return ca::copysign(
+        static_cast<double>(std::numeric_limits<T_1>::infinity()),
+        indexIsOdd ? radicand : 1.0);
+  }
+  return ca::copysign(ca::pow(absRadicand, 1.0 / static_cast<double>(index)),
+                      radicand);
+}
+
+template <typename T_1, typename T_2>
 replace_fp_with_double_t<T_1> calculate_rootn(const T_1 &input_a,
                                               const T_2 &input_b) {
   if constexpr (ca::is_vector_v<T_1>) {
     replace_fp_with_double_t<T_1> result{};
     for (auto i = 0; i < T_1::vector_size; i++) {
-      if (input_b[i] == 0) {
-        result[i] = std::numeric_limits<double>::quiet_NaN();
-      } else if (static_cast<double>(input_a[i]) == -0.0 &&
-                 (input_b[i] % 2) == 1 && input_b[i] < 0) {
-        result[i] = -std::numeric_limits<double>::infinity();
-      } else {
-        result[i] = ca::pow(static_cast<double>(input_a[i]),
-                            1.0 / static_cast<double>(input_b[i]));
-      }
+      result[i] = calculate_rootn_impl(input_a[i], input_b[i]);
     }
     return result;
   } else {
-    if (input_b == 0) {
-      return static_cast<double>(std::numeric_limits<T_1>::quiet_NaN());
-    } else if (static_cast<double>(input_a) == -0.0 && (input_b % 2) == 1 &&
-               input_b < 0) {
-      return -std::numeric_limits<double>::infinity();
-    } else {
-      return ca::pow(static_cast<double>(input_a),
-                     1.0 / static_cast<double>(input_b));
-    }
+    return calculate_rootn_impl(input_a, input_b);
   }
 }
 
