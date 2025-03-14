@@ -22,8 +22,7 @@ public:
   LevelZeroWrapper &operator=(const LevelZeroWrapper &) = delete;
   LevelZeroWrapper &operator=(LevelZeroWrapper &&) = delete;
 
-  ze_pfnInit_t zeInit = nullptr;
-  ze_pfnDriverGet_t zeDriverGet = nullptr;
+  ze_pfnInitDrivers_t zeInitDrivers = nullptr;
   ze_pfnDeviceGet_t zeDeviceGet = nullptr;
   ze_pfnDeviceGetProperties_t zeDeviceGetProperties = nullptr;
   ze_pfnDeviceGetModuleProperties_t zeDeviceGetModuleProperties = nullptr;

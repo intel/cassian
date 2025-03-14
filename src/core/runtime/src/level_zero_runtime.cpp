@@ -49,15 +49,14 @@ void LevelZeroRuntime::initialize() {
 
   ze_result_t result = ZE_RESULT_SUCCESS;
 
-  result = wrapper_.zeInit(0);
-  if (result != ZE_RESULT_SUCCESS) {
-    throw RuntimeException("Failed to initialize Level Zero");
-  }
+  ze_init_driver_type_desc_t desc = {ZE_STRUCTURE_TYPE_INIT_DRIVER_TYPE_DESC};
+  desc.pNext = nullptr;
+  desc.flags = ZE_INIT_DRIVER_TYPE_FLAG_GPU;
 
   uint32_t num_driver_handles = 1;
-  result = wrapper_.zeDriverGet(&num_driver_handles, &driver_);
+  result = wrapper_.zeInitDrivers(&num_driver_handles, &driver_, &desc);
   if (result != ZE_RESULT_SUCCESS) {
-    throw RuntimeException("Failed to get Level Zero driver");
+    throw RuntimeException("Failed to initialize and get Level Zero driver");
   }
 
   uint32_t num_devices = 1;
