@@ -88,7 +88,6 @@ protected:
                          std::array<size_t, 3> global_work_size,
                          const std::array<size_t, 3> *local_work_size) override;
 
-private:
   OpenCLWrapper wrapper_;
 
   std::vector<cl_device_id> devices_;

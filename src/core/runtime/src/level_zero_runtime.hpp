@@ -83,7 +83,6 @@ protected:
                          std::array<size_t, 3> global_work_size,
                          const std::array<size_t, 3> *local_work_size) override;
 
-private:
   LevelZeroWrapper wrapper_;
 
   ze_driver_handle_t driver_;
