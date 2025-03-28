@@ -268,18 +268,21 @@ private:
   }
 };
 
-template <class OUTPUT_TYPE, class REFERENCE_TYPE>
+template <class OUTPUT_TYPE, class REFERENCE_TYPE, class... INPUTS>
 class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
   using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
   std::vector<REFERENCE_TYPE> reference;
   std::vector<scalar_type> ulp_values;
   std::vector<OUTPUT_TYPE> result;
+  std::tuple<INPUTS...> input;
 
 public:
   UlpComparator(const std::vector<OUTPUT_TYPE> &result,
                 const std::vector<REFERENCE_TYPE> &reference,
-                const std::vector<scalar_type> &ulp_values)
-      : reference(reference), result(result), ulp_values(ulp_values) {}
+                const std::vector<scalar_type> &ulp_values, INPUTS... input)
+      : reference(reference), result(result), ulp_values(ulp_values),
+        input(input...) {}
+
   bool match(std::vector<OUTPUT_TYPE> const &result) const override {
     for (auto i = 0U; i < result.size(); i++) {
       if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
@@ -302,6 +305,8 @@ public:
     auto ulp_diffs = result;
     std::stringstream os;
     os.precision(std::numeric_limits<double>::max_digits10);
+    os << "\nReference: " + input_to_string<REFERENCE_TYPE>(reference) +
+              "\nULP distance: ";
     os << '{';
     for (auto i = 0; i < result.size(); i++) {
       if constexpr (cassian::is_vector_v<OUTPUT_TYPE>) {
@@ -315,7 +320,33 @@ public:
       }
     }
     os << '}';
-    return "\nReference: " + input_to_string<REFERENCE_TYPE>(reference) +
-           "\nULP distance: " + os.str();
+    os << "\nInputs: "
+       << inputs_to_string(std::make_index_sequence<sizeof...(INPUTS)>());
+    return os.str();
+  }
+
+private:
+  template <size_t... I>
+  std::string inputs_to_string(std::index_sequence<I...>) const {
+    std::stringstream os;
+    if constexpr (sizeof...(I) == 0) {
+      os << "None";
+    } else {
+      os << '{';
+      size_t max_size = std::max({std::get<I>(input).size()...});
+      for (size_t i = 0; i < max_size; ++i) {
+        std::apply(
+            [&os, i](const auto &... vecs) {
+              os << '{';
+              ((vecs.size() > i ? os << ca::to_string(vecs[i]) << ", "
+                                : os << ""),
+               ...);
+              os << '}';
+            },
+            input);
+      }
+      os << '}';
+    }
+    return os.str();
   }
 };

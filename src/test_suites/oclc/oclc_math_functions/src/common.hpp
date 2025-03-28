@@ -440,26 +440,41 @@ replace_fp_with_double_t<T> calculate_cosh(const T &input_a) {
 }
 
 template <typename T>
+replace_fp_with_double_t<T> calculate_cospi_impl(const T &input) {
+  const double pi_value = static_cast<double>(M_PI);
+  auto abs_mod = [](const double &x) { return ca::fabs(ca::fmod(x, 2.0)); };
+  double integer_part{};
+  const double fractional_part =
+      std::modf(static_cast<double>(input), &integer_part);
+  if (input == static_cast<T>(0.0)) {
+    return 1.0;
+  } else if (ca::isinf(input)) {
+    return std::numeric_limits<double>::quiet_NaN();
+  } else if (abs_mod(static_cast<double>(input)) == 0.0) {
+    // Edge case not described in spec
+    // makes the reference func closer to mathematical truth.
+    return 1.0;
+  } else if (abs_mod(static_cast<double>(input)) == 1.0) {
+    // Same as case above.
+    return -1.0;
+  } else if (ca::abs(fractional_part) == 0.5) {
+    return +0.0;
+  } else {
+    return ca::cos(pi_value * static_cast<double>(input));
+  }
+}
+
+template <typename T>
 replace_fp_with_double_t<T> calculate_cospi(const T &input) {
-  double pi_value = static_cast<double>(M_PI);
+  const double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      if (ca::floor(input[i]) - input[i] == 0 &&
-          input[i] != std::numeric_limits<typename T::value_type>::infinity()) {
-        result[i] = 1.0;
-      } else {
-        result[i] = ca::cos(pi_value * static_cast<double>(input[i]));
-      }
+      result[i] = calculate_cospi_impl(input[i]);
     }
     return result;
   } else {
-    if (ca::floor(input) - input == 0 &&
-        input != std::numeric_limits<T>::infinity()) {
-      return 1.0;
-    } else {
-      return ca::cos(pi_value * static_cast<double>(input));
-    }
+    return calculate_cospi_impl(input);
   }
 }
 
@@ -772,29 +787,30 @@ replace_fp_with_double_t<T> calculate_sinh(const T &input) {
 }
 
 template <typename T>
+replace_fp_with_double_t<T> calculate_sinpi_impl(const T &input) {
+  const double pi_value = static_cast<double>(M_PI);
+  if (input == static_cast<T>(0.0)) {
+    return ca::copysign(0.0, static_cast<double>(input));
+  } else if (ca::isinf(input)) {
+    return std::numeric_limits<double>::quiet_NaN();
+  } else if (ca::trunc(input) == input) {
+    return ca::copysign(0.0, static_cast<double>(input));
+  } else {
+    return ca::sin(pi_value * static_cast<double>(input));
+  }
+}
+
+template <typename T>
 replace_fp_with_double_t<T> calculate_sinpi(const T &input) {
-  double pi_value = static_cast<double>(M_PI);
+  const double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      if (input[i] == 0) {
-        result[i] = 0.0;
-      } else if ((ca::floor(input[i]) - input[i]) == 0 &&
-                 !ca::isinf(input[i])) {
-        result[i] = 0.0;
-      } else {
-        result[i] = ca::sin(pi_value * static_cast<double>(input[i]));
-      }
+      result[i] = calculate_sinpi_impl(input[i]);
     }
     return result;
   } else {
-    if (input == 0) {
-      return 0.0;
-    } else if (ca::floor(input) - input == 0 && !ca::isinf(input)) {
-      return 0.0;
-    } else {
-      return ca::sin(pi_value * static_cast<double>(input));
-    }
+    return calculate_sinpi_impl(input);
   }
 }
 
@@ -825,31 +841,42 @@ replace_fp_with_double_t<T> calculate_tanh(const T &input) {
 }
 
 template <typename T>
+replace_fp_with_double_t<T> calculate_tanpi_impl(const T &input) {
+  const double pi_value = static_cast<double>(M_PI);
+  auto abs_mod = [](const double &x) { return ca::fabs(ca::fmod(x, 2.0)); };
+  double integer_part{};
+  const double fractional_part =
+      std::modf(static_cast<double>(input), &integer_part);
+  if (input == static_cast<T>(0.0)) {
+    return ca::copysign(0.0, static_cast<double>(input));
+  } else if (ca::isinf(input)) {
+    return std::numeric_limits<double>::quiet_NaN();
+  } else if (abs_mod(static_cast<double>(input)) == 0.0) {
+    return ca::copysign(0.0, static_cast<double>(input));
+  } else if (abs_mod(static_cast<double>(input)) == 1.0) {
+    return ca::copysign(0.0, -static_cast<double>(input));
+  } else if (abs_mod(static_cast<double>(input) - 0.5) == 0.0 &&
+             ca::fabs(fractional_part) == 0.5) {
+    return std::numeric_limits<double>::infinity();
+  } else if (abs_mod(static_cast<double>(input) - 0.5) == 1.0 &&
+             ca::fabs(fractional_part) == 0.5) {
+    return -std::numeric_limits<double>::infinity();
+  } else {
+    return ca::sin(pi_value * static_cast<double>(input)) /
+           ca::cos(pi_value * static_cast<double>(input));
+  }
+}
+
+template <typename T>
 replace_fp_with_double_t<T> calculate_tanpi(const T &input) {
-  double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      if (ca::fabs(ca::fmod(static_cast<double>(input[i]), 2.0)) == 0.0) {
-        result[i] = ca::copysign(0.0, static_cast<double>(input[i]));
-      } else if (ca::fabs(ca::fmod(static_cast<double>(input[i]), 2.0)) ==
-                 1.0) {
-        result[i] = ca::copysign(0.0, -static_cast<double>(input[i]));
-      } else {
-        result[i] = ca::sin(pi_value * static_cast<double>(input[i])) /
-                    ca::cos(pi_value * static_cast<double>(input[i]));
-      }
+      result[i] = calculate_tanpi_impl(input[i]);
     }
     return result;
   } else {
-    if (ca::fabs(ca::fmod(input, T(2.0))) == 0.0) {
-      return ca::copysign(0.0, static_cast<double>(input));
-    } else if (ca::fabs(ca::fmod(input, T(2.0))) == 1.0) {
-      return ca::copysign(0.0, -static_cast<double>(input));
-    } else {
-      return ca::sin(pi_value * static_cast<double>(input)) /
-             ca::cos(pi_value * static_cast<double>(input));
-    }
+    return calculate_tanpi_impl(input);
   }
 }
 

@@ -204,13 +204,28 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(input_type_1(scalar_type_1(1)));
     values.add_edge_case(higher_than_one);
   } else if constexpr (T::function == Function::cospi) {
+    const auto infinity =
+        input_type_1(std::numeric_limits<scalar_type_1>::infinity());
+    // Set threshold to largest representable odd integer using mantissa digits
+    const int64_t precision_threshold =
+        (1LL << (std::numeric_limits<scalar_type_1>::digits - 1)) - 1LL;
+    const auto even_number = input_type_1(
+        scalar_type_1(generate_value<int64_t>(-precision_threshold,
+                                              precision_threshold, {0}) &
+                      ~1LL));
+    const auto odd_number = input_type_1(
+        scalar_type_1(generate_value<int64_t>(-precision_threshold,
+                                              precision_threshold, {0}) |
+                      1LL));
     values.add_random_case(generate_value<input_type_1>());
-    values.add_edge_case(input_type_1(scalar_type_1(0)));
-    values.add_edge_case(input_type_1(scalar_type_1(-0)));
-    values.add_edge_case(input_type_1(
-        ca::ceil(generate_value<scalar_type_1>() + scalar_type_1(0.5F))));
-    values.add_edge_case(
-        input_type_1(std::numeric_limits<scalar_type_1>::infinity()));
+    values.add_edge_case(input_type_1(scalar_type_1(0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)));
+    values.add_edge_case(even_number);
+    values.add_edge_case(odd_number);
+    values.add_edge_case(even_number + input_type_1(scalar_type_1(0.5F)));
+    values.add_edge_case(odd_number + input_type_1(scalar_type_1(0.5F)));
+    values.add_edge_case(infinity);
+    values.add_edge_case(-infinity);
   } else if constexpr (T::function == Function::ceil) {
     values.add_random_case(generate_value<input_type_1>());
     values.add_edge_case(
@@ -416,7 +431,6 @@ template <class T> constexpr auto get_gentype_values() {
     const auto int_lower_than_zero =
         input_type_1(ca::ceil(generate_value<scalar_type_1>(
             std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(-1))));
-
     values.add_random_case(generate_value<input_type_1>());
     values.add_edge_case(input_type_1(scalar_type_1(0.0F)));
     values.add_edge_case(input_type_1(scalar_type_1(-0.0F)));
@@ -440,15 +454,23 @@ template <class T> constexpr auto get_gentype_values() {
   } else if constexpr (T::function == Function::tanpi) {
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
-    const auto even_number =
-        input_type_1(generate_value<int>() * scalar_type_1(2));
+    // Set threshold to largest representable odd integer using mantissa digits
+    const int64_t precision_threshold =
+        (1LL << (std::numeric_limits<scalar_type_1>::digits - 1)) - 1LL;
+    const auto even_number = input_type_1(
+        scalar_type_1(generate_value<int64_t>(-precision_threshold,
+                                              precision_threshold, {0}) &
+                      ~1LL));
     const auto odd_number = input_type_1(
-        generate_value<int>() * scalar_type_1(2) + scalar_type_1(1));
+        scalar_type_1(generate_value<int64_t>(-precision_threshold,
+                                              precision_threshold, {0}) |
+                      1LL));
     values.add_random_case(generate_value<input_type_1>(
         scalar_type_1(-0.5 + 0.05), scalar_type_1(0.5 - 0.05)));
-    values.add_edge_case(input_type_1(scalar_type_1(0.0F)));
-    values.add_edge_case(input_type_1(scalar_type_1(1.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(+0.0F)));
+    values.add_edge_case(input_type_1(scalar_type_1(-0.0F)));
     values.add_edge_case(infinity);
+    values.add_edge_case(-infinity);
     values.add_edge_case(even_number);
     values.add_edge_case(odd_number);
     values.add_edge_case(even_number + input_type_1(scalar_type_1(0.5F)));
@@ -1150,20 +1172,23 @@ void run_section(const T &oclc_function, INPUT &input,
     SUCCEED();
     return;
   }
-  REQUIRE_THAT(result, UlpComparator(result, reference_vector,
-                                     get_ulp_values<output_type>(T::function,
-                                                                 work_size)));
+  REQUIRE_THAT(
+      result, UlpComparator(result, reference_vector,
+                            get_ulp_values<output_type>(T::function, work_size),
+                            input.input_a, input.input_b, input.input_c));
   if (oclc_function.get_is_store() && T::arg_num == 2) {
     REQUIRE_THAT(
         argument_2_output,
         UlpComparator(argument_2_output, reference_vector_2,
-                      get_ulp_values<input_b_type>(T::function, work_size)));
+                      get_ulp_values<input_b_type>(T::function, work_size),
+                      input.input_a, input.input_b, input.input_c));
   }
   if (oclc_function.get_is_store() && T::arg_num == 3) {
     REQUIRE_THAT(
         argument_3_output,
         UlpComparator(argument_3_output, reference_vector_3,
-                      get_ulp_values<input_c_type>(T::function, work_size)));
+                      get_ulp_values<input_c_type>(T::function, work_size),
+                      input.input_a, input.input_b, input.input_c));
   }
 }
 
