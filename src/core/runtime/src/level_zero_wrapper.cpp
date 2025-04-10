@@ -20,6 +20,9 @@ namespace cassian {
 LevelZeroWrapper::LevelZeroWrapper() {
   library_ = load_library(l0_loader);
 
+  zeInit = reinterpret_cast<ze_pfnInit_t>(library_->get_function("zeInit"));
+  zeDriverGet = reinterpret_cast<ze_pfnDriverGet_t>(
+      library_->get_function("zeDriverGet"));
   zeInitDrivers = reinterpret_cast<ze_pfnInitDrivers_t>(
       library_->get_function("zeInitDrivers"));
   zeDeviceGet = reinterpret_cast<ze_pfnDeviceGet_t>(

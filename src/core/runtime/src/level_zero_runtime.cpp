@@ -47,16 +47,38 @@ LevelZeroRuntime::~LevelZeroRuntime() {
 void LevelZeroRuntime::initialize() {
   logging::info() << "Runtime: " << name() << '\n';
 
-  ze_result_t result = ZE_RESULT_SUCCESS;
-
-  ze_init_driver_type_desc_t desc = {ZE_STRUCTURE_TYPE_INIT_DRIVER_TYPE_DESC};
-  desc.pNext = nullptr;
-  desc.flags = ZE_INIT_DRIVER_TYPE_FLAG_GPU;
+  ze_result_t result = ZE_RESULT_ERROR_UNKNOWN;
 
   uint32_t num_driver_handles = 1;
-  result = wrapper_.zeInitDrivers(&num_driver_handles, &driver_, &desc);
+  if (wrapper_.zeInitDrivers != nullptr) {
+    ze_init_driver_type_desc_t desc = {ZE_STRUCTURE_TYPE_INIT_DRIVER_TYPE_DESC};
+    desc.pNext = nullptr;
+    desc.flags = ZE_INIT_DRIVER_TYPE_FLAG_GPU;
+
+    result = wrapper_.zeInitDrivers(&num_driver_handles, &driver_, &desc);
+  }
   if (result != ZE_RESULT_SUCCESS) {
-    throw RuntimeException("Failed to initialize and get Level Zero driver");
+    logging::info()
+        << "zeInitDrivers function not found or returned "
+           "ZE_RESULT_ERROR_UNINITIALIZED, using zeInit/zeDriverGet path\n";
+
+    if (wrapper_.zeInit == nullptr) {
+      throw RuntimeException(
+          "Failed to get zeInit function from Level Zero driver");
+    }
+    result = wrapper_.zeInit(ZE_INIT_FLAG_GPU_ONLY);
+    if (result != ZE_RESULT_SUCCESS) {
+      throw RuntimeException("Failed to initialize Level Zero driver");
+    }
+
+    if (wrapper_.zeDriverGet == nullptr) {
+      throw RuntimeException(
+          "Failed to get zeDriverGet function from Level Zero driver");
+    }
+    result = wrapper_.zeDriverGet(&num_driver_handles, &driver_);
+    if (result != ZE_RESULT_SUCCESS) {
+      throw RuntimeException("Failed to get Level Zero driver");
+    }
   }
 
   uint32_t num_devices = 1;
