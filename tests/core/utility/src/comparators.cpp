@@ -253,6 +253,27 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
       REQUIRE_FALSE(range_comparator.match(result_below));
     }
   }
+
+  SECTION("any") {
+    const double reference = 10.0;
+    const double result = 0.0;
+
+    PrecisionRequirement<double> any_requirement{PrecisionRequirementType::any};
+    PrecisionComparator any_comparator(result, reference, any_requirement);
+
+    REQUIRE(any_comparator.match(result));
+  }
+
+  SECTION("undefined") {
+    const double reference = 10.0;
+    const double result = 0.0;
+
+    PrecisionRequirement<double> any_requirement{
+        PrecisionRequirementType::undefined};
+    PrecisionComparator any_comparator(result, reference, any_requirement);
+
+    REQUIRE(any_comparator.match(result));
+  }
 }
 
 TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
@@ -405,6 +426,41 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
       REQUIRE_FALSE(range_comparator.match(result_mixed));
     }
   }
+
+  SECTION("all requirements") {
+    const ca::Vector<double, 5> reference = {20.0, 15.0, 10.0, 5.0, 5.0};
+    const double error_value = 1.0;
+    const double ulp_value = 0.0;
+    const double min_value = 9.0;
+    const double max_value = 11.0;
+    const ca::Vector<double, 5> result = {20.0, 15.0, 10.0, 0.0, 0.0};
+
+    std::vector<PrecisionRequirement<double>> requirements = {
+        PrecisionRequirement<double>{PrecisionRequirementType::error_value,
+                                     error_value},
+        PrecisionRequirement<double>{PrecisionRequirementType::ulp_value,
+                                     ulp_value},
+        PrecisionRequirement<double>{PrecisionRequirementType::value_range,
+                                     min_value, max_value},
+        PrecisionRequirement<double>{PrecisionRequirementType::any},
+        PrecisionRequirement<double>{PrecisionRequirementType::undefined}};
+
+    PrecisionComparator comparator(result, reference, requirements);
+
+    REQUIRE(comparator.match(result));
+
+    const ca::Vector<double, 5> result_error_outside = {22.0, 15.0, 10.0, 0.0,
+                                                        0.0};
+    REQUIRE_FALSE(comparator.match(result_error_outside));
+
+    const ca::Vector<double, 5> result_ulp_outside = {
+        20.0, std::nextafter(15.0, 16.0), 10.0, 0.0, 0.0};
+    REQUIRE_FALSE(comparator.match(result_ulp_outside));
+
+    const ca::Vector<double, 5> result_range_outside = {20.0, 15.0, 12.0, 0.0,
+                                                        0.0};
+    REQUIRE_FALSE(comparator.match(result_range_outside));
+  }
 }
 
 TEST_CASE("UlpComparator - scalar", "[UlpComparator]") {
@@ -488,11 +544,12 @@ TEST_CASE("UlpComparator - vector", "[UlpComparator]") {
     }
 
     SECTION("in range - positive value") {
-      const std::vector<double> reference = {
-          2.0, std::nextafter(2.0, 4.0),
-          std::nextafter(std::nextafter(2.0, 4.0), 4.0)};
-      const std::vector<double> result = {2.0, 2.0, 2.0};
-      const std::vector<double> ulp_values = {0.0, 1.0, 2.0};
+      const std::vector<ca::Vector<double, 2>> reference = {
+          {2.0, std::nextafter(2.0, 4.0)},
+          {2.0, std::nextafter(std::nextafter(2.0, 4.0), 4.0)}};
+      const std::vector<ca::Vector<double, 2>> result = {{2.0, 2.0},
+                                                         {2.0, 2.0}};
+      const std::vector<double> ulp_values = {1.0, 2.0};
 
       UlpComparator comparator(result, reference, ulp_values);
 
@@ -512,11 +569,13 @@ TEST_CASE("UlpComparator - vector", "[UlpComparator]") {
     }
 
     SECTION("all outside") {
-      const std::vector<double> reference = {
-          std::nextafter(1.0, 2.0), std::nextafter(2.0, 4.0),
-          std::nextafter(std::nextafter(2.0, 4.0), 4.0)};
-      const std::vector<double> result = {2.0, 2.0, 2.0};
-      const std::vector<double> ulp_values = {0.0, 0.0, 1.0};
+      const std::vector<ca::Vector<double, 2>> reference = {
+          {std::nextafter(1.0, 2.0), std::nextafter(2.0, 4.0)},
+          {std::nextafter(std::nextafter(2.0, 4.0), 4.0),
+           std::nextafter(std::nextafter(3.0, 4.0), 4.0)}};
+      const std::vector<ca::Vector<double, 2>> result = {{1.0, 2.0},
+                                                         {2.0, 3.0}};
+      const std::vector<double> ulp_values = {0.0, 1.0};
 
       UlpComparator comparator(result, reference, ulp_values);
 
@@ -524,11 +583,12 @@ TEST_CASE("UlpComparator - vector", "[UlpComparator]") {
     }
 
     SECTION("mixed outside") {
-      const std::vector<double> reference = {
-          std::nextafter(1.0, 2.0), std::nextafter(2.0, 4.0),
-          std::nextafter(std::nextafter(2.0, 4.0), 4.0)};
-      const std::vector<double> result = {2.0, 2.0, 2.0};
-      const std::vector<double> ulp_values = {1.0, 1.0, 1.0};
+      const std::vector<ca::Vector<double, 2>> reference = {
+          {std::nextafter(1.0, 2.0), std::nextafter(2.0, 4.0)},
+          {std::nextafter(std::nextafter(2.0, 4.0), 4.0), 2.0}};
+      const std::vector<ca::Vector<double, 2>> result = {{2.0, 2.0},
+                                                         {2.0, 2.0}};
+      const std::vector<double> ulp_values = {1.0, 1.0};
 
       UlpComparator comparator(result, reference, ulp_values);
 
