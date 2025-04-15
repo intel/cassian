@@ -13,7 +13,7 @@ def get_root_directory():
     while p.parent != ".git":
         p = p.parent
         for i in p.rglob("*"):
-            if i.is_dir() and i.name == ".git":
+            if i.name == ".git":
                 return Path(p)
     return None
 
