@@ -359,10 +359,27 @@ Half remainder(Half value_a, Half value_b) {
 }
 
 Half nextafter(const Half from, const Half to) {
-  return (from < to)
-             ? Half(from + std::numeric_limits<Half>::epsilon())
-             : (from > to ? Half(from - std::numeric_limits<Half>::epsilon())
-                          : Half(to));
+  if (isnan(from) || isnan(to)) {
+    return from + to;
+  }
+  if (from == to) {
+    return to;
+  }
+  if (from == 0.0F) {
+    return (to > 0.0F) ? std::numeric_limits<Half>::denorm_min()
+                       : -std::numeric_limits<Half>::denorm_min();
+  }
+
+  int16_t from_data = from.decode();
+  int16_t to_data = to.decode();
+
+  if (from_data >= 0) {
+    from_data += (to_data >= from_data) ? 1 : -1;
+  } else {
+    from_data += (to_data >= from_data && to_data < 0) ? 1 : -1;
+  }
+
+  return Half::encode(from_data);
 }
 
 Half rint(Half value) { return Half(std::rint(static_cast<float>(value))); }

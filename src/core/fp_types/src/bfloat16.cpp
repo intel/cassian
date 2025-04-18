@@ -141,11 +141,28 @@ Bfloat16 sqrt(Bfloat16 value) {
 }
 
 Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to) {
-  return (from < to)
-             ? Bfloat16(from + std::numeric_limits<Bfloat16>::epsilon())
-             : (from > to
-                    ? Bfloat16(from - std::numeric_limits<Bfloat16>::epsilon())
-                    : Bfloat16(to));
+  if (isnan(from) || isnan(to)) {
+    return from + to;
+  }
+  if (from == to) {
+    return to;
+  }
+  if (from == static_cast<Bfloat16>(0.0F)) {
+    return (to > static_cast<Bfloat16>(0.0F))
+               ? std::numeric_limits<Bfloat16>::denorm_min()
+               : -std::numeric_limits<Bfloat16>::denorm_min();
+  }
+
+  int16_t from_data = from.decode();
+  int16_t to_data = to.decode();
+
+  if (from_data >= 0) {
+    from_data += (to_data >= from_data) ? 1 : -1;
+  } else {
+    from_data += (to_data >= from_data && to_data < 0) ? 1 : -1;
+  }
+
+  return Bfloat16::encode(from_data);
 }
 
 } // namespace cassian

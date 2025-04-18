@@ -482,7 +482,7 @@ public:
   static constexpr std::float_round_style round_style = std::round_to_nearest;
 
   /**
-   * cassian::Tfloat is IEC 559/IEEE 745 type
+   * cassian::Tfloat is IEC 559/IEEE 754 type
    */
   static constexpr bool is_iec559 = true;
 
@@ -567,7 +567,8 @@ public:
    * difference between 1.0 and the next representable value
    */
   static cassian::Tfloat epsilon() {
-    return cassian::Tfloat(std::numeric_limits<float>::epsilon());
+    // encode(0x3f802000) - encode(0x3f800000);
+    return cassian::Tfloat::encode(0x3a800000);
   }
   /**
    * maximum rounding error

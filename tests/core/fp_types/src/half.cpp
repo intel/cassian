@@ -648,15 +648,66 @@ TEST_CASE("half - nextafter") {
   SECTION("zero -> one") {
     const cassian::Half a(0.0F);
     const cassian::Half b(1.0F);
-    const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == epsilon);
+    const cassian::Half denorm =
+        std::numeric_limits<cassian::Half>::denorm_min();
+    REQUIRE(cassian::nextafter(a, b) == denorm);
   }
 
   SECTION("zero -> -one") {
     const cassian::Half a(0.0F);
     const cassian::Half b(-1.0F);
+    const cassian::Half denorm =
+        std::numeric_limits<cassian::Half>::denorm_min();
+    REQUIRE(cassian::nextafter(a, b) == -denorm);
+  }
+
+  SECTION("1.5 -> greater than 1.5") {
+    const cassian::Half a(1.5F);
+    const cassian::Half b(2.0F);
     const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == -epsilon);
+    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+  }
+
+  SECTION("1.5 -> lesser than 1.5") {
+    const cassian::Half a(1.5F);
+    const cassian::Half b(0.0F);
+    const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == a - epsilon);
+  }
+
+  SECTION("-1.5 -> greater than -1.5") {
+    const cassian::Half a(-1.5F);
+    const cassian::Half b(-0.5F);
+    const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+  }
+
+  SECTION("-1.5 -> greater than zero") {
+    const cassian::Half a(-1.5F);
+    const cassian::Half b(0.5F);
+    const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+  }
+
+  SECTION("-1.5 -> lesser than -1.5") {
+    const cassian::Half a(-1.5F);
+    const cassian::Half b(-2.0F);
+    const cassian::Half epsilon = std::numeric_limits<cassian::Half>::epsilon();
+    REQUIRE(cassian::nextafter(a, b) == a - epsilon);
+  }
+
+  SECTION("x -> greater than x (high exponent)") {
+    const cassian::Half a = cassian::Half::encode(0x7000);
+    const cassian::Half b = cassian::Half::encode(0x7800);
+    const cassian::Half expected = cassian::Half::encode(0x7001);
+    REQUIRE(cassian::nextafter(a, b) == expected);
+  }
+
+  SECTION("x -> lesser than x (high exponent)") {
+    const cassian::Half a = cassian::Half::encode(0x7000);
+    const cassian::Half b = cassian::Half::encode(0x6000);
+    const cassian::Half expected = cassian::Half::encode(0x6fff);
+    REQUIRE(cassian::nextafter(a, b) == expected);
   }
 
   SECTION("zero -> zero") {

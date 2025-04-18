@@ -489,7 +489,7 @@ public:
   static constexpr std::float_round_style round_style = std::round_to_nearest;
 
   /**
-   * cassian::Bfloat16 is IEC 559/IEEE 745 type
+   * cassian::Bfloat16 is IEC 559/IEEE 754 type
    */
   static constexpr bool is_iec559 = true;
 

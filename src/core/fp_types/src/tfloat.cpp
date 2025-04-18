@@ -134,11 +134,29 @@ Tfloat sqrt(Tfloat value) {
 }
 
 Tfloat nextafter(const Tfloat from, const Tfloat to) {
-  return (from < to)
-             ? Tfloat(from + std::numeric_limits<Tfloat>::epsilon())
-             : (from > to
-                    ? Tfloat(from - std::numeric_limits<Tfloat>::epsilon())
-                    : Tfloat(to));
+  if (isnan(from) || isnan(to)) {
+    return from + to;
+  }
+  if (from == to) {
+    return to;
+  }
+  if (from == static_cast<Tfloat>(0.0F)) {
+    return (to > static_cast<Tfloat>(0.0F))
+               ? std::numeric_limits<Tfloat>::denorm_min()
+               : -std::numeric_limits<Tfloat>::denorm_min();
+  }
+
+  int32_t from_data = from.decode();
+  int32_t to_data = to.decode();
+
+  if (from_data >= 0) {
+    from_data += (to_data >= from_data) ? 0x00002000 : -0x00002000;
+  } else {
+    from_data +=
+        (to_data >= from_data && to_data < 0) ? 0x00002000 : -0x00002000;
+  }
+
+  return Tfloat::encode(from_data);
 }
 
 } // namespace cassian
