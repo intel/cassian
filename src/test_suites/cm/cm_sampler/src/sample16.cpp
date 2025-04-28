@@ -340,7 +340,7 @@ TEMPLATE_TEST_CASE("cm_sample16_2d_nullmask", "[cm][image][sampler]",
                    [height](float value) { return value / height; });
 
     ca::test::output(res, ref.size());
-    ca::test::output(nullmask, 1);
+    ca::test::output(nullmask, 8);
     ca::test::input(image);
     ca::test::sampler(ca::SamplerCoordinates::normalized,
                       ca::SamplerAddressingMode::clamp);
