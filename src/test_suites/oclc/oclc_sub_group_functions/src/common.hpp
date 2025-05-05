@@ -168,7 +168,8 @@ private:
         std::string(" -D USE_ALL=") + use_all_func +
         std::string(" -D DELTA_SIZE=") + std::to_string(delta_size) +
         std::string(" -D MAX_VALUE=") + max_value +
-        std::string(" -D MIN_VALUE=") + min_value;
+        std::string(" -D MIN_VALUE=") + min_value + std::string(" ") +
+        kernel_build_options;
     return build_options;
   };
 
@@ -228,6 +229,7 @@ private:
       build_options += std::string(" -D IMAGE_HEIGHT=") +
                        std::to_string(image_config.dim.height);
     }
+    build_options += std::string(" ") + kernel_build_options;
     return build_options;
   };
 };
@@ -295,7 +297,7 @@ std::vector<std::vector<T>> run_kernel(
   }
   uint32_t img_id = 0;
   for (auto each_image : images) {
-    std::vector<T> output(img_data_count[img_id], 0);
+    std::vector<T> output(img_data_count[img_id], static_cast<T>(0));
     runtime->read_image(each_image, output.data());
     outputs.push_back(output);
     runtime->release_image(each_image);
@@ -425,10 +427,10 @@ void test_subgroup_generic(const TestConfig &config, const std::string &name,
                        input_data_values.size() * sizeof(uint32_t),
                        input_data_values.size());
 
-    test_description.kernel_name = "test_kernel_" + name_to_set;
+    test_description.kernel_name = "test_kernel_" + name;
     test_description.kernel_file_name =
-        "kernels/oclc_sub_group_functions/" + name_to_set + ".cl";
-    test_description.kernel_func_names = std::vector{name};
+        "kernels/oclc_sub_group_functions/" + name + ".cl";
+    test_description.kernel_func_names = std::vector{name_to_set};
     test_description.change_prefix_for_all_types = false;
     if (name_to_set == "sub_group_broadcast") {
       test_description.change_prefix_for_types = true;
