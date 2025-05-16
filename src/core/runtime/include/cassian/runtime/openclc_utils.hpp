@@ -17,13 +17,21 @@
  */
 namespace cassian {
 /**
+ * Checks if OpenCL C preprocessor macro is true.
+ *
+ * @param[in] runtime
+ * @param[in] program_type
+ * @param[in] if_clause #if clause to check
+ */
+bool check_optional_openclc_macro(Runtime *runtime,
+                                  const std::string &program_type,
+                                  const std::string &if_clause);
+/**
  * Checks if OpenCL C 3.0 optional feature is supported
  *
  * @param[in] runtime
  * @param[in] program_type
  * @param[in] feature_macro name of feature
- * @throws cassian::RuntimeException Thrown if layout is unsupported for the
- * number of components
  */
 bool check_optional_openclc_feature_support(Runtime *runtime,
                                             const std::string &program_type,
