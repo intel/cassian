@@ -170,6 +170,17 @@ template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
   using test_type = typename TEST_CASE_TYPE::test_type;
   using test_host_type = typename TEST_CASE_TYPE::test_host_type;
 
+  ca::Requirements requirements;
+  function_type_requirements(requirements, test_case.program_type,
+                             test_case.function_type);
+  memory_scope_requirements(requirements, test_case.program_type,
+                            test_case.memory_scope);
+  memory_order_requirements(requirements, test_case.program_type,
+                            test_case.success_memory_order);
+  if (ca::should_skip_test(requirements, *test_case.runtime)) {
+    return;
+  }
+
   const std::string kernel_path = get_kernel_path(test_case.memory_type);
   const std::string build_options = get_build_options<test_type>(
       test_case.local_work_size, test_case.function_type,
@@ -202,12 +213,6 @@ void set_memory_orders(TEST_CASE_TYPE test_case,
   for (const auto success_memory_order : success_memory_orders) {
     test_case.success_memory_order = success_memory_order;
     SECTION("success_" + to_string(success_memory_order)) {
-      if (!is_memory_order_supported(test_case.runtime, test_case.program_type,
-                                     success_memory_order)) {
-        ca::logging::info()
-            << to_string(success_memory_order) << " section skipped\n";
-        continue;
-      }
       for (const auto failure_memory_order : failure_memory_orders) {
         test_case.failure_memory_order = failure_memory_order;
         SECTION("failure_" + to_string(failure_memory_order)) {
@@ -245,13 +250,6 @@ void test_signatures(TEST_CASE_TYPE test_case,
               for (const auto function_type : functions_types) {
                 test_case.function_type = function_type;
                 SECTION(to_string(function_type)) {
-                  if (!is_function_type_supported(test_case.runtime,
-                                                  test_case.program_type,
-                                                  function_type)) {
-                    ca::logging::info()
-                        << to_string(function_type) << " section skipped\n";
-                    continue;
-                  }
                   if (function_type == FunctionType::implicit) {
                     run_test(test_case);
                   } else if (function_type ==
@@ -263,13 +261,6 @@ void test_signatures(TEST_CASE_TYPE test_case,
                     for (const auto memory_scope : memory_scopes) {
                       test_case.memory_scope = memory_scope;
                       SECTION(to_string(memory_scope)) {
-                        if (!is_memory_scope_supported(test_case.runtime,
-                                                       test_case.program_type,
-                                                       memory_scope)) {
-                          ca::logging::info() << to_string(memory_scope)
-                                              << " section skipped\n";
-                          continue;
-                        }
                         set_memory_orders(test_case, failure_memory_orders,
                                           success_memory_orders);
                       }

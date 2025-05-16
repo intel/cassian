@@ -8,10 +8,13 @@
 #include <cassian/runtime/device_properties.hpp>
 #include <cassian/runtime/openclc_utils.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
 #include <common.hpp>
 #include <stdexcept>
 #include <test_config.hpp>
+
+namespace ca = cassian;
 
 std::string to_string(FunctionType function_type) {
   switch (function_type) {
@@ -138,7 +141,7 @@ std::vector<int32_t> to_bool_vector(ComparisonResult comparison_result,
 }
 
 int get_local_work_size(const int global_work_size,
-                        const cassian::Runtime &runtime) {
+                        const ca::Runtime &runtime) {
   const int max_size = runtime.get_device_property(
       cassian::DeviceProperty::max_total_group_size);
   return global_work_size > max_size ? max_size : global_work_size;
@@ -157,52 +160,56 @@ int suggest_work_size(const std::string &type) {
   return default_size;
 }
 
-bool is_function_type_supported(cassian::Runtime *runtime,
+void function_type_requirements(ca::Requirements &requirements,
                                 const std::string &program_type,
                                 FunctionType function_type) {
   switch (function_type) {
   case FunctionType::implicit:
-    return cassian::check_optional_openclc_feature_support(
-               runtime, program_type, "__opencl_c_atomic_order_seq_cst") &&
-           cassian::check_optional_openclc_feature_support(
-               runtime, program_type, "__opencl_c_atomic_scope_device");
+    requirements.openclc_feature("__opencl_c_atomic_order_seq_cst",
+                                 program_type);
+    [[fallthrough]];
   case FunctionType::explicit_memory_order:
-    return cassian::check_optional_openclc_feature_support(
-        runtime, program_type, "__opencl_c_atomic_scope_device");
+    requirements.openclc_feature("__opencl_c_atomic_scope_device",
+                                 program_type);
+    return;
   default:
-    return true;
+    return;
   }
 }
 
-bool is_memory_order_supported(cassian::Runtime *runtime,
+void memory_order_requirements(ca::Requirements &requirements,
                                const std::string &program_type,
                                MemoryOrder memory_order) {
   switch (memory_order) {
   case MemoryOrder::acquire:
   case MemoryOrder::release:
   case MemoryOrder::acq_rel:
-    return cassian::check_optional_openclc_feature_support(
-        runtime, program_type, "__opencl_c_atomic_order_acq_rel");
+    requirements.openclc_feature("__opencl_c_atomic_order_acq_rel",
+                                 program_type);
+    return;
   case MemoryOrder::seq_cst:
-    return cassian::check_optional_openclc_feature_support(
-        runtime, program_type, "__opencl_c_atomic_order_seq_cst");
+    requirements.openclc_feature("__opencl_c_atomic_order_seq_cst",
+                                 program_type);
+    return;
   default:
-    return true;
+    return;
   }
 }
 
-bool is_memory_scope_supported(cassian::Runtime *runtime,
+void memory_scope_requirements(ca::Requirements &requirements,
                                const std::string &program_type,
                                MemoryScope memory_scope) {
   switch (memory_scope) {
   case MemoryScope::device:
-    return cassian::check_optional_openclc_feature_support(
-        runtime, program_type, "__opencl_c_atomic_scope_device");
+    requirements.openclc_feature("__opencl_c_atomic_scope_device",
+                                 program_type);
+    return;
   case MemoryScope::all_svm_devices:
-    return cassian::check_optional_openclc_feature_support(
-        runtime, program_type, "__opencl_c_atomic_scope_all_devices");
+    requirements.openclc_feature("__opencl_c_atomic_scope_all_devices",
+                                 program_type);
+    return;
   default:
-    return true;
+    return;
   }
 }
 

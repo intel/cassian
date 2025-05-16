@@ -55,6 +55,15 @@ std::string get_build_options(const MemoryFlag memory_flag,
 }
 
 template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
+  ca::Requirements requirements;
+  memory_scope_requirements(requirements, test_case.program_type,
+                            test_case.memory_scope);
+  memory_order_requirements(requirements, test_case.program_type,
+                            test_case.memory_order);
+  if (ca::should_skip_test(requirements, *test_case.runtime)) {
+    return;
+  }
+
   const std::string kernel_path = get_kernel_path();
   const std::string build_options = get_build_options<TEST_CASE_TYPE>(
       test_case.memory_flag, test_case.memory_order, test_case.memory_scope);
@@ -74,7 +83,6 @@ void test_signatures(TEST_CASE_TYPE test_case,
   for (const auto memory_flag : memory_flags) {
     test_case.memory_flag = memory_flag;
     SECTION(to_string(memory_flag)) {
-
       for (const auto memory_scope : memory_scopes) {
         test_case.memory_scope = memory_scope;
         SECTION(to_string(memory_scope)) {
@@ -82,24 +90,11 @@ void test_signatures(TEST_CASE_TYPE test_case,
               memory_scope != MemoryScope::work_item) {
             continue;
           }
-          if (!is_memory_scope_supported(
-                  test_case.runtime, test_case.program_type, memory_scope)) {
-            ca::logging::info()
-                << to_string(memory_scope) << " section skipped\n";
-            continue;
-          }
           for (const auto memory_order : memory_orders) {
             test_case.memory_order = memory_order;
             SECTION(to_string(memory_order)) {
               if (memory_flag == MemoryFlag::image &&
                   memory_order != MemoryOrder::acq_rel) {
-                continue;
-              }
-              if (!is_memory_order_supported(test_case.runtime,
-                                             test_case.program_type,
-                                             memory_order)) {
-                ca::logging::info()
-                    << to_string(memory_order) << " section skipped\n";
                 continue;
               }
               run_test(test_case);
