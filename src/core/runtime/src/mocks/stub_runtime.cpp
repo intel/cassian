@@ -42,4 +42,14 @@ int StubRuntime::get_device_property(const DeviceProperty property) const {
   }
 }
 
+Kernel StubRuntime::create_kernel(
+    const std::string & /*kernel_name*/, const std::string & /*source*/,
+    const std::string & /*build_options*/, const std::string & /*program_type*/,
+    const std::optional<std::string> & /*spirv_options*/, bool /*quiet*/) {
+  if (!create_kernel_success_) {
+    throw RuntimeException("Failed to create kernel");
+  }
+  return Kernel();
+}
+
 } // namespace cassian

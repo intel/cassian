@@ -32,7 +32,7 @@ public:
    * @returns reason why requirements are not fulfilled or empty string
    * otherwise.
    */
-  std::string check(const Runtime &runtime) const;
+  std::string check(Runtime &runtime) const;
 
   /**
    * Require a feature.
@@ -101,6 +101,12 @@ public:
    * Require a sub group size.
    */
   template <int N> void sub_group_size() {}
+
+  /**
+   * Require OpenCL C feature support.
+   */
+  void openclc_feature(const std::string &feature,
+                       const std::string &program_type);
 
 private:
   std::vector<Feature> features_;
@@ -240,7 +246,7 @@ template <> void Requirements::sub_group_size<32>();
  * @param[in] runtime Runtime to check against.
  * @returns true if the test should be skipped.
  */
-bool should_skip_test(const Requirements &requirements, const Runtime &runtime);
+bool should_skip_test(const Requirements &requirements, Runtime &runtime);
 
 } // namespace cassian
 #endif

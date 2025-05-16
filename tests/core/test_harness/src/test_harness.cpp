@@ -197,6 +197,23 @@ TEST_CASE("Requirements::check") {
                         "size (1025, 1025, 1025)");
     }
   }
+
+  SECTION("openclc_feature") {
+    SECTION("supported") {
+      runtime.create_kernel_success_ = true;
+      requirements.openclc_feature("__opencl_c_dummy", "");
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(reason.empty());
+    }
+    SECTION("not supported") {
+      runtime.create_kernel_success_ = false;
+      requirements.openclc_feature("__opencl_c_dummy", "");
+      const std::string reason = requirements.check(runtime);
+      REQUIRE(
+          reason ==
+          "Test case requirements not met: OpenCL C feature __opencl_c_dummy");
+    }
+  }
 }
 
 TEST_CASE("should_skip_test") {
@@ -227,6 +244,50 @@ TEST_CASE("should_skip_test") {
       requirements.min_work_group_size(1025, 1025, 1025);
       REQUIRE(ca::should_skip_test(requirements, runtime));
     }
+  }
+
+  SECTION("OpenCL C feature supported") {
+    runtime.create_kernel_success_ = true;
+    requirements.openclc_feature("__opencl_c_dummy", "");
+    REQUIRE_FALSE(ca::should_skip_test(requirements, runtime));
+  }
+
+  SECTION("OpenCL C feature not supported") {
+    runtime.create_kernel_success_ = false;
+    requirements.openclc_feature("__opencl_c_dummy", "");
+    REQUIRE(ca::should_skip_test(requirements, runtime));
+  }
+
+  SECTION("feature supported + OpenCL C feature supported") {
+    runtime.create_kernel_success_ = true;
+    runtime.is_fp16_supported_ = true;
+    requirements.feature(ca::Feature::fp16);
+    requirements.openclc_feature("__opencl_c_dummy", "");
+    REQUIRE_FALSE(ca::should_skip_test(requirements, runtime));
+  }
+
+  SECTION("feature not supported + OpenCL C feature supported") {
+    runtime.create_kernel_success_ = true;
+    runtime.is_fp16_supported_ = false;
+    requirements.feature(ca::Feature::fp16);
+    requirements.openclc_feature("__opencl_c_dummy", "");
+    REQUIRE(ca::should_skip_test(requirements, runtime));
+  }
+
+  SECTION("feature supported + OpenCL C feature not supported") {
+    runtime.create_kernel_success_ = false;
+    runtime.is_fp16_supported_ = true;
+    requirements.feature(ca::Feature::fp16);
+    requirements.openclc_feature("__opencl_c_dummy", "");
+    REQUIRE(ca::should_skip_test(requirements, runtime));
+  }
+
+  SECTION("feature not supported + OpenCL C feature not supported") {
+    runtime.create_kernel_success_ = false;
+    runtime.is_fp16_supported_ = false;
+    requirements.feature(ca::Feature::fp16);
+    requirements.openclc_feature("__opencl_c_dummy", "");
+    REQUIRE(ca::should_skip_test(requirements, runtime));
   }
 
   SECTION("sub_group_size") {

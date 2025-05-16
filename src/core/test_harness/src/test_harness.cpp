@@ -18,7 +18,7 @@
 
 namespace cassian {
 
-std::string Requirements::check(const Runtime &runtime) const {
+std::string Requirements::check(Runtime &runtime) const {
   std::string reason;
   for (const auto feature : features_) {
     if (!runtime.is_feature_supported(feature)) {
@@ -224,8 +224,13 @@ template <> void Requirements::sub_group_size<32>() {
   features_.push_back(Feature::simd32);
 }
 
-bool should_skip_test(const Requirements &requirements,
-                      const Runtime &runtime) {
+void Requirements::openclc_feature(const std::string &feature,
+                                   const std::string &program_type) {
+  properties_.push_back(
+      std::make_unique<OpenclcFeature>(program_type, feature));
+}
+
+bool should_skip_test(const Requirements &requirements, Runtime &runtime) {
   // Catch2 requires at least one assertion to report test case result
   // Visual Studio can't build test_harness as a shared library
   // without CATCH_CONFIG_RUNNER, because Catch2 source is not linked

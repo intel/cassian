@@ -19,7 +19,7 @@ namespace cassian {
 class PropertyCheck {
 public:
   virtual ~PropertyCheck() = default;
-  virtual bool check(const Runtime &runtime) = 0;
+  virtual bool check(Runtime &runtime) = 0;
   virtual std::string to_string() = 0;
 };
 
@@ -28,7 +28,17 @@ class MinWorkGroupSize : public PropertyCheck {
 
 public:
   MinWorkGroupSize(int x, int y, int z);
-  bool check(const Runtime &runtime) override;
+  bool check(Runtime &runtime) override;
+  std::string to_string() override;
+};
+
+class OpenclcFeature : public PropertyCheck {
+  std::string program_type;
+  std::string feature;
+
+public:
+  OpenclcFeature(std::string program_type, std::string feature);
+  bool check(Runtime &runtime) override;
   std::string to_string() override;
 };
 

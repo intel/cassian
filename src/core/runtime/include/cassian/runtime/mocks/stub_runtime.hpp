@@ -63,9 +63,23 @@ public:
    */
   int max_group_size_z_ = 1024;
 
+  /*
+   * Specify if kernel creation should succeed.
+   */
+  bool create_kernel_success_ = true;
+
   bool is_feature_supported(Feature feature) const override;
 
   int get_device_property(const DeviceProperty property) const override;
+
+  Kernel create_kernel(const std::string &kernel_name,
+                       const std::string &source,
+                       const std::string &build_options,
+                       const std::string &program_type,
+                       const std::optional<std::string> &spirv_options,
+                       bool quiet) override;
+
+  void release_kernel(const Kernel &kernel) {}
 };
 
 } // namespace cassian

@@ -30,10 +30,10 @@ bool check_kernel_compilation(Runtime *runtime, const std::string &kernel_name,
 }
 } // namespace
 
-bool check_optional_openclc_feature_support(Runtime *runtime,
-                                            const std::string &program_type,
-                                            const std::string &feature_macro) {
-  std::string source = "#ifndef " + feature_macro +
+bool check_optional_openclc_macro(Runtime *runtime,
+                                  const std::string &program_type,
+                                  const std::string &if_clause) {
+  std::string source = "#if " + if_clause +
                        "\n"
                        "#error \"Feature unsupported\"\n"
                        "#endif \n"
@@ -42,10 +42,21 @@ bool check_optional_openclc_feature_support(Runtime *runtime,
   bool is_supported = check_kernel_compilation(runtime, "test", source,
                                                " -cl-std=CL3.0", program_type);
 
+  return is_supported;
+}
+
+bool check_optional_openclc_feature_support(Runtime *runtime,
+                                            const std::string &program_type,
+                                            const std::string &feature_macro) {
+  std::stringstream ss;
+  ss << "!defined(" << feature_macro << ")";
+
+  bool is_supported =
+      check_optional_openclc_macro(runtime, program_type, ss.str());
+
   if (!is_supported) {
     logging::info() << feature_macro << " unsupported\n";
   }
-
   return is_supported;
 }
 
