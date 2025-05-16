@@ -933,6 +933,35 @@ template <typename T> struct MakeUnsigned<T, typename T::is_vector> {
  */
 template <typename T> using make_unsigned_t = typename MakeUnsigned<T>::type;
 
+template <typename OUTPUT_TYPE, typename T, int N, int SIZE_IN_MEMORY = N>
+OUTPUT_TYPE
+component_wise_compare(std::function<scalar_type_v<OUTPUT_TYPE>(T, T)> op,
+                       const Vector<T, N, SIZE_IN_MEMORY> &lhs,
+                       const Vector<T, N, SIZE_IN_MEMORY> &rhs) {
+  using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
+  OUTPUT_TYPE output;
+  for (size_t i = 0; i < output.size(); ++i) {
+    output[i] = op(lhs[i], rhs[i]) ? scalar_type(-1) : scalar_type(0);
+  }
+  return output;
+}
+
+template <typename OUTPUT_TYPE, typename T, int N, int SIZE_IN_MEMORY = N>
+OUTPUT_TYPE
+component_wise_compare(std::function<scalar_type_v<OUTPUT_TYPE>(T, T)> op,
+                       const T &lhs, const Vector<T, N, SIZE_IN_MEMORY> &rhs) {
+  const Vector<T, N, SIZE_IN_MEMORY> vector_lhs(lhs);
+  return component_wise_compare<OUTPUT_TYPE>(op, vector_lhs, rhs);
+}
+
+template <typename OUTPUT_TYPE, typename T, int N, int SIZE_IN_MEMORY = N>
+OUTPUT_TYPE
+component_wise_compare(std::function<scalar_type_v<OUTPUT_TYPE>(T, T)> op,
+                       const Vector<T, N, SIZE_IN_MEMORY> &lhs, const T &rhs) {
+  const Vector<T, N, SIZE_IN_MEMORY> vector_rhs(rhs);
+  return component_wise_compare<OUTPUT_TYPE>(op, lhs, vector_rhs);
+}
+
 /**
  * Apply equal operator on Vectors component-wise.
  *
