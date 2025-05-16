@@ -37,6 +37,10 @@ std::string Requirements::check(Runtime &runtime) const {
 
 void Requirements::feature(Feature f) { features_.push_back(f); }
 
+void Requirements::property(std::unique_ptr<PropertyCheck> p) {
+  properties_.push_back(std::move(p));
+}
+
 template <> void Requirements::arithmetic_type<clc_half_t>() {
   features_.push_back(Feature::fp16);
 }

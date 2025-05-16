@@ -42,6 +42,13 @@ public:
   void feature(Feature feature);
 
   /**
+   * Require a property.
+   *
+   * @param[in] property PropertyCheck to be required.
+   */
+  void property(std::unique_ptr<PropertyCheck> property);
+
+  /**
    * Require an arithmetic type.
    *
    * @tparam T OpenCL C scalar type to be required.
@@ -108,7 +115,7 @@ public:
   void openclc_feature(const std::string &feature,
                        const std::string &program_type);
 
-private:
+protected:
   std::vector<Feature> features_;
   std::vector<std::unique_ptr<PropertyCheck>> properties_;
 
