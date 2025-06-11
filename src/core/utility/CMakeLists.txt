@@ -11,9 +11,10 @@ list(
   "include/cassian/utility/version.hpp"
   "include/cassian/utility/metaprogramming.hpp"
   "include/cassian/utility/math.hpp"
+  "include/cassian/utility/matchers.hpp"
   "include/cassian/utility/comparators.hpp")
 list(APPEND PRIVATE_HEADERS "src/version_config.hpp")
-list(APPEND SOURCES "src/utility.cpp" "src/version.cpp"
+list(APPEND SOURCES "src/utility.cpp" "src/version.cpp" "src/matchers.cpp"
      "${PROJECT_BINARY_DIR}/generated/version_config.cpp")
 
 configure_file(src/version_config.cpp.in
