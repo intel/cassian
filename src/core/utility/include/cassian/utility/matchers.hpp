@@ -17,8 +17,8 @@ namespace cassian {
 template <typename T> bool nan_sensitive_eq(const T lhs, const T rhs) {
   return lhs.nan_sensitive_eq(rhs);
 }
-template<> bool nan_sensitive_eq<float>(const float lhs, const float rhs);
-template<> bool nan_sensitive_eq<double>(const double lhs, const double rhs);
+template <> bool nan_sensitive_eq<float>(const float lhs, const float rhs);
+template <> bool nan_sensitive_eq<double>(const double lhs, const double rhs);
 
 template <typename T>
 class NanSensitiveEqMatcher : public Catch::MatcherBase<T> {
@@ -41,6 +41,6 @@ inline NanSensitiveEqMatcher<T> nan_sensitive_equal(const T value) {
   return NanSensitiveEqMatcher<T>(value);
 }
 
-}
+} // namespace cassian
 
 #endif

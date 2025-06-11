@@ -8,8 +8,8 @@
 #include <cassian/runtime/feature.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/utility/matchers.hpp>
-#include <common.hpp>
 #include <catch2/catch.hpp>
+#include <common.hpp>
 
 namespace ca = cassian;
 

@@ -1,12 +1,29 @@
+/*
+ * Copyright (C) 2024-2025 Intel Corporation
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ */
+
 #include <cassian/runtime/openclc_types.hpp>
 #include <cassian/utility/comparators.hpp>
 #include <cassian/utility/utility.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 namespace {
+
+namespace ca = cassian;
+
+// disable buggy clang-tidy checks
+using ca::calculate_ulp_distance;
+using ca::PrecisionComparator; // NOLINT(misc-unused-using-decls)
+using ca::PrecisionRequirement;
+using ca::PrecisionRequirementType;
+using ca::UlpComparator; // NOLINT(misc-unused-using-decls)
 
 TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
   SECTION("error_value") {
