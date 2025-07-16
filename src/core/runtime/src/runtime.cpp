@@ -105,7 +105,7 @@ template <> std::string to_cm_string<uint64_t>() {
 template <> std::string to_cm_string<float>() { return "float"; }
 template <> std::string to_cm_string<double>() { return "double"; }
 template <> std::string to_cm_string<half>() { return "half"; }
-template <> std::string to_cm_string<Bfloat16>() { return "short"; }
+template <> std::string to_cm_string<Bfloat16>() { return "bfloat16"; }
 template <> std::string to_cm_string<Tfloat>() { return "float"; }
 
 } // namespace cassian
