@@ -53,7 +53,7 @@ Half::Half(float v) {
   } else if (biased_exp32 != 0) {
     const int8_t exp = biased_exp32 - float_bias;
 
-    if (exp < half_min_exp_denorm) {
+    if (exp < half_min_exp_denorm - 1) {
       // too small, flush to zero
       mantissa16 = 0;
     } else if (exp < half_min_exp) {

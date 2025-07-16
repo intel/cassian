@@ -224,6 +224,13 @@ TEST_CASE("half from float with rounding towards zero", "") {
   test(std::get<0>(test_params), std::get<1>(test_params));
 }
 
+TEST_CASE("float with half min denorm exponent might be rounded to denormal") {
+  uint32_t bits = 0x333501f0; // unbiased exponent -25
+  float f = 0.0F;
+  std::memcpy(&f, &bits, sizeof(bits));
+  REQUIRE(cassian::Half(f) == cassian::Half::encode(0x1));
+}
+
 const uint16_t half_nan = 0x7f00;
 const uint16_t half_nan2 = 0x7f01;
 TEST_CASE("half NaN sensitive comparison same NaN value") {
