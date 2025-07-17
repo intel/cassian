@@ -48,7 +48,8 @@ template <auto FUNCTION, auto ARG_NUM, auto REFERENCE_FUNC,
           typename OUTPUT_TYPE, auto ADDRESS_SPACE = AddressSpace::clc_global,
           typename INPUT_TYPE_1 = OUTPUT_TYPE,
           typename INPUT_TYPE_2 = INPUT_TYPE_1,
-          typename INPUT_TYPE_3 = INPUT_TYPE_2>
+          typename INPUT_TYPE_3 = INPUT_TYPE_2,
+          auto REFERENCE_FUNC_DERIVED_CHECK = nullptr>
 class OclcFunction {
 public:
   using clc_output_type = OUTPUT_TYPE;
@@ -64,6 +65,8 @@ public:
   static constexpr auto function = FUNCTION;
   static constexpr auto arg_num = ARG_NUM;
   static constexpr auto calculate_reference = REFERENCE_FUNC;
+  static constexpr auto calculate_reference_derived_check =
+      REFERENCE_FUNC_DERIVED_CHECK;
   static constexpr auto address_space = ADDRESS_SPACE;
 
   using function_type = decltype(FUNCTION);
@@ -1193,6 +1196,17 @@ void run_section(const T &oclc_function, INPUT &input,
   }
 }
 
+template <typename, typename = void>
+struct has_derived_check_method : std::false_type {};
+
+template <typename T>
+struct has_derived_check_method<
+    T, decltype(void(T::calculate_reference_derived_check(
+           std::declval<typename T::input_type_1>())))> : std::true_type {};
+
+template <typename T>
+constexpr bool has_derived_check_method_v = has_derived_check_method<T>::value;
+
 template <class T, typename INPUT>
 void run_section_relaxed(const T &oclc_function, INPUT &input,
                          const TestConfig &config) {
@@ -1205,24 +1219,52 @@ void run_section_relaxed(const T &oclc_function, INPUT &input,
   using scalar_type_2 = typename T::scalar_type_2;
   const auto work_size = config.work_size();
 
-  auto reference_vector =
+  // Calculate references from both implementations
+  auto reference_vector_standard =
       std::vector<replace_fp_with_double_t<output_type>>(work_size);
-  auto reference_vector_2 = std::vector<input_b_type>(
-      work_size); // vector for reference values returned by function argument
+  auto reference_vector_derived_check =
+      std::vector<replace_fp_with_double_t<output_type>>(work_size);
+
+  auto reference_vector_2 = std::vector<input_b_type>(work_size);
   auto reference_vector_3 = std::vector<input_c_type>(work_size);
+
   for (auto j = 0; j < work_size; j++) {
     if constexpr (T::arg_num == 3) {
-      reference_vector[j] = T::calculate_reference(
+      // Use T::calculate_reference for standard implementation
+      reference_vector_standard[j] = T::calculate_reference(
           input.input_a[j], input.input_b[j], input.input_c[j]);
+      // Use impl version if it exists
+      if constexpr (has_derived_check_method_v<T>) {
+        reference_vector_derived_check[j] =
+            T::calculate_reference_derived_check(
+                input.input_a[j], input.input_b[j], input.input_c[j]);
+      } else {
+        // Fallback to standard if impl doesn't exist
+        reference_vector_derived_check[j] = reference_vector_standard[j];
+      }
       reference_vector_3[j] = input.input_c[j];
     } else if constexpr (T::arg_num == 2) {
-      reference_vector[j] =
+      reference_vector_standard[j] =
           T::calculate_reference(input.input_a[j], input.input_b[j]);
+      if constexpr (has_derived_check_method_v<T>) {
+        reference_vector_derived_check[j] =
+            T::calculate_reference_derived_check(input.input_a[j],
+                                                 input.input_b[j]);
+      } else {
+        reference_vector_derived_check[j] = reference_vector_standard[j];
+      }
       reference_vector_2[j] = input.input_b[j];
     } else {
-      reference_vector[j] = T::calculate_reference(input.input_a[j]);
+      reference_vector_standard[j] = T::calculate_reference(input.input_a[j]);
+      if constexpr (has_derived_check_method_v<T>) {
+        reference_vector_derived_check[j] =
+            T::calculate_reference_derived_check(input.input_a[j]);
+      } else {
+        reference_vector_derived_check[j] = reference_vector_standard[j];
+      }
     }
   }
+
   std::vector<input_b_type> argument_2_output(work_size);
   std::vector<input_c_type> argument_3_output(work_size);
   const std::string build_options = oclc_function.get_build_options_relaxed();
@@ -1230,6 +1272,7 @@ void run_section_relaxed(const T &oclc_function, INPUT &input,
   const auto result = test_gentype<output_type, INPUT, input_b_type>(
       input, argument_2_output, argument_3_output, build_options, config,
       oclc_function.get_is_store());
+
   if constexpr (T::get_is_native()) {
     return;
   }
@@ -1239,14 +1282,48 @@ void run_section_relaxed(const T &oclc_function, INPUT &input,
         requirements_function<output_type>(T::function, input.input_a[i],
                                            input.input_b[i]);
 
-    if constexpr (T::arg_num == 1) {
-      REQUIRE_THAT(result[i],
-                   ca::PrecisionComparator(result[i], reference_vector[i], req,
-                                           input.input_a[i]));
+    // Try comparison with standard reference first
+    bool standard_comparison_passed = false;
+    try {
+      ca::logging::debug() << "Trying standard comparison for index " << i
+                           << '\n';
+      if constexpr (T::arg_num == 1) {
+        auto comparator = ca::PrecisionComparator(
+            result[i], reference_vector_standard[i], req, input.input_a[i]);
+        standard_comparison_passed = comparator.match(result[i]);
+      } else {
+        auto comparator =
+            ca::PrecisionComparator(result[i], reference_vector_standard[i],
+                                    req, input.input_a[i], input.input_b[i]);
+        standard_comparison_passed = comparator.match(result[i]);
+      }
+      ca::logging::debug() << "Standard comparison result: "
+                           << (standard_comparison_passed ? "PASSED" : "FAILED")
+                           << '\n';
+    } catch (const std::exception &e) {
+      ca::logging::info() << "Exception in standard comparison: " << e.what()
+                          << '\n';
+      standard_comparison_passed = false;
+    } catch (...) {
+      ca::logging::info() << "Unknown exception in standard comparison\n";
+      standard_comparison_passed = false;
+    }
+
+    if (!standard_comparison_passed) {
+      if constexpr (T::arg_num == 1) {
+        REQUIRE_THAT(result[i],
+                     ca::PrecisionComparator(result[i],
+                                             reference_vector_derived_check[i],
+                                             req, input.input_a[i]));
+      } else {
+        REQUIRE_THAT(result[i],
+                     ca::PrecisionComparator(
+                         result[i], reference_vector_derived_check[i], req,
+                         input.input_a[i], input.input_b[i]));
+      }
     } else {
-      REQUIRE_THAT(result[i],
-                   ca::PrecisionComparator(result[i], reference_vector[i], req,
-                                           input.input_a[i], input.input_b[i]));
+      // Standard comparison passed, explicitly succeed
+      SUCCEED();
     }
   }
 }

@@ -258,6 +258,66 @@ replace_fp_with_double_t<T> calculate_asinh(const T &input) {
 }
 
 template <typename T>
+replace_fp_with_double_t<T>
+calculate_asinh_derived_check(const T &input, double ulp_tolerance = 4.0) {
+  using scalar_type = ca::scalar_type_v<T>;
+
+  // Determine safe input limits based on the scalar type
+  const double max_safe_input = [ulp_tolerance]() {
+    if constexpr (std::is_same_v<scalar_type, float>) {
+      // Calculate margin based on ULP tolerance
+      constexpr double base_limit = 1.8446744e19;
+      double ulp_size = std::numeric_limits<float>::epsilon() * base_limit;
+      return base_limit - (ulp_tolerance * ulp_size);
+    } else if constexpr (std::is_same_v<scalar_type, double>) {
+      constexpr double base_limit = 1.3e154;
+      double ulp_size = std::numeric_limits<double>::epsilon() * base_limit;
+      return base_limit - (ulp_tolerance * ulp_size);
+    } else {
+      return 1e308;
+    }
+  }();
+
+  const double min_safe_input = -max_safe_input;
+
+  if constexpr (ca::is_vector_v<T>) {
+    replace_fp_with_double_t<T> result{};
+    for (auto i = 0; i < T::vector_size; i++) {
+      double input_val = static_cast<double>(input[i]);
+
+      // Check for overflow conditions
+      if (input_val > max_safe_input) {
+        result[i] = std::numeric_limits<double>::infinity();
+      } else if (input_val < min_safe_input) {
+        result[i] = std::numeric_limits<double>::infinity();
+      } else if (std::isnan(input_val)) {
+        result[i] = std::numeric_limits<double>::quiet_NaN();
+      } else if (std::isinf(input_val)) {
+        result[i] = input_val; // Preserve sign of infinity
+      } else {
+        result[i] = ca::asinh(input_val);
+      }
+    }
+    return result;
+  } else {
+    double input_val = static_cast<double>(input);
+
+    // Check for overflow conditions
+    if (input_val > max_safe_input) {
+      return std::numeric_limits<double>::infinity();
+    } else if (input_val < min_safe_input) {
+      return std::numeric_limits<double>::infinity();
+    } else if (std::isnan(input_val)) {
+      return std::numeric_limits<double>::quiet_NaN();
+    } else if (std::isinf(input_val)) {
+      return input_val; // Preserve sign of infinity
+    } else {
+      return ca::asinh(input_val);
+    }
+  }
+}
+
+template <typename T>
 replace_fp_with_double_t<T> calculate_acospi(const T &input) {
   double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {

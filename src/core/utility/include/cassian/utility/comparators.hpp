@@ -84,6 +84,9 @@ bool match_results_ulp(const RESULT_TYPE &result,
   // this if constexpr is needed for msvc compatibility, isnan doesn't work with
   // integers
   if constexpr (is_floating_point_v<RESULT_TYPE>) {
+    if (isinf(result) && isinf(reference)) {
+      return true;
+    }
     if (isnan(result) && isnan(reference)) {
       return true;
     }

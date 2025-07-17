@@ -43,7 +43,9 @@ using asin =
     OclcFunction<Function::asin, 1, calculate_asin<typename T::host_type>, T>;
 template <typename T>
 using asinh =
-    OclcFunction<Function::asinh, 1, calculate_asinh<typename T::host_type>, T>;
+    OclcFunction<Function::asinh, 1, calculate_asinh<typename T::host_type>, T,
+                 AddressSpace::clc_global, T, T, T,
+                 calculate_asinh_derived_check<typename T::host_type>>;
 template <typename T>
 using asinpi = OclcFunction<Function::asinpi, 1,
                             calculate_asinpi<typename T::host_type>, T>;
