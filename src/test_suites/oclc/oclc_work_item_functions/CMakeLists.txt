@@ -32,14 +32,20 @@ list(
   "kernels/oclc_work_item_functions/get_work_dim.cl"
   "kernels/oclc_work_item_functions/get_global_id.cl"
   "kernels/oclc_work_item_functions/get_local_id.cl"
+  "kernels/oclc_work_item_functions/get_local_id_import.cl"
+  "kernels/oclc_work_item_functions/get_local_id_export.cl"
   "kernels/oclc_work_item_functions/get_global_size.cl"
   "kernels/oclc_work_item_functions/get_local_size.cl"
+  "kernels/oclc_work_item_functions/get_local_size_import.cl"
+  "kernels/oclc_work_item_functions/get_local_size_export.cl"
   "kernels/oclc_work_item_functions/get_num_groups.cl"
   "kernels/oclc_work_item_functions/get_group_id.cl"
   "kernels/oclc_work_item_functions/get_global_offset.cl"
   "kernels/oclc_work_item_functions/get_global_linear_id.cl"
   "kernels/oclc_work_item_functions/get_local_linear_id.cl"
-  "kernels/oclc_work_item_functions/get_enqueued_local_size.cl")
+  "kernels/oclc_work_item_functions/get_enqueued_local_size.cl"
+  "kernels/oclc_work_item_functions/get_enqueued_local_size_import.cl"
+  "kernels/oclc_work_item_functions/get_enqueued_local_size_export.cl")
 
 add_executable(oclc_work_item_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                         ${SOURCES})

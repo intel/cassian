@@ -57,58 +57,43 @@ run_kernel(const ca::Kernel &kernel,
 
 template <size_t N>
 std::array<std::vector<uint32_t>, N>
-get_reference(const std::array<size_t, N> &global_work_size,
-              const std::array<size_t, N> &local_work_size) {
+get_reference(const WorkSize<N> &work_size) {
   std::array<std::vector<uint32_t>, N> output = {};
+  bool is_non_uniform =
+      get_work_group_type(work_size) == WorkGroupType::non_uniform;
   for (size_t i = 0; i < N; ++i) {
-    std::vector<uint32_t> local_size(global_work_size.at(i),
-                                     local_work_size.at(i));
+    std::vector<uint32_t> local_size(work_size.global_work_size.at(i),
+                                     work_size.local_work_size.at(i));
+    if (is_non_uniform) {
+      int remainder_size =
+          work_size.global_work_size.at(i) % work_size.local_work_size.at(i);
+      for (int j = 0; j < remainder_size; j++) {
+        local_size[local_size.size() - 1 - j] = remainder_size;
+      }
+    }
     output.at(i) = local_size;
   }
   return output;
 }
 
 template <size_t N>
-void run_test(const ca::Kernel &kernel,
-              const std::array<size_t, N> &global_work_size,
-              const std::array<size_t, N> &local_work_size,
+void run_test(const ca::Kernel &kernel, const WorkSize<N> &work_size,
               ca::Runtime *runtime) {
-  const std::array<std::vector<uint32_t>, N> output =
-      run_kernel(kernel, global_work_size, local_work_size, runtime);
+  const std::array<std::vector<uint32_t>, N> output = run_kernel(
+      kernel, work_size.global_work_size, work_size.local_work_size, runtime);
   const std::array<std::vector<uint32_t>, N> reference =
-      get_reference(global_work_size, local_work_size);
+      get_reference(work_size);
   for (size_t i = 0; i < N; ++i) {
     REQUIRE_THAT(output.at(i), Catch::Equals(reference.at(i)));
   }
 }
 
-template <size_t N> void test_get_local_size(const TestConfig &config) {
-  ca::Runtime *runtime = config.runtime();
-  const std::string program_type = config.program_type();
-
-  const std::string kernel_name = get_kernel_name(N);
-  const std::string path = "kernels/oclc_work_item_functions/get_local_size.cl";
-  const std::string source = ca::load_text_file(ca::get_asset(path));
-  const std::string build_options = get_build_options(config.simd());
-  const ca::Kernel kernel =
-      runtime->create_kernel(kernel_name, source, build_options, program_type);
-
-  const size_t global_work_size_per_dimension = config.work_size();
-  std::array<size_t, N> global_work_size = {};
-  for (auto &gws : global_work_size) {
-    gws = global_work_size_per_dimension;
-  }
-
-  std::array<size_t, N> max_group_size = get_max_group_size<N>(runtime);
-  const auto max_total_group_size = static_cast<size_t>(
-      runtime->get_device_property(ca::DeviceProperty::max_total_group_size));
-  const std::array<size_t, N> local_work_size =
-      ca::Runtime::get_max_local_work_size(global_work_size, max_group_size,
-                                           max_total_group_size);
-
-  run_test(kernel, global_work_size, local_work_size, runtime);
-
-  runtime->release_kernel(kernel);
+template <size_t N>
+void test_get_local_size(const TestConfig &config, TestType test_type,
+                         bool link) {
+  run_test_of_type<N>(config, get_kernel_name(N), test_type, link,
+                      "kernels/oclc_work_item_functions/get_local_size",
+                      run_test<N>);
 }
 
 TEST_CASE("get_local_size", "") {
@@ -117,9 +102,31 @@ TEST_CASE("get_local_size", "") {
     return;
   }
 
-  SECTION("1D") { test_get_local_size<1>(config); }
-  SECTION("2D") { test_get_local_size<2>(config); }
-  SECTION("3D") { test_get_local_size<3>(config); }
+  SECTION("1D") { test_get_local_size<1>(config, TestType::basic, false); }
+  SECTION("2D") { test_get_local_size<2>(config, TestType::basic, false); }
+  SECTION("3D") { test_get_local_size<3>(config, TestType::basic, false); }
+}
+
+TEST_CASE("get_local_size - complete", "") {
+  const TestConfig &config = get_test_config();
+  if (should_skip(config)) {
+    return;
+  }
+
+  SECTION("1D") { test_get_local_size<1>(config, TestType::complete, false); }
+  SECTION("2D") { test_get_local_size<2>(config, TestType::complete, false); }
+  SECTION("3D") { test_get_local_size<3>(config, TestType::complete, false); }
+}
+
+TEST_CASE("get_local_size - linked wrappers complete", "") {
+  const TestConfig &config = get_test_config();
+  if (should_skip(config)) {
+    return;
+  }
+
+  SECTION("1D") { test_get_local_size<1>(config, TestType::complete, true); }
+  SECTION("2D") { test_get_local_size<2>(config, TestType::complete, true); }
+  SECTION("3D") { test_get_local_size<3>(config, TestType::complete, true); }
 }
 
 } // namespace
