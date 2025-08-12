@@ -4,18 +4,33 @@
 # SPDX-License-Identifier: MIT
 #
 
+import logging
 import subprocess
 from pathlib import Path
 
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+
+def run_git_cmd(cmd):
+    try:
+        process = subprocess.run(
+            cmd,
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        logger.debug("Git command line: %s", cmd)
+    except subprocess.CalledProcessError as e:
+        logger.error("Git output:\n%s", e.stdout.decode())
+        raise
+    return process.stdout.decode().strip()
+
+
 def get_root_directory():
-    p = Path(Path.cwd() / __file__)
-    while p.parent != ".git":
-        p = p.parent
-        for i in p.rglob("*"):
-            if i.name == ".git":
-                return Path(p)
-    return None
+    return Path(run_git_cmd("git rev-parse --show-toplevel"))
 
 
 directories_to_format = ["src", "tests"]
