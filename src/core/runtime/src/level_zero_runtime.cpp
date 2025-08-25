@@ -1166,6 +1166,10 @@ int LevelZeroRuntime::get_device_property(const DeviceProperty property) const {
         (device_module_properties.flags & ZE_DEVICE_MODULE_FLAG_DP4A) != 0);
   case DeviceProperty::non_uniform_work_group:
     return 0;
+  case DeviceProperty::max_compute_units:
+    return static_cast<int>(device_properties.numEUsPerSubslice *
+                            device_properties.numSubslicesPerSlice *
+                            device_properties.numSlices);
   default:
     throw RuntimeException("Failed to find device property");
   }

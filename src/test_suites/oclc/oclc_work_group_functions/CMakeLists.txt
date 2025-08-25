@@ -15,7 +15,8 @@ list(
   "src/work_group_all.cpp"
   "src/work_group_any.cpp"
   "src/work_group_barrier.cpp"
-  "src/work_group_broadcast.cpp")
+  "src/work_group_broadcast.cpp"
+  "src/work_group_reduce.cpp")
 
 list(
   APPEND
@@ -23,7 +24,8 @@ list(
   "kernels/oclc_work_group_functions/work_group_all.cl"
   "kernels/oclc_work_group_functions/work_group_any.cl"
   "kernels/oclc_work_group_functions/work_group_barrier.cl"
-  "kernels/oclc_work_group_functions/work_group_broadcast.cl")
+  "kernels/oclc_work_group_functions/work_group_broadcast.cl"
+  "kernels/oclc_work_group_functions/work_group_reduce.cl")
 
 add_executable(oclc_work_group_functions ${PUBLIC_HEADERS} ${PRIVATE_HEADERS}
                                          ${SOURCES})

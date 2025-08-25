@@ -866,6 +866,9 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
           devices_[0], CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR, 0));
     }
     return 0;
+  case DeviceProperty::max_compute_units:
+    return static_cast<int>(cl_get_device_property_at_index<cl_uint>(
+        devices_[0], CL_DEVICE_MAX_COMPUTE_UNITS, 0));
   default:
     throw RuntimeException("Failed to find device property");
   }
