@@ -17,10 +17,13 @@
 #include <cassian/utility/utility.hpp>
 #include <cassian/vector/vector.hpp>
 #include <catch2/catch.hpp>
+#include <cstring>
+#include <iomanip>
 #include <limits>
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace cassian {
@@ -39,16 +42,69 @@ template <typename T> struct PrecisionRequirement {
   T value2 = static_cast<T>(0);
 };
 
-template <typename T> std::string input_to_string(const std::vector<T> &input) {
-  std::stringstream ss;
-  ss << "{";
-  for (const auto &input_val : input) {
-    ss << to_string<T>(input_val) << ", ";
-  }
-  ss.seekp(-2, std::ios_base::end);
-  ss << "}";
-  return ss.str();
+// --- helpers for hex formatting ---
+namespace detail_hex_fmt {
+template <class T,
+          class U = std::conditional_t<(sizeof(T) <= 4), uint32_t, uint64_t>>
+inline std::enable_if_t<std::is_floating_point_v<T>, std::string>
+raw_bits(const T &v) {
+  U bits{};
+  std::memcpy(&bits, &v, sizeof(T));
+  std::ostringstream os;
+  os << "0x" << std::hex << std::uppercase << std::setw(sizeof(T) * 2)
+     << std::setfill('0') << bits;
+  return os.str();
 }
+
+template <class T>
+inline std::enable_if_t<std::is_integral_v<T>, std::string>
+raw_bits(const T &v) {
+  using Uns = std::make_unsigned_t<T>;
+  std::ostringstream os;
+  os << "0x" << std::hex << std::uppercase << std::setw(sizeof(T) * 2)
+     << std::setfill('0') << static_cast<Uns>(v);
+  return os.str();
+}
+
+template <class V>
+inline std::enable_if_t<is_vector_v<V>, std::string> raw_bits(const V &vec) {
+  std::ostringstream os;
+  os << '{';
+  for (int i = 0; i < vec.size(); ++i) {
+    os << raw_bits(vec[i]);
+    if (i + 1 < vec.size()) {
+      os << ", ";
+    }
+  }
+  os << '}';
+  return os.str();
+}
+
+template <class T> inline std::string dec_hex_pair(const T &v) {
+  if constexpr (std::is_integral_v<T>) {
+    return to_string(v) + " (" + raw_bits(v) + ")";
+  } else if constexpr (std::is_floating_point_v<T>) {
+    std::ostringstream os;
+    os.setf(std::ios::scientific);
+    os << std::setprecision(std::numeric_limits<T>::max_digits10) << v;
+    return os.str() + " (" + raw_bits(v) + ")";
+  } else if constexpr (is_vector_v<T>) {
+    std::ostringstream os;
+    os << '{';
+    for (int i = 0; i < v.size(); ++i) {
+      os << dec_hex_pair(v[i]);
+      if (i + 1 < v.size()) {
+        os << ", ";
+      }
+    }
+    os << '}';
+    return os.str();
+  } else {
+    return to_string(v);
+  }
+}
+
+} // namespace detail_hex_fmt
 
 template <typename RESULT_TYPE, typename REFERENCE_TYPE>
 REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
@@ -116,9 +172,10 @@ bool match_results_error_value(const RESULT_TYPE &result,
       return true;
     }
   }
-  logging::debug() << "result = " << to_string(result)
-                   << "reference = " << to_string(reference)
-                   << "error_value = " << to_string(error_value) << '\n';
+  logging::debug() << "result = " << detail_hex_fmt::dec_hex_pair(result)
+                   << " reference = " << detail_hex_fmt::dec_hex_pair(reference)
+                   << " error_value = "
+                   << detail_hex_fmt::dec_hex_pair(error_value) << '\n';
   return fabs(static_cast<REFERENCE_TYPE>(result) -
               static_cast<REFERENCE_TYPE>(reference)) <=
          static_cast<REFERENCE_TYPE>(error_value);
@@ -228,23 +285,25 @@ public:
         break;
       case PrecisionRequirementType::error_value:
         if constexpr (is_vector_v<RESULT_TYPE>) {
-          description << "\nReference[" << req_index
-                      << "]: " << to_string(reference[req_index]);
+          description << "\nReference[" << req_index << "]: "
+                      << detail_hex_fmt::dec_hex_pair(reference[req_index]);
         } else {
-          description << "\nReference: " << to_string(reference);
+          description << "\nReference: "
+                      << detail_hex_fmt::dec_hex_pair(reference);
         }
         description << " Absolute error within " << to_string(req.value);
         break;
       case PrecisionRequirementType::ulp_value:
         if constexpr (is_vector_v<RESULT_TYPE>) {
-          description << "\nReference[" << req_index
-                      << "]: " << to_string(reference[req_index])
+          description << "\nReference[" << req_index << "]: "
+                      << detail_hex_fmt::dec_hex_pair(reference[req_index])
                       << "\n ULP error "
                       << calculate_ulp_distance(result[req_index],
                                                 reference[req_index])
                       << " within " << to_string(req.value);
         } else {
-          description << "\nReference: " << to_string(reference)
+          description << "\nReference: "
+                      << detail_hex_fmt::dec_hex_pair(reference)
                       << "\n ULP error "
                       << calculate_ulp_distance(result, reference) << " within "
                       << to_string(req.value);
@@ -262,6 +321,19 @@ public:
         description << "\n";
       }
     }
+    // Add result values
+    if constexpr (is_vector_v<RESULT_TYPE>) {
+      description << "\nResult: {";
+      for (int i = 0; i < result.size(); ++i) {
+        description << detail_hex_fmt::dec_hex_pair(result[i]);
+        if (i + 1 < result.size()) {
+          description << ", ";
+        }
+      }
+      description << '}';
+    } else {
+      description << "\nResult: " << detail_hex_fmt::dec_hex_pair(result);
+    }
 
     description << "\n"
                 << inputs_to_string(
@@ -277,8 +349,9 @@ private:
     if constexpr (sizeof...(I) == 0) {
       return "Inputs: None";
     } else {
-      return "Inputs: " +
-             ((std::string(I ? ", " : "") + to_string(std::get<I>(in))) + ...);
+      return "Inputs: " + ((std::string(I ? ", " : "") +
+                            detail_hex_fmt::dec_hex_pair(std::get<I>(in))) +
+                           ...);
     }
   }
 };
@@ -320,8 +393,37 @@ public:
     auto ulp_diffs = result;
     std::stringstream os;
     os.precision(std::numeric_limits<double>::max_digits10);
-    os << "\nReference: " + input_to_string<REFERENCE_TYPE>(reference) +
-              "\nULP distance: ";
+    os << "\nReference: {";
+    for (size_t i = 0; i < reference.size(); ++i) {
+      os << detail_hex_fmt::dec_hex_pair(reference[i]);
+      if (i + 1 < reference.size()) {
+        os << ", ";
+      }
+    }
+    os << "}";
+
+    // Results
+    os << "\nResult: {";
+    for (size_t i = 0; i < result.size(); ++i) {
+      if constexpr (is_vector_v<OUTPUT_TYPE>) {
+        os << '{';
+        for (int j = 0; j < result[i].size(); ++j) {
+          os << detail_hex_fmt::dec_hex_pair(result[i][j]);
+          if (j + 1 < result[i].size()) {
+            os << ", ";
+          }
+        }
+        os << '}';
+      } else {
+        os << detail_hex_fmt::dec_hex_pair(result[i]);
+      }
+      if (i + 1 < result.size()) {
+        os << ", ";
+      }
+    }
+    os << "}";
+
+    os << "\nULP distance: ";
     os << '{';
     for (auto i = 0; i < result.size(); i++) {
       if constexpr (is_vector_v<OUTPUT_TYPE>) {
@@ -353,7 +455,9 @@ private:
         std::apply(
             [&os, i](const auto &... vecs) {
               os << '{';
-              ((vecs.size() > i ? os << to_string(vecs[i]) << ", " : os << ""),
+              ((vecs.size() > i
+                    ? os << detail_hex_fmt::dec_hex_pair(vecs[i]) << ", "
+                    : os << ""),
                ...);
               os << '}';
             },
