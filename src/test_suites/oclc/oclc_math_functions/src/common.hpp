@@ -434,17 +434,150 @@ replace_fp_with_double_t<T> calculate_atan2pi(const T &input_a,
   }
 }
 
+// --- double-double helper (hi + lo) ---
+struct dd {
+  double hi;
+  double lo;
+};
+
+inline dd make_dd(double value) { return {value, 0.0}; }
+
+inline dd quick_two_sum(double lhs, double rhs) {
+  double sum = lhs + rhs;
+  double error = rhs - (sum - lhs);
+  return {sum, error};
+}
+
+inline dd two_sum(double lhs, double rhs) {
+  double sum = lhs + rhs;
+  double b_virtual = sum - lhs;
+  double error = (lhs - (sum - b_virtual)) + (rhs - b_virtual);
+  return {sum, error};
+}
+
+inline dd two_prod(double lhs, double rhs) {
+#if defined(__FMA__) || defined(__FMA) || defined(__FMA4__) || defined(__AVX2__)
+  double product = lhs * rhs;
+  double error = std::fma(lhs, rhs, -product);
+  return {product, error};
+#else
+  // Dekker split
+  constexpr double splitter = 134217729.0; // 2^27+1
+  double c_lhs = splitter * lhs;
+  double lhs_hi = c_lhs - (c_lhs - lhs);
+  double lhs_lo = lhs - lhs_hi;
+  double c_rhs = splitter * rhs;
+  double rhs_hi = c_rhs - (c_rhs - rhs);
+  double rhs_lo = rhs - rhs_hi;
+  double product = lhs * rhs;
+  double error =
+      ((lhs_hi * rhs_hi - product) + lhs_hi * rhs_lo + lhs_lo * rhs_hi) +
+      lhs_lo * rhs_lo;
+  return {product, error};
+#endif
+}
+
+inline dd normalize_dd(double high, double low) {
+  auto sum = quick_two_sum(high, low);
+  return {sum.hi, sum.lo};
+}
+
+inline dd add_dd(dd lhs, dd rhs) {
+  auto sum = two_sum(lhs.hi, rhs.hi);
+  double temp = lhs.lo + rhs.lo + sum.lo;
+  return quick_two_sum(sum.hi, temp);
+}
+
+inline dd sub_dd(dd lhs, dd rhs) {
+  auto sum = two_sum(lhs.hi, -rhs.hi);
+  double temp = lhs.lo - rhs.lo + sum.lo;
+  return quick_two_sum(sum.hi, temp);
+}
+
+inline dd mul_dd(dd lhs, dd rhs) {
+  auto prod = two_prod(lhs.hi, rhs.hi);
+  double temp = lhs.hi * rhs.lo + lhs.lo * rhs.hi + prod.lo;
+  return quick_two_sum(prod.hi, temp);
+}
+
+inline dd div_dd(dd lhs, dd rhs) {
+  double quotient = lhs.hi / rhs.hi;
+  auto prod = mul_dd({quotient, 0.0}, rhs);
+  double remainder = ((lhs.hi - prod.hi) - prod.lo) + lhs.lo;
+  double correction = remainder / rhs.hi;
+  return quick_two_sum(quotient, correction);
+}
+
+// High precision cube root using double-double Newton refinement.
+inline double cbrt_high_precision(double value) {
+  // Edge cases: preserve sign of zero, propagate NaN/Inf.
+  if (value == 0.0 || std::isnan(value) || std::isinf(value)) {
+    return value;
+  }
+  bool is_negative = value < 0.0;
+  double abs_value = is_negative ? -value : value;
+
+  // Decompose abs_value = mantissa * 2^exponent, mantissa in [0.5, 1)
+  int exponent;
+  double mantissa = std::frexp(abs_value, &exponent);
+
+  // Split exponent: exponent = 3*quotient + remainder, remainder in {
+  // -2,-1,0,1,2 } but frexp ensures mantissa in [0.5,1), so remainder will end
+  // up in {0,1,2}. Adjust so that after shifting mantissa stays ~O(1).
+  int quotient = exponent / 3;
+  int remainder = exponent - 3 * quotient; // 0,1,2
+  // Incorporate remainder by scaling mantissa.
+  // abs_value = (mantissa * 2^remainder) * 2^{3*quotient}; thus cbrt(abs_value)
+  // = cbrt(mantissa * 2^remainder) * 2^quotient
+  mantissa = std::ldexp(mantissa, remainder);
+
+  // Initial double precision approximation using std::cbrt for the adjusted
+  // mantissa.
+  double approx = std::cbrt(mantissa);
+
+  // Lift to double-double.
+  dd y_dd = make_dd(approx);
+  dd a_dd = make_dd(mantissa);
+
+  // Perform a few Newton iterations in double-double arithmetic.
+  // For f(y)=y^3 - a, iteration: y_{n+1} = y - (y^3 - a)/(3*y^2)
+  // Reformulated to reduce operations: y_{n+1} = (2*y + a/(y^2)) / 3.
+  // We'll do 3 iterations which should yield ~ 100+ bits then fold to double.
+  auto one_third = make_dd(1.0 / 3.0);
+
+  auto square_dd = [](dd v) { return mul_dd(v, v); };
+  auto cube_dd = [&](dd v) { return mul_dd(mul_dd(v, v), v); };
+
+  for (int i = 0; i < 3; ++i) {
+    dd y_sq = square_dd(y_dd);
+    // a / y^2
+    dd ratio = div_dd(a_dd, y_sq);
+    // 2*y
+    dd y_doubled = add_dd(y_dd, y_dd);
+    // (2*y + a/y^2)
+    dd numerator = add_dd(y_doubled, ratio);
+    // (2*y + a/y^2)/3
+    y_dd = mul_dd(numerator, one_third);
+  }
+
+  // Reattach 2^quotient
+  double high = std::ldexp(y_dd.hi, quotient);
+  double low = std::ldexp(y_dd.lo, quotient);
+  dd result_dd = normalize_dd(high, low);
+  double result = result_dd.hi + result_dd.lo;
+  return is_negative ? -result : result;
+}
+
 template <typename T>
 replace_fp_with_double_t<T> calculate_cbrt(const T &input_a) {
-  using std::cbrt;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = cbrt(static_cast<double>(input_a[i]));
+      result[i] = cbrt_high_precision(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return cbrt(static_cast<double>(input_a));
+    return cbrt_high_precision(static_cast<double>(input_a));
   }
 }
 
