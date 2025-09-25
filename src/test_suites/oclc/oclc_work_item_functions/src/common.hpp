@@ -89,6 +89,30 @@ template <size_t N> WorkGroupType get_work_group_type(WorkSize<N> work_size) {
 }
 
 template <size_t N>
+WorkSize<N> change_work_type(WorkSize<N> work_size,
+                             const WorkGroupType work_group_type) {
+  if (work_group_type == WorkGroupType::uniform) {
+    for (size_t i = 0; i < N; i++) {
+      work_size.global_work_size[i] =
+          (work_size.global_work_size[i] / work_size.local_work_size[i]) *
+          work_size.local_work_size[i];
+    }
+  } else {
+    for (size_t i = 0; i < N; i++) {
+      while (work_size.global_work_size[i] % work_size.local_work_size[i] ==
+             0) {
+        if (work_size.local_work_size[i] > 1) {
+          work_size.local_work_size[i]--;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+  return work_size;
+}
+
+template <size_t N>
 using run_test_t = void(const ca::Kernel &, const WorkSize<N>, ca::Runtime *);
 
 template <size_t N>
@@ -164,7 +188,8 @@ void run_test_of_type(const TestConfig &config, const std::string &kernel_name,
     std::vector<cassian::ProgramDescriptor> programs;
     programs.reserve(2);
     programs.emplace_back(source_import, build_options, program_type);
-    programs.emplace_back(source_export, build_options, program_type);
+    programs.emplace_back(source_export, build_options, program_type,
+                          build_options + " -library-compilation");
 
     const std::string linker_options = "";
     kernel = runtime->create_kernel_from_multiple_programs(
@@ -183,9 +208,9 @@ void run_test_of_type(const TestConfig &config, const std::string &kernel_name,
       run_complete_test(run_test, kernel, work_size, runtime,
                         WorkGroupType::uniform);
     } else {
-      if (get_work_group_type(work_size) == WorkGroupType::uniform) {
-        run_test(kernel, work_size, runtime);
-      }
+      WorkSize<N> uniform_work_size =
+          change_work_type(work_size, WorkGroupType::uniform);
+      run_test(kernel, work_size, runtime);
     }
   }
 
@@ -200,9 +225,9 @@ void run_test_of_type(const TestConfig &config, const std::string &kernel_name,
       run_complete_test(run_test, kernel, work_size, runtime,
                         WorkGroupType::non_uniform);
     } else {
-      if (get_work_group_type(work_size) == WorkGroupType::non_uniform) {
-        run_test(kernel, work_size, runtime);
-      }
+      WorkSize<N> non_uniform_work_size =
+          change_work_type(work_size, WorkGroupType::non_uniform);
+      run_test(kernel, work_size, runtime);
     }
   }
 

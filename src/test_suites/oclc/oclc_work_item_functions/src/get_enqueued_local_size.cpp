@@ -105,6 +105,22 @@ TEST_CASE("get_enqueued_local_size", "") {
   }
 }
 
+TEST_CASE("get_enqueued_local_size - linked wrappers", "") {
+  const TestConfig &config = get_test_config();
+  if (should_skip(config)) {
+    return;
+  }
+  SECTION("1D") {
+    test_get_enqueued_local_size<1>(config, TestType::basic, true);
+  }
+  SECTION("2D") {
+    test_get_enqueued_local_size<2>(config, TestType::basic, true);
+  }
+  SECTION("3D") {
+    test_get_enqueued_local_size<3>(config, TestType::basic, true);
+  }
+}
+
 TEST_CASE("get_enqueued_local_size - complete", "") {
   const TestConfig &config = get_test_config();
   if (should_skip(config)) {

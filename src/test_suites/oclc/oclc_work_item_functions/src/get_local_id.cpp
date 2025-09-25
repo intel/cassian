@@ -107,6 +107,27 @@ TEST_CASE("get_local_id", "") {
   }
 }
 
+TEST_CASE("get_local_id - linked wrappers", "") {
+  const TestConfig &config = get_test_config();
+  ca::Requirements requirements;
+  requirements.feature(parse_simd(config.simd()));
+  if (ca::should_skip_test(requirements, *config.runtime())) {
+    return;
+  }
+
+  SECTION("1D") {
+    test_get_local_id<1>(config, "test_kernel_wrappers", TestType::basic, true);
+  }
+
+  SECTION("2D") {
+    test_get_local_id<2>(config, "test_kernel_wrappers", TestType::basic, true);
+  }
+
+  SECTION("3D") {
+    test_get_local_id<3>(config, "test_kernel_wrappers", TestType::basic, true);
+  }
+}
+
 TEST_CASE("get_local_id - complete", "") {
   const TestConfig &config = get_test_config();
   if (should_skip(config)) {
@@ -147,12 +168,12 @@ TEST_CASE("get_local_id - linked wrappers complete", "") {
   }
 
   SECTION("1D") {
-    test_get_local_id<3>(config, "test_kernel_wrappers", TestType::complete,
+    test_get_local_id<1>(config, "test_kernel_wrappers", TestType::complete,
                          true);
   }
 
   SECTION("2D") {
-    test_get_local_id<3>(config, "test_kernel_wrappers", TestType::complete,
+    test_get_local_id<2>(config, "test_kernel_wrappers", TestType::complete,
                          true);
   }
 

@@ -70,6 +70,19 @@ OpenCL C functionality.
   * Dimensions: 1D, 2D, 3D.
   * Work-group size: uniform, non-uniform.
 
+### `get_local_size - linked wrappers`
+* Status: DONE
+* Goal: Verify that the `get_local_size` function, used in linked module, works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `get_local_size` in multiple work-groups via the wrapper placed in separate program.
+  * Output is compared against reference values computed on the host.
+* Expectations: 
+  * Returned value is the same as local work size passed to enqueue function.
+  * If non uniform work-group size is used, the size of the final, partial group is of size filling out the remainder.
+* Parameters:
+  * Dimensions: 1D, 2D, 3D.
+  * Work-group size: uniform, non-uniform.
+
 #### `get_local_size - complete`
 * Status: DONE
 * Goal: Verify that `get_local_size` function works as expected for all supported work sizes.
@@ -107,6 +120,17 @@ OpenCL C functionality.
   * Dimensions: 1D, 2D, 3D.
   * Work-group size: uniform, non-uniform.
 
+#### `get_enqueued_local_size - linked wrappers`
+* Status: DONE
+* Goal: Verify that the `get_enqueued_local_size` function, used in linked module, works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `get_enqueued_local_size` in multiple work-groups via the wrapper placed in separate program.
+  * Output is compared against reference values computed on the host.
+* Expectations: Returned value is the same as enqueued local work size.
+* Parameters:
+  * Dimensions: 1D, 2D, 3D.
+  * Work-group size: uniform, non-uniform.
+
 #### `get_enqueued_local_size - complete`
 * Status: DONE
 * Goal: Verify that `get_enqueued_local_size` function works as expected for all supported work sizes.
@@ -134,6 +158,17 @@ OpenCL C functionality.
 * Goal: Verify that `get_local_id` function works as expected.
 * Description: 
   * Run OpenCL C kernel that calls `get_local_id` in multiple work-groups.
+  * Output is compared against reference values computed on the host.
+* Expectations: Returned values contain all ids within enqueued local work sizes.
+* Parameters:
+  * Dimensions: 1D, 2D, 3D.
+  * Work-group size: uniform, non-uniform.
+
+#### `get_local_id - linked wrappers`
+* Status: DONE
+* Goal: Verify that the `get_local_id` function, used in linked module, works as expected.
+* Description: 
+  * Run OpenCL C kernel that calls `get_local_id` in multiple work-groups via the wrapper placed in separate program.
   * Output is compared against reference values computed on the host.
 * Expectations: Returned values contain all ids within enqueued local work sizes.
 * Parameters:
