@@ -9,7 +9,6 @@
 
 namespace cassian::logging {
 static Logger logger;
-LogLevel Logger::threshold_ = LogLevel::info;
 
 Logger &Logger::operator()(LogLevel log_level, Prefix prefix) {
   log_level_ = log_level;
@@ -17,7 +16,8 @@ Logger &Logger::operator()(LogLevel log_level, Prefix prefix) {
   return *this;
 }
 
-void Logger::set_threshold(LogLevel threshold) { threshold_ = threshold; }
+void set_threshold(LogLevel threshold) { logger.threshold_ = threshold; }
+bool is_debug() { return logger.get_threshold() >= LogLevel::debug; }
 
 LogLevel Logger::get_threshold() { return threshold_; }
 

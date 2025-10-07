@@ -43,16 +43,33 @@ public:
     }
     return *this;
   }
-  static void set_threshold(LogLevel threshold);
+  friend void set_threshold(LogLevel threshold);
+  friend bool is_debug();
 
 private:
-  static LogLevel get_threshold();
+  LogLevel get_threshold();
   static std::string prefix(LogLevel log_level);
 
   LogLevel log_level_;
   Prefix prefix_;
-  static LogLevel threshold_;
+  LogLevel threshold_ = LogLevel::info;
 };
+
+/**
+ * @brief Sets the logging threshold level.
+ *
+ * Messages with a log level below the specified threshold will be ignored.
+ *
+ * @param threshold The minimum LogLevel to be logged.
+ */
+void set_threshold(LogLevel threshold);
+
+/**
+ * @brief Checks if debug logging is enabled.
+ *
+ * @returns true if log level is debug or trace, false otherwise.
+ */
+bool is_debug();
 
 /**
  * Log message.

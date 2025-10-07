@@ -52,7 +52,7 @@ TestConfigBase::TestConfigBase(const CommandLineParser &parser) {
 
   auto log_level =
       logging::LogLevel(parser.get<LogLevelConverter>("--logging-level"));
-  logging::Logger::set_threshold(log_level);
+  logging::set_threshold(log_level);
 
   program_type_ = parser.get<std::string>("--program-type");
 }
