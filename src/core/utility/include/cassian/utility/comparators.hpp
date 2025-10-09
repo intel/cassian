@@ -109,6 +109,8 @@ template <class T> inline std::string dec_hex_pair(const T &v) {
 template <typename RESULT_TYPE, typename REFERENCE_TYPE>
 REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
                                       REFERENCE_TYPE reference) {
+  using cassian::abs;
+  using std::abs;
   if constexpr (!is_floating_point_v<RESULT_TYPE>) {
     static_assert(std::is_same_v<RESULT_TYPE, REFERENCE_TYPE>);
     return abs(reference - result);
@@ -137,6 +139,8 @@ template <typename RESULT_TYPE, typename REFERENCE_TYPE>
 bool match_results_ulp(const RESULT_TYPE &result,
                        const REFERENCE_TYPE &reference,
                        const RESULT_TYPE ulp_value) {
+  using std::isinf;
+  using std::isnan;
   // this if constexpr is needed for msvc compatibility, isnan doesn't work with
   // integers
   if constexpr (is_floating_point_v<RESULT_TYPE>) {
@@ -166,7 +170,8 @@ template <typename RESULT_TYPE, typename REFERENCE_TYPE,
 bool match_results_error_value(const RESULT_TYPE &result,
                                const REFERENCE_TYPE &reference,
                                RESULT_TYPE error_value) {
-
+  using std::fabs;
+  using std::isnan;
   if constexpr (!std::is_integral_v<RESULT_TYPE>) {
     if (isnan(result) && isnan(reference)) {
       return true;

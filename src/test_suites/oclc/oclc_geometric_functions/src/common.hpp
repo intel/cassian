@@ -65,13 +65,15 @@ std::string input_to_string(const std::vector<T> &input_a,
 }
 
 template <typename T> T ulp_distance(const T &a, const T &b) {
+  using std::isinf;
+  using std::isnan;
   if (a == b) {
     return 0;
   }
-  if (ca::isnan(a) || ca::isnan(b)) {
+  if (isnan(a) || isnan(b)) {
     return std::numeric_limits<T>::quiet_NaN();
   }
-  if (ca::isinf(a) || ca::isinf(b)) {
+  if (isinf(a) || isinf(b)) {
     return std::numeric_limits<T>::infinity();
   }
   return ((b >= a) ? b - a : a - b);
@@ -183,7 +185,8 @@ auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
     for (auto k = 0; k < T::vector_size; k++) {
-      randomized_input[j][k] = ca::nextafter(
+      using std::nextafter;
+      randomized_input[j][k] = nextafter(
           input[j - 1][k], std::numeric_limits<ca::scalar_type_v<T>>::max());
     }
   }
@@ -194,7 +197,8 @@ template <typename T, ca::EnableIfIsScalar<T> = 0>
 auto randomize_input(const std::vector<T> &input) {
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
-    randomized_input[j] = ca::nextafter(
+    using std::nextafter;
+    randomized_input[j] = nextafter(
         input[j - 1], std::numeric_limits<ca::scalar_type_v<T>>::max());
   }
   return randomized_input;

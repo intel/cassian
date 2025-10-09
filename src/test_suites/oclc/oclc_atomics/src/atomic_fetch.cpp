@@ -208,9 +208,10 @@ using operand_type_v = typename OperandType<T, O>::value;
 template <typename T,
           typename std::enable_if_t<cassian::is_floating_point_v<T>, int> = 0>
 void compare(const std::vector<T> &output, const std::vector<T> &reference) {
+  using std::isnan;
   for (auto i = 0; i < reference.size(); i++) {
-    if (cassian::isnan(reference[i])) {
-      REQUIRE(cassian::isnan(output[i]));
+    if (isnan(reference[i])) {
+      REQUIRE(isnan(output[i]));
     } else {
       REQUIRE(output[i] == reference[i]);
     }

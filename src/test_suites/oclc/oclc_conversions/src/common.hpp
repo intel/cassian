@@ -309,11 +309,11 @@ template <
                          ca::is_floating_point_v<T> && std::is_integral_v<U>,
                      int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  using std::nearbyint;
   set_rounding_mode<U>(RND);
   std::vector<U> ret(values.size());
   for (size_t i = 0; i < values.size(); i++) {
-    ret[i] =
-        U(static_cast<typename TO::underlying_type>(ca::nearbyint(values[i])));
+    ret[i] = U(static_cast<typename TO::underlying_type>(nearbyint(values[i])));
   }
   return ret;
 }
@@ -328,10 +328,12 @@ template <
                          ca::is_floating_point_v<T> && std::is_integral_v<U>,
                      int> = 0>
 std::vector<U> test_references(std::vector<T> values, size_t output_size) {
+  using std::isnan;
+  using std::nearbyint;
   set_rounding_mode<U>(RND);
   std::vector<U> ret(values.size());
   for (size_t i = 0; i < values.size(); i++) {
-    if (ca::isnan(values[i])) {
+    if (isnan(values[i])) {
       ret[i] = U(0);
       continue;
     }
@@ -343,8 +345,7 @@ std::vector<U> test_references(std::vector<T> values, size_t output_size) {
       ret[i] = std::numeric_limits<U>::lowest();
       continue;
     }
-    ret[i] =
-        U(static_cast<typename TO::underlying_type>(ca::nearbyint(values[i])));
+    ret[i] = U(static_cast<typename TO::underlying_type>(nearbyint(values[i])));
   }
   return ret;
 }

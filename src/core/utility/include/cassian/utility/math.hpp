@@ -23,9 +23,10 @@ namespace cassian {
  */
 template <typename T, EnableIfIsVector<T> = 0>
 scalar_type_v<T> dot_product(const T &a, const T &b) {
+  using std::fma;
   scalar_type_v<T> result = 0;
   for (auto i = 0; i < T::vector_size; i++) {
-    result = std::fma(a[i], b[i], result);
+    result = fma(a[i], b[i], result);
   }
   return result;
 }
@@ -71,16 +72,19 @@ T cross_product(const T &a, const T &b) {
  */
 template <typename T, EnableIfIsVector<T> = 0>
 scalar_type_v<T> distance(const T &a, const T &b) {
+  using std::pow;
+  using std::sqrt;
   scalar_type_v<T> result = 0.0;
   for (int i = 0; i < T::vector_size; i++) {
-    result += std::pow(a[i] - b[i], 2);
+    result += pow(a[i] - b[i], 2);
   }
-  return cassian::sqrt(result);
+  return sqrt(result);
 }
 
 template <typename T, EnableIfIsScalar<T> = 0>
 T distance(const T &a, const T &b) {
-  return cassian::abs(a - b);
+  using std::abs;
+  return abs(a - b);
 }
 
 /**
@@ -90,15 +94,19 @@ T distance(const T &a, const T &b) {
  */
 template <typename T, EnableIfIsVector<T> = 0>
 scalar_type_v<T> length(const T &a) {
+  using std::pow;
+  using std::sqrt;
   scalar_type_v<T> length = 0.0;
   for (int i = 0; i < T::vector_size; i++) {
-    length += std::pow(a[i], 2);
+    length += pow(a[i], 2);
   }
-  return cassian::sqrt(length);
+  return sqrt(length);
 }
 
 template <typename T, EnableIfIsScalar<T> = 0> T length(const T &a) {
-  return cassian::sqrt(std::pow(a, 2));
+  using std::pow;
+  using std::sqrt;
+  return sqrt(pow(a, 2));
 }
 
 /**
@@ -108,18 +116,22 @@ template <typename T, EnableIfIsScalar<T> = 0> T length(const T &a) {
  * @returns vector.
  */
 template <typename T, EnableIfIsVector<T> = 0> T normalize(const T &a) {
+  using std::copysign;
+  using std::isinf;
+  using std::isnan;
+  using std::sqrt;
   using scalar_type = scalar_type_v<T>;
   for (auto i = 0; i < T::vector_size; i++) {
-    if (cassian::isnan(a[i])) {
+    if (isnan(a[i])) {
       return T(std::numeric_limits<scalar_type>::quiet_NaN());
     }
   }
   T result = a;
   if (std::find_if(a.begin(), a.begin() + T::vector_size,
-                   [](const scalar_type &val) { return std::isinf(val); }) !=
+                   [](const scalar_type &val) { return isinf(val); }) !=
       a.begin() + T::vector_size) {
     for (size_t i = 0; i < T::vector_size; i++) {
-      result[i] = std::isinf(a[i]) ? std::copysign(1.0, a[i]) : 0.0 * a[i];
+      result[i] = isinf(a[i]) ? copysign(1.0, a[i]) : 0.0 * a[i];
     }
   }
   long double norm = 0.0;
@@ -130,7 +142,7 @@ template <typename T, EnableIfIsVector<T> = 0> T normalize(const T &a) {
   if (norm == 0.0) {
     return result;
   }
-  norm = cassian::sqrt(norm);
+  norm = sqrt(norm);
   for (size_t i = 0; i < T::vector_size; i++) {
     result[i] /= norm;
   }
@@ -138,17 +150,20 @@ template <typename T, EnableIfIsVector<T> = 0> T normalize(const T &a) {
 }
 
 template <typename T, EnableIfIsScalar<T> = 0> T normalize(const T &a) {
-  if (cassian::isnan(a)) {
+  using std::copysign;
+  using std::isinf;
+  using std::isnan;
+  if (isnan(a)) {
     return std::numeric_limits<T>::quiet_NaN();
   }
-  if (std::isinf(a)) {
-    T result = std::isinf(a) ? std::copysign(1.0, a) : 0.0 * a;
+  if (isinf(a)) {
+    T result = isinf(a) ? copysign(1.0, a) : 0.0 * a;
     return result;
   }
   if (a == 0) {
     return a;
   }
-  return std::copysign(1.0, a);
+  return copysign(1.0, a);
 }
 
 } // namespace cassian

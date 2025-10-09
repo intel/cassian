@@ -154,12 +154,13 @@ std::string create_section_name(const std::string_view &function_string,
 
 template <typename T, ca::EnableIfIsVector<T> = 0>
 auto randomize_input(const std::vector<T> &input) {
+  using std::nextafter;
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
     for (auto k = 0; k < T::vector_size; k++) {
       randomized_input[j][k] =
-          ca::nextafter(randomized_input[j - 1][k],
-                        std::numeric_limits<ca::scalar_type_v<T>>::max());
+          nextafter(randomized_input[j - 1][k],
+                    std::numeric_limits<ca::scalar_type_v<T>>::max());
     }
   }
   return randomized_input;
@@ -167,11 +168,12 @@ auto randomize_input(const std::vector<T> &input) {
 
 template <typename T, ca::EnableIfIsScalar<T> = 0>
 auto randomize_input(const std::vector<T> &input) {
+  using std::nextafter;
   auto randomized_input = input;
   for (auto j = 1; j < input.size(); j++) {
     randomized_input[j] =
-        ca::nextafter(randomized_input[j - 1],
-                      std::numeric_limits<ca::scalar_type_v<T>>::max());
+        nextafter(randomized_input[j - 1],
+                  std::numeric_limits<ca::scalar_type_v<T>>::max());
   }
   return randomized_input;
 }
@@ -199,61 +201,64 @@ struct ReplaceFloatingPointWithDouble<
 };
 
 template <typename T> bool powr_special_case(T input_a, T input_b) {
-  return (input_a == 0 && input_b == 0) ||
-         (ca::isinf(input_a) && input_b == 0) ||
-         (input_a == 1 && ca::isinf(input_b)) ||
-         (input_a == -1 && ca::isinf(input_b));
+  using std::isinf;
+  return (input_a == 0 && input_b == 0) || (isinf(input_a) && input_b == 0) ||
+         (input_a == 1 && isinf(input_b)) || (input_a == -1 && isinf(input_b));
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_acos(const T &input) {
+  using std::acos;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::acos(static_cast<double>(input[i]));
+      result[i] = acos(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::acos(static_cast<double>(input));
+    return acos(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_acosh(const T &input) {
+  using std::acosh;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::acosh(static_cast<double>(input[i]));
+      result[i] = acosh(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::acosh(static_cast<double>(input));
+    return acosh(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_asin(const T &input) {
+  using std::asin;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::asin(static_cast<double>(input[i]));
+      result[i] = asin(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::asin(static_cast<double>(input));
+    return asin(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_asinh(const T &input) {
+  using std::asinh;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::asinh(static_cast<double>(input[i]));
+      result[i] = asinh(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::asinh(static_cast<double>(input));
+    return asinh(static_cast<double>(input));
   }
 }
 
@@ -261,6 +266,9 @@ template <typename T>
 replace_fp_with_double_t<T>
 calculate_asinh_derived_check(const T &input, double ulp_tolerance = 4.0) {
   using scalar_type = ca::scalar_type_v<T>;
+  using std::asinh;
+  using std::isinf;
+  using std::isnan;
 
   // Determine safe input limits based on the scalar type
   const double max_safe_input = [ulp_tolerance]() {
@@ -290,12 +298,12 @@ calculate_asinh_derived_check(const T &input, double ulp_tolerance = 4.0) {
         result[i] = std::numeric_limits<double>::infinity();
       } else if (input_val < min_safe_input) {
         result[i] = std::numeric_limits<double>::infinity();
-      } else if (std::isnan(input_val)) {
+      } else if (isnan(input_val)) {
         result[i] = std::numeric_limits<double>::quiet_NaN();
-      } else if (std::isinf(input_val)) {
+      } else if (isinf(input_val)) {
         result[i] = input_val; // Preserve sign of infinity
       } else {
-        result[i] = ca::asinh(input_val);
+        result[i] = asinh(input_val);
       }
     }
     return result;
@@ -307,208 +315,224 @@ calculate_asinh_derived_check(const T &input, double ulp_tolerance = 4.0) {
       return std::numeric_limits<double>::infinity();
     } else if (input_val < min_safe_input) {
       return std::numeric_limits<double>::infinity();
-    } else if (std::isnan(input_val)) {
+    } else if (isnan(input_val)) {
       return std::numeric_limits<double>::quiet_NaN();
-    } else if (std::isinf(input_val)) {
+    } else if (isinf(input_val)) {
       return input_val; // Preserve sign of infinity
     } else {
-      return ca::asinh(input_val);
+      return asinh(input_val);
     }
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_acospi(const T &input) {
+  using std::acos;
   double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::acos(static_cast<double>(input[i])) / pi_value;
+      result[i] = acos(static_cast<double>(input[i])) / pi_value;
     }
     return result;
   } else {
-    return ca::acos(static_cast<double>(input)) / pi_value;
+    return acos(static_cast<double>(input)) / pi_value;
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_asinpi(const T &input) {
+  using std::asin;
   double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::asin(static_cast<double>(input[i])) / pi_value;
+      result[i] = asin(static_cast<double>(input[i])) / pi_value;
     }
     return result;
   } else {
-    return ca::asin(static_cast<double>(input)) / pi_value;
+    return asin(static_cast<double>(input)) / pi_value;
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_atan(const T &input) {
+  using std::atan;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::atan(static_cast<double>(input[i]));
+      result[i] = atan(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::atan(static_cast<double>(input));
+    return atan(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_atan2(const T &input_a,
                                             const T &input_b) {
+  using std::atan2;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::atan2(static_cast<double>(input_a[i]),
-                            static_cast<double>(input_b[i]));
+      result[i] = atan2(static_cast<double>(input_a[i]),
+                        static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    return ca::atan2(static_cast<double>(input_a),
-                     static_cast<double>(input_b));
+    return atan2(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_atanh(const T &input_a) {
+  using std::atanh;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::atanh(static_cast<double>(input_a[i]));
+      result[i] = atanh(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::atanh(static_cast<double>(input_a));
+    return atanh(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_atanpi(const T &input_a) {
+  using std::atan;
   double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::atan(static_cast<double>(input_a[i])) / pi_value;
+      result[i] = atan(static_cast<double>(input_a[i])) / pi_value;
     }
     return result;
   } else {
-    return ca::atan(static_cast<double>(input_a)) / pi_value;
+    return atan(static_cast<double>(input_a)) / pi_value;
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_atan2pi(const T &input_a,
                                               const T &input_b) {
+  using std::atan2;
   double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::atan2(static_cast<double>(input_a[i]),
-                            static_cast<double>(input_b[i])) /
+      result[i] = atan2(static_cast<double>(input_a[i]),
+                        static_cast<double>(input_b[i])) /
                   pi_value;
     }
     return result;
   } else {
-    return ca::atan2(static_cast<double>(input_a),
-                     static_cast<double>(input_b)) /
+    return atan2(static_cast<double>(input_a), static_cast<double>(input_b)) /
            pi_value;
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_cbrt(const T &input_a) {
+  using std::cbrt;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::cbrt(static_cast<double>(input_a[i]));
+      result[i] = cbrt(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::cbrt(static_cast<double>(input_a));
+    return cbrt(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_ceil(const T &input_a) {
+  using std::ceil;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = static_cast<double>(ca::ceil(input_a[i]));
+      result[i] = static_cast<double>(ceil(input_a[i]));
     }
     return result;
   } else {
-    return static_cast<double>(ca::ceil(input_a));
+    return static_cast<double>(ceil(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_copysign(const T &input_a,
                                                const T &input_b) {
+  using std::copysign;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = static_cast<double>(ca::copysign(input_a[i], input_b[i]));
+      result[i] = static_cast<double>(copysign(input_a[i], input_b[i]));
     }
     return result;
   } else {
-    return static_cast<double>(ca::copysign(input_a, input_b));
+    return static_cast<double>(copysign(input_a, input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_sqrt(const T &input_a) {
+  using std::sqrt;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::sqrt(static_cast<double>(input_a[i]));
+      result[i] = sqrt(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::sqrt(static_cast<double>(input_a));
+    return sqrt(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_cos(const T &input_a) {
+  using std::cos;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::cos(static_cast<double>(input_a[i]));
+      result[i] = cos(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::cos(static_cast<double>(input_a));
+    return cos(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_cosh(const T &input_a) {
+  using std::cosh;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::cosh(static_cast<double>(input_a[i]));
+      result[i] = cosh(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::cosh(static_cast<double>(input_a));
+    return cosh(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_cospi_impl(const T &input) {
+  using std::abs;
+  using std::cos;
+  using std::fabs;
+  using std::fmod;
+  using std::isinf;
   const double pi_value = static_cast<double>(M_PI);
-  auto abs_mod = [](const double &x) { return ca::fabs(ca::fmod(x, 2.0)); };
+  auto abs_mod = [](const double &x) { return fabs(fmod(x, 2.0)); };
   double integer_part{};
   const double fractional_part =
       std::modf(static_cast<double>(input), &integer_part);
   if (input == static_cast<T>(0.0)) {
     return 1.0;
-  } else if (ca::isinf(input)) {
+  } else if (isinf(input)) {
     return std::numeric_limits<double>::quiet_NaN();
   } else if (abs_mod(static_cast<double>(input)) == 0.0) {
     // Edge case not described in spec
@@ -517,16 +541,15 @@ replace_fp_with_double_t<T> calculate_cospi_impl(const T &input) {
   } else if (abs_mod(static_cast<double>(input)) == 1.0) {
     // Same as case above.
     return -1.0;
-  } else if (ca::abs(fractional_part) == 0.5) {
+  } else if (abs(fractional_part) == 0.5) {
     return +0.0;
   } else {
-    return ca::cos(pi_value * static_cast<double>(input));
+    return cos(pi_value * static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_cospi(const T &input) {
-  const double pi_value = static_cast<double>(M_PI);
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
@@ -540,132 +563,142 @@ replace_fp_with_double_t<T> calculate_cospi(const T &input) {
 
 template <typename OUT, typename IN>
 replace_fp_with_double_t<OUT> calculate_ilogb(const IN &input_a) {
+  using std::ilogb;
   if constexpr (ca::is_vector_v<IN>) {
     replace_fp_with_double_t<OUT> result{};
     for (auto i = 0; i < IN::vector_size; i++) {
-      result[i] = ca::ilogb<typename OUT::value_type>(input_a[i]);
+      result[i] = ilogb(input_a[i]);
     }
     return result;
   } else {
-    return OUT(ca::ilogb<OUT>(input_a));
+    return ilogb(input_a);
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_erfc(const T &input_a) {
+  using std::erfc;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::erfc(static_cast<double>(input_a[i]));
+      result[i] = erfc(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::erfc(static_cast<double>(input_a));
+    return erfc(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_erf(const T &input_a) {
+  using std::erf;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::erf(static_cast<double>(input_a[i]));
+      result[i] = erf(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::erf(static_cast<double>(input_a));
+    return erf(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_exp(const T &input_a) {
+  using std::exp;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::exp(static_cast<double>(input_a[i]));
+      result[i] = exp(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::exp(static_cast<double>(input_a));
+    return exp(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_exp2(const T &input_a) {
+  using std::exp2;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::exp2(static_cast<double>(input_a[i]));
+      result[i] = exp2(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::exp2(static_cast<double>(input_a));
+    return exp2(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_exp10(const T &input_a) {
+  using std::pow;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::pow(10.0, static_cast<double>(input_a[i]));
+      result[i] = pow(10.0, static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::pow(10.0, static_cast<double>(input_a));
+    return pow(10.0, static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_expm1(const T &input_a) {
+  using std::expm1;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::expm1(static_cast<double>(input_a[i]));
+      result[i] = expm1(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::expm1(static_cast<double>(input_a));
+    return expm1(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_fabs(const T &input_a) {
+  using std::fabs;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = static_cast<double>(ca::fabs(input_a[i]));
+      result[i] = static_cast<double>(fabs(input_a[i]));
     }
     return result;
   } else {
-    return static_cast<double>(ca::fabs(input_a));
+    return static_cast<double>(fabs(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_fdim(const T &input_a, const T &input_b) {
+  using std::fdim;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::fdim(static_cast<double>(input_a[i]),
-                           static_cast<double>(input_b[i]));
+      result[i] = fdim(static_cast<double>(input_a[i]),
+                       static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    return ca::fdim(static_cast<double>(input_a), static_cast<double>(input_b));
+    return fdim(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_floor(const T &input_a) {
+  using std::floor;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::floor(static_cast<double>(input_a[i]));
+      result[i] = floor(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::floor(static_cast<double>(input_a));
+    return floor(static_cast<double>(input_a));
   }
 }
 
@@ -689,174 +722,189 @@ replace_fp_with_double_t<T> calculate_mad(const T &input_a, const T &input_b,
 template <typename T>
 replace_fp_with_double_t<T> calculate_maxmag(const T &input_a,
                                              const T &input_b) {
+  using std::abs;
+  using std::fmax;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      if (ca::abs(input_a[i]) > ca::abs(input_b[i]))
+      if (abs(input_a[i]) > abs(input_b[i]))
         result[i] = static_cast<double>(input_a[i]);
-      else if (ca::abs(input_a[i]) < ca::abs(input_b[i]))
+      else if (abs(input_a[i]) < abs(input_b[i]))
         result[i] = static_cast<double>(input_b[i]);
       else
-        result[i] = ca::fmax(static_cast<double>(input_a[i]),
-                             static_cast<double>(input_b[i]));
+        result[i] = fmax(static_cast<double>(input_a[i]),
+                         static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    if (ca::abs(input_a) > ca::abs(input_b))
+    if (abs(input_a) > abs(input_b))
       return static_cast<double>(input_a);
-    else if (ca::abs(input_a) < ca::abs(input_b))
+    else if (abs(input_a) < abs(input_b))
       return static_cast<double>(input_b);
     else
-      return ca::fmax(static_cast<double>(input_a),
-                      static_cast<double>(input_b));
+      return fmax(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_minmag(const T &input_a,
                                              const T &input_b) {
+  using std::abs;
+  using std::fmin;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      if (ca::abs(input_a[i]) < ca::abs(input_b[i]))
+      if (abs(input_a[i]) < abs(input_b[i]))
         result[i] = static_cast<double>(input_a[i]);
-      else if (ca::abs(input_a[i]) > ca::abs(input_b[i]))
+      else if (abs(input_a[i]) > abs(input_b[i]))
         result[i] = static_cast<double>(input_b[i]);
       else
-        result[i] = ca::fmin(static_cast<double>(input_a[i]),
-                             static_cast<double>(input_b[i]));
+        result[i] = fmin(static_cast<double>(input_a[i]),
+                         static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    if (ca::abs(input_a) < ca::abs(input_b))
+    if (abs(input_a) < abs(input_b))
       return static_cast<double>(input_a);
-    else if (ca::abs(input_a) > ca::abs(input_b))
+    else if (abs(input_a) > abs(input_b))
       return static_cast<double>(input_b);
     else
-      return static_cast<double>(ca::fmin(input_a, input_b));
+      return static_cast<double>(fmin(input_a, input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_nextafter(const T &input_a,
                                                 const T &input_b) {
+  using std::nextafter;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = static_cast<double>(ca::nextafter(input_a[i], input_b[i]));
+      result[i] = static_cast<double>(nextafter(input_a[i], input_b[i]));
     }
     return result;
   } else {
-    return static_cast<double>(ca::nextafter(input_a, input_b));
+    return static_cast<double>(nextafter(input_a, input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_pow(const T &input_a, const T &input_b) {
+  using std::pow;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::pow(static_cast<double>(input_a[i]),
-                          static_cast<double>(input_b[i]));
+      result[i] =
+          pow(static_cast<double>(input_a[i]), static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    return ca::pow(static_cast<double>(input_a), static_cast<double>(input_b));
+    return pow(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_remainder(const T &input_a,
                                                 const T &input_b) {
+  using std::remainder;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::remainder(static_cast<double>(input_a[i]),
-                                static_cast<double>(input_b[i]));
+      result[i] = remainder(static_cast<double>(input_a[i]),
+                            static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    return ca::remainder(static_cast<double>(input_a),
-                         static_cast<double>(input_b));
+    return remainder(static_cast<double>(input_a),
+                     static_cast<double>(input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_rint(const T &input_a) {
+  using std::rint;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = static_cast<double>(ca::rint(input_a[i]));
+      result[i] = static_cast<double>(rint(input_a[i]));
     }
     return result;
   } else {
-    return static_cast<double>(ca::rint(input_a));
+    return static_cast<double>(rint(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_round(const T &input_a) {
+  using std::round;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = static_cast<double>(ca::round(input_a[i]));
+      result[i] = static_cast<double>(round(input_a[i]));
     }
     return result;
   } else {
-    return static_cast<double>(ca::round(input_a));
+    return static_cast<double>(round(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_rsqrt(const T &input_a) {
+  using std::sqrt;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = 1.0 / ca::sqrt(static_cast<double>(input_a[i]));
+      result[i] = 1.0 / sqrt(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return 1.0 / ca::sqrt(static_cast<double>(input_a));
+    return 1.0 / sqrt(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_sin(const T &input) {
+  using std::sin;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::sin(static_cast<double>(input[i]));
+      result[i] = sin(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::sin(static_cast<double>(input));
+    return sin(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_sinh(const T &input) {
+  using std::sinh;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::sinh(static_cast<double>(input[i]));
+      result[i] = sinh(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::sinh(static_cast<double>(input));
+    return sinh(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_sinpi_impl(const T &input) {
+  using std::copysign;
+  using std::isinf;
+  using std::sin;
+  using std::trunc;
   const double pi_value = static_cast<double>(M_PI);
   if (input == static_cast<T>(0.0)) {
-    return ca::copysign(0.0, static_cast<double>(input));
-  } else if (ca::isinf(input)) {
+    return copysign(0.0, static_cast<double>(input));
+  } else if (isinf(input)) {
     return std::numeric_limits<double>::quiet_NaN();
-  } else if (ca::trunc(input) == input) {
-    return ca::copysign(0.0, static_cast<double>(input));
+  } else if (trunc(input) == input) {
+    return copysign(0.0, static_cast<double>(input));
   } else {
-    return ca::sin(pi_value * static_cast<double>(input));
+    return sin(pi_value * static_cast<double>(input));
   }
 }
 
@@ -876,54 +924,62 @@ replace_fp_with_double_t<T> calculate_sinpi(const T &input) {
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_tan(const T &input) {
+  using std::tan;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::tan(static_cast<double>(input[i]));
+      result[i] = tan(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::tan(static_cast<double>(input));
+    return tan(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_tanh(const T &input) {
+  using std::tanh;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::tanh(static_cast<double>(input[i]));
+      result[i] = tanh(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::tanh(static_cast<double>(input));
+    return tanh(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_tanpi_impl(const T &input) {
+  using std::copysign;
+  using std::cos;
+  using std::fabs;
+  using std::fmod;
+  using std::isinf;
+  using std::sin;
   const double pi_value = static_cast<double>(M_PI);
-  auto abs_mod = [](const double &x) { return ca::fabs(ca::fmod(x, 2.0)); };
+  auto abs_mod = [](const double &x) { return fabs(fmod(x, 2.0)); };
   double integer_part{};
   const double fractional_part =
       std::modf(static_cast<double>(input), &integer_part);
   if (input == static_cast<T>(0.0)) {
-    return ca::copysign(0.0, static_cast<double>(input));
-  } else if (ca::isinf(input)) {
+    return copysign(0.0, static_cast<double>(input));
+  } else if (isinf(input)) {
     return std::numeric_limits<double>::quiet_NaN();
   } else if (abs_mod(static_cast<double>(input)) == 0.0) {
-    return ca::copysign(0.0, static_cast<double>(input));
+    return copysign(0.0, static_cast<double>(input));
   } else if (abs_mod(static_cast<double>(input)) == 1.0) {
-    return ca::copysign(0.0, -static_cast<double>(input));
+    return copysign(0.0, -static_cast<double>(input));
   } else if (abs_mod(static_cast<double>(input) - 0.5) == 0.0 &&
-             ca::fabs(fractional_part) == 0.5) {
+             fabs(fractional_part) == 0.5) {
     return std::numeric_limits<double>::infinity();
   } else if (abs_mod(static_cast<double>(input) - 0.5) == 1.0 &&
-             ca::fabs(fractional_part) == 0.5) {
+             fabs(fractional_part) == 0.5) {
     return -std::numeric_limits<double>::infinity();
   } else {
-    return ca::sin(pi_value * static_cast<double>(input)) /
-           ca::cos(pi_value * static_cast<double>(input));
+    return sin(pi_value * static_cast<double>(input)) /
+           cos(pi_value * static_cast<double>(input));
   }
 }
 
@@ -942,27 +998,29 @@ replace_fp_with_double_t<T> calculate_tanpi(const T &input) {
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_tgamma(const T &input) {
+  using std::tgamma;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::tgamma(static_cast<double>(input[i]));
+      result[i] = tgamma(static_cast<double>(input[i]));
     }
     return result;
   } else {
-    return ca::tgamma(static_cast<double>(input));
+    return tgamma(static_cast<double>(input));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_trunc(const T &input) {
+  using std::trunc;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = static_cast<double>(ca::trunc(input[i]));
+      result[i] = static_cast<double>(trunc(input[i]));
     }
     return result;
   } else {
-    return static_cast<double>(ca::trunc(input));
+    return static_cast<double>(trunc(input));
   }
 }
 
@@ -997,183 +1055,194 @@ replace_fp_with_double_t<T> calculate_recip(const T &input) {
 template <typename T>
 replace_fp_with_double_t<T> calculate_fma(const T &input_a, const T &input_b,
                                           const T &input_c) {
+  using std::fma;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::fma(static_cast<double>(input_a[i]),
-                          static_cast<double>(input_b[i]),
-                          static_cast<double>(input_c[i]));
+      result[i] =
+          fma(static_cast<double>(input_a[i]), static_cast<double>(input_b[i]),
+              static_cast<double>(input_c[i]));
     }
     return result;
   } else {
-    return ca::fma(static_cast<double>(input_a), static_cast<double>(input_b),
-                   static_cast<double>(input_c));
+    return fma(static_cast<double>(input_a), static_cast<double>(input_b),
+               static_cast<double>(input_c));
   }
 }
 
 template <typename T, typename T_1 = T>
 replace_fp_with_double_t<T> calculate_fmax(const T &input_a,
                                            const T_1 &input_b) {
+  using std::fmax;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
       if constexpr (ca::is_vector_v<T_1>) {
-        result[i] = ca::fmax(static_cast<double>(input_a[i]),
-                             static_cast<double>(input_b[i]));
+        result[i] = fmax(static_cast<double>(input_a[i]),
+                         static_cast<double>(input_b[i]));
       } else {
-        result[i] = ca::fmax(static_cast<double>(input_a[i]),
-                             static_cast<double>(input_b));
+        result[i] =
+            fmax(static_cast<double>(input_a[i]), static_cast<double>(input_b));
       }
     }
     return result;
   } else {
-    return ca::fmax(static_cast<double>(input_a), static_cast<double>(input_b));
+    return fmax(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T, typename T_1 = T>
 replace_fp_with_double_t<T> calculate_fmin(const T &input_a,
                                            const T_1 &input_b) {
+  using std::fmin;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
       if constexpr (ca::is_vector_v<T_1>) {
-        result[i] = ca::fmin(static_cast<double>(input_a[i]),
-                             static_cast<double>(input_b[i]));
+        result[i] = fmin(static_cast<double>(input_a[i]),
+                         static_cast<double>(input_b[i]));
       } else {
-        result[i] = ca::fmin(static_cast<double>(input_a[i]),
-                             static_cast<double>(input_b));
+        result[i] =
+            fmin(static_cast<double>(input_a[i]), static_cast<double>(input_b));
       }
     }
     return result;
   } else {
-    return ca::fmin(static_cast<double>(input_a), static_cast<double>(input_b));
+    return fmin(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_fmod(const T &input_a, const T &input_b) {
+  using std::fmod;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::fmod(static_cast<double>(input_a[i]),
-                           static_cast<double>(input_b[i]));
+      result[i] = fmod(static_cast<double>(input_a[i]),
+                       static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    return ca::fmod(static_cast<double>(input_a), static_cast<double>(input_b));
+    return fmod(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T, typename T_1 = T>
 replace_fp_with_double_t<T> calculate_ldexp(const T &input_a,
                                             const T_1 &input_b) {
+  using std::ldexp;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
       if constexpr (ca::is_vector_v<T_1>) {
-        result[i] = ca::ldexp(static_cast<double>(input_a[i]), input_b[i]);
+        result[i] = ldexp(static_cast<double>(input_a[i]), input_b[i]);
       } else {
-        result[i] = ca::ldexp(static_cast<double>(input_a[i]), input_b);
+        result[i] = ldexp(static_cast<double>(input_a[i]), input_b);
       }
     }
     return result;
   } else {
-    return ca::ldexp(static_cast<double>(input_a), input_b);
+    return ldexp(static_cast<double>(input_a), input_b);
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_hypot(const T &input_a,
                                             const T &input_b) {
+  using std::hypot;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::hypot(static_cast<double>(input_a[i]),
-                            static_cast<double>(input_b[i]));
+      result[i] = hypot(static_cast<double>(input_a[i]),
+                        static_cast<double>(input_b[i]));
     }
     return result;
   } else {
-    return ca::hypot(static_cast<double>(input_a),
-                     static_cast<double>(input_b));
+    return hypot(static_cast<double>(input_a), static_cast<double>(input_b));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_lgamma(const T &input_a) {
+  using std::lgamma;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::lgamma(static_cast<double>(input_a[i]));
+      result[i] = lgamma(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::lgamma(static_cast<double>(input_a));
+    return lgamma(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_log(const T &input_a) {
+  using std::log;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::log(static_cast<double>(input_a[i]));
+      result[i] = log(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::log(static_cast<double>(input_a));
+    return log(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_log2(const T &input_a) {
+  using std::log2;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::log2(static_cast<double>(input_a[i]));
+      result[i] = log2(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::log2(static_cast<double>(input_a));
+    return log2(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_log10(const T &input_a) {
+  using std::log10;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::log10(static_cast<double>(input_a[i]));
+      result[i] = log10(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::log10(static_cast<double>(input_a));
+    return log10(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_log1p(const T &input_a) {
+  using std::log1p;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::log1p(static_cast<double>(input_a[i]));
+      result[i] = log1p(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::log1p(static_cast<double>(input_a));
+    return log1p(static_cast<double>(input_a));
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_logb(const T &input_a) {
+  using std::logb;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = ca::logb(static_cast<double>(input_a[i]));
+      result[i] = logb(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    return ca::logb(static_cast<double>(input_a));
+    return logb(static_cast<double>(input_a));
   }
 }
 
@@ -1194,19 +1263,21 @@ replace_fp_with_double_t<T_1> calculate_nan(const T_2 &input_a) {
 template <typename T_1, typename T_2>
 replace_fp_with_double_t<T_1> calculate_pown(const T_1 &input_a,
                                              const T_2 &input_b) {
+  using std::pow;
   if constexpr (ca::is_vector_v<T_1>) {
     replace_fp_with_double_t<T_1> result{};
     for (auto i = 0; i < T_1::vector_size; i++) {
-      result[i] = ca::pow(static_cast<double>(input_a[i]), input_b[i]);
+      result[i] = pow(static_cast<double>(input_a[i]), input_b[i]);
     }
     return result;
   } else {
-    return ca::pow(static_cast<double>(input_a), input_b);
+    return pow(static_cast<double>(input_a), input_b);
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_powr(const T &input_a, const T &input_b) {
+  using std::pow;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
@@ -1214,8 +1285,8 @@ replace_fp_with_double_t<T> calculate_powr(const T &input_a, const T &input_b) {
         result[i] = static_cast<double>(
             std::numeric_limits<typename T::value_type>::quiet_NaN());
       } else {
-        result[i] = ca::pow(static_cast<double>(input_a[i]),
-                            static_cast<double>(input_b[i]));
+        result[i] += pow(static_cast<double>(input_a[i]),
+                         static_cast<double>(input_b[i]));
       }
     }
     return result;
@@ -1223,8 +1294,7 @@ replace_fp_with_double_t<T> calculate_powr(const T &input_a, const T &input_b) {
     if (powr_special_case(input_a, input_b)) {
       return static_cast<double>(std::numeric_limits<T>::quiet_NaN());
     } else {
-      return ca::pow(static_cast<double>(input_a),
-                     static_cast<double>(input_b));
+      return pow(static_cast<double>(input_a), static_cast<double>(input_b));
     }
   }
 }
@@ -1232,18 +1302,23 @@ replace_fp_with_double_t<T> calculate_powr(const T &input_a, const T &input_b) {
 template <typename T_1, typename T_2>
 replace_fp_with_double_t<T_1> calculate_rootn_impl(const T_1 &rad,
                                                    const T_2 &index) {
+  using std::abs;
+  using std::copysign;
+  using std::isinf;
+  using std::isnan;
+  using std::pow;
   double radicand = static_cast<double>(rad);
-  const double absRadicand = ca::abs(static_cast<double>(radicand));
+  const double absRadicand = abs(static_cast<double>(radicand));
   bool indexIsOdd = index % 2;
 
-  if (ca::isnan(static_cast<double>(index)) ||
-      (ca::isnan(radicand) && !ca::isinf(static_cast<double>(index)))
+  if (isnan(static_cast<double>(index)) ||
+      (isnan(radicand) && !isinf(static_cast<double>(index)))
       // 7.5.1. Additional Requirements Beyond C99 TC2
       // rootn(x, 0) returns a NaN.
       // rootn(x, n) returns a NaN for x < 0 and n is even.
       || index == 0 || (radicand < -0.0 && !indexIsOdd)) {
     return static_cast<double>(std::numeric_limits<T_1>::quiet_NaN());
-  } else if (ca::isinf(static_cast<double>(index))) {
+  } else if (isinf(static_cast<double>(index))) {
     // no clear definition neither in OpenCL standard, nor in  IEEE 754,
     // hence deriving from std::pow(radicand, 0)
     // pow(base, +-0) returns 1 for any base, even when base is NaN.
@@ -1252,24 +1327,22 @@ replace_fp_with_double_t<T_1> calculate_rootn_impl(const T_1 &rad,
     // accepted, but we're alligning with stdlib definition for the sake of
     // simplicity.
     return 1.0;
-  } else if (ca::isinf(radicand)) {
-    return ca::copysign(
-        static_cast<double>(std::numeric_limits<T_1>::infinity()), radicand);
+  } else if (isinf(radicand)) {
+    return copysign(static_cast<double>(std::numeric_limits<T_1>::infinity()),
+                    radicand);
   } else if (absRadicand == 0.0 && index > 0) {
     // 7.5.1. Additional Requirements Beyond C99 TC2
     // rootn(+-0, n) is +-0 for odd n > 0.
     // rootn(+-0, n) is +0 for even n > 0.
-    return ca::copysign(0.0, indexIsOdd ? radicand : 1.0);
+    return copysign(0.0, indexIsOdd ? radicand : 1.0);
   } else if (absRadicand == 0.0 && index < 0) {
     // 7.5.1. Additional Requirements Beyond C99 TC2
     // rootn(+-0, n) is +-inf for odd n < 0.
     // rootn(+-0, n) is +inf for even n < 0.
-    return ca::copysign(
-        static_cast<double>(std::numeric_limits<T_1>::infinity()),
-        indexIsOdd ? radicand : 1.0);
+    return copysign(static_cast<double>(std::numeric_limits<T_1>::infinity()),
+                    indexIsOdd ? radicand : 1.0);
   }
-  return ca::copysign(ca::pow(absRadicand, 1.0 / static_cast<double>(index)),
-                      radicand);
+  return copysign(pow(absRadicand, 1.0 / static_cast<double>(index)), radicand);
 }
 
 template <typename T_1, typename T_2>
@@ -1288,77 +1361,85 @@ replace_fp_with_double_t<T_1> calculate_rootn(const T_1 &input_a,
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_fract(const T &input_a, T &input_b) {
+  using std::floor;
+  using std::fmin;
+  using std::isinf;
+  using std::isnan;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      if (ca::isnan(input_a[i])) {
+      if (isnan(input_a[i])) {
         result[i] = static_cast<double>(
             std::numeric_limits<typename T::value_type>::quiet_NaN());
-      } else if (ca::isinf(input_a[i])) {
+      } else if (isinf(input_a[i])) {
         result[i] = 0.0;
       } else {
         result[i] = std::fmin(static_cast<double>(input_a[i]) -
-                                  ca::floor(static_cast<double>(input_a[i])),
+                                  floor(static_cast<double>(input_a[i])),
                               0x1.fffffep-1f);
       }
-      input_b[i] = ca::floor(static_cast<double>(input_a[i]));
+      input_b[i] = floor(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    if (ca::isnan(input_a)) {
-      input_b = ca::floor(static_cast<double>(input_a));
+    if (isnan(input_a)) {
+      input_b = floor(static_cast<double>(input_a));
       return std::numeric_limits<T>::quiet_NaN();
-    } else if (ca::isinf(static_cast<double>(input_a))) {
-      input_b = ca::floor(static_cast<double>(input_a));
+    } else if (isinf(static_cast<double>(input_a))) {
+      input_b = floor(static_cast<double>(input_a));
       return 0;
     } else {
-      input_b = ca::floor(static_cast<double>(input_a));
-      return std::fmin(input_a - ca::floor(static_cast<double>(input_a)),
-                       0x1.fffffep-1f);
+      input_b = floor(static_cast<double>(input_a));
+      return fmin(input_a - floor(static_cast<double>(input_a)),
+                  0x1.fffffep-1f);
     }
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_modf(const T &input_a, T &input_b) {
+  using std::modf;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = std::modf(static_cast<double>(input_a[i]), &input_b[i]);
+      result[i] = modf(static_cast<double>(input_a[i]), &input_b[i]);
     }
     return result;
   } else {
-    return std::modf(static_cast<double>(input_a), &input_b);
+    return modf(static_cast<double>(input_a), &input_b);
   }
 }
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_sincos(const T &input_a, T &input_b) {
+  using std::cos;
+  using std::sin;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = std::sin(static_cast<double>(input_a[i]));
-      input_b[i] = std::cos(static_cast<double>(input_a[i]));
+      result[i] = sin(static_cast<double>(input_a[i]));
+      input_b[i] = cos(static_cast<double>(input_a[i]));
     }
     return result;
   } else {
-    input_b = std::cos(static_cast<double>(input_a));
-    return std::sin(static_cast<double>(input_a));
+    input_b = cos(static_cast<double>(input_a));
+    return sin(static_cast<double>(input_a));
   }
 }
 
 template <typename T, typename T_1>
 replace_fp_with_double_t<T> calculate_frexp(const T &input_a, T_1 &input_b) {
+  using std::frexp;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = std::frexp(static_cast<double>(input_a[i]), &input_b[i]);
+      result[i] = frexp(static_cast<double>(input_a[i]), &input_b[i]);
       if (input_b[i] == -1)
         input_b[i] = 0;
     }
     return result;
   } else {
-    auto result = std::frexp(static_cast<double>(input_a), &input_b);
+    auto result = frexp(static_cast<double>(input_a), &input_b);
     if (input_b == -1)
       input_b = 0;
     return result;
@@ -1368,50 +1449,55 @@ replace_fp_with_double_t<T> calculate_frexp(const T &input_a, T_1 &input_b) {
 template <typename T, typename T_1>
 replace_fp_with_double_t<T> calculate_remquo(const T &input_a, const T &input_b,
                                              T_1 &input_c) {
+  using std::fabs;
+  using std::isinf;
+  using std::isnan;
+  using std::remquo;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      if (ca::isnan(input_a[i])) {
+      if (isnan(input_a[i])) {
         input_c[i] = 0;
         result[i] = std::numeric_limits<typename T::value_type>::quiet_NaN();
         continue;
       }
-      if ((ca::isinf(std::fabs(input_a[i]))) ||
-          (input_b[i] == 0 && !ca::isnan(input_a[i])) ||
-          ((ca::isnan(input_a[i])) ^ (ca::isnan(input_b[i])))) {
+      if ((isinf(std::fabs(input_a[i]))) ||
+          (input_b[i] == 0 && !isnan(input_a[i])) ||
+          ((isnan(input_a[i])) ^ (isnan(input_b[i])))) {
         result[i] = std::numeric_limits<typename T::value_type>::quiet_NaN();
         input_c[i] = 0;
         continue;
       }
-      result[i] = std::remquo(static_cast<double>(input_a[i]),
-                              static_cast<double>(input_b[i]), &input_c[i]);
+      result[i] = remquo(static_cast<double>(input_a[i]),
+                         static_cast<double>(input_b[i]), &input_c[i]);
     }
     return result;
   } else {
     if ((std::fabs(input_a) == std::numeric_limits<T>::infinity()) ||
-        (input_b == 0 && !ca::isnan(input_a)) ||
-        ((ca::isnan(input_a)) ^ (ca::isnan(input_b)))) {
+        (input_b == 0 && !isnan(input_a)) ||
+        ((isnan(input_a)) ^ (isnan(input_b)))) {
       input_c = 0;
       return std::numeric_limits<T>::quiet_NaN();
     } else {
-      return std::remquo(static_cast<double>(input_a),
-                         static_cast<double>(input_b), &input_c);
+      return remquo(static_cast<double>(input_a), static_cast<double>(input_b),
+                    &input_c);
     }
   }
 }
 
 template <typename T, typename T_1>
 replace_fp_with_double_t<T> calculate_lgamma_r(const T &input_a, T_1 &input_b) {
+  using std::lgamma;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
-      result[i] = std::lgamma(static_cast<double>(input_a[i]));
+      result[i] = lgamma(static_cast<double>(input_a[i]));
       input_b[i] = input_a[i] > 0 ? 1 : 0;
     }
     return result;
   } else {
     input_b = input_a > 0 ? 1 : 0;
-    return std::lgamma(static_cast<double>(input_a));
+    return lgamma(static_cast<double>(input_a));
   }
 }
 

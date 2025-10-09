@@ -425,14 +425,15 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_random_case(generate_value<input_type_1>());
     values.add_edge_case(less_than_zero);
   } else if constexpr (T::function == Function::sinpi) {
+    using std::ceil;
     const auto infinity =
         input_type_1(std::numeric_limits<scalar_type_1>::infinity());
     const auto int_higher_than_zero =
-        input_type_1(ca::ceil(generate_value<scalar_type_1>(
+        input_type_1(ceil(generate_value<scalar_type_1>(
             scalar_type_1(0), std::numeric_limits<scalar_type_1>::max(),
             {scalar_type_1(0)})));
     const auto int_lower_than_zero =
-        input_type_1(ca::ceil(generate_value<scalar_type_1>(
+        input_type_1(ceil(generate_value<scalar_type_1>(
             std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(-1))));
     values.add_random_case(generate_value<input_type_1>());
     values.add_edge_case(input_type_1(scalar_type_1(0.0F)));
@@ -479,8 +480,9 @@ template <class T> constexpr auto get_gentype_values() {
     values.add_edge_case(even_number + input_type_1(scalar_type_1(0.5F)));
     values.add_edge_case(odd_number + input_type_1(scalar_type_1(0.5F)));
   } else if constexpr (T::function == Function::lgamma_r) {
+    using std::ceil;
     const auto int_lower_than_zero =
-        input_type_1(ca::ceil(generate_value<scalar_type_1>(
+        input_type_1(ceil(generate_value<scalar_type_1>(
             std::numeric_limits<scalar_type_1>::lowest(), scalar_type_1(-1))));
     values.add_random_case(generate_value<input_type_1>(),
                            generate_value<input_type_2>());

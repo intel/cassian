@@ -65,9 +65,11 @@ using atan2pi = OclcFunction<Function::atan2pi, 2,
 template <typename T>
 using cbrt =
     OclcFunction<Function::cbrt, 1, calculate_cbrt<typename T::host_type>, T>;
+namespace internal {
 template <typename T>
 using ceil =
     OclcFunction<Function::ceil, 1, calculate_ceil<typename T::host_type>, T>;
+}
 template <typename T>
 using copysign = OclcFunction<Function::copysign, 2,
                               calculate_copysign<typename T::host_type>, T>;
@@ -116,9 +118,9 @@ using Gentype =
 
 using GentypeFunctions =
     FunctionProduct<Gentype, acos, acosh, acospi, asin, asinh, asinpi, atan,
-                    atan2, atanh, atanpi, atan2pi, cbrt, ceil, copysign, cos,
-                    cosh, cospi, sqrt, mad, maxmag, minmag, nextafter, pow,
-                    remainder, rint, round, rsqrt>::type;
+                    atan2, atanh, atanpi, atan2pi, cbrt, internal::ceil,
+                    copysign, cos, cosh, cospi, sqrt, mad, maxmag, minmag,
+                    nextafter, pow, remainder, rint, round, rsqrt>::type;
 
 TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("functions", "", GentypeFunctions,
                                     test_name_with_function<TestType>) {

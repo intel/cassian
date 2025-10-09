@@ -247,7 +247,8 @@ bool match_results(const T &result, const T &reference,
 template <typename T, typename ca::EnableIfIsScalar<T> = 0>
 bool match_results(const T &result, const T &reference, const T &ulp_value,
                    const Function &function) {
-  if (ca::isnan(result) && ca::isnan(reference)) {
+  using std::isnan;
+  if (isnan(result) && isnan(reference)) {
     return true;
   }
   if (function == Function::dot || function == Function::cross) {
