@@ -392,9 +392,7 @@ Half trunc(Half value) { return Half(std::trunc(static_cast<float>(value))); }
 
 Half round(Half value) { return Half(std::round(static_cast<float>(value))); }
 
-Half ilogb(Half value) {
-  return Half(static_cast<float>(std::ilogb(static_cast<float>(value))));
-}
+int ilogb(Half value) { return std::ilogb(static_cast<float>(value)); }
 
 Half erfc(Half value) { return Half(std::erfc(static_cast<float>(value))); }
 

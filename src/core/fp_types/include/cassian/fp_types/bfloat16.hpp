@@ -194,6 +194,202 @@ private:
    * Binary representation
    */
   storage_t data;
+
+  template <typename T>
+  using EnableBfloat16ArithmeticIfIntegral =
+      std::enable_if_t<std::is_integral_v<T>, Bfloat16>;
+
+  template <typename T>
+  using EnableBfloat16ArithmeticIfFloatingPoint =
+      std::enable_if_t<std::is_floating_point_v<T>, T>;
+
+  /**
+   * Addition operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns sum of lhs and rhs
+   */
+  friend Bfloat16 operator+(Bfloat16 lhs, Bfloat16 rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator+(T lhs, Bfloat16 rhs) {
+    return static_cast<Bfloat16>(lhs) + rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator+(Bfloat16 lhs, T rhs) {
+    return lhs + static_cast<Bfloat16>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator+(T lhs,
+                                                              Bfloat16 rhs) {
+    return lhs + static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator+(Bfloat16 lhs,
+                                                              T rhs) {
+    return static_cast<T>(lhs) + rhs;
+  }
+
+  /**
+   * Subtraction operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns difference between lhs and rhs
+   */
+  friend Bfloat16 operator-(Bfloat16 lhs, Bfloat16 rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator-(T lhs, Bfloat16 rhs) {
+    return static_cast<Bfloat16>(lhs) - rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator-(Bfloat16 lhs, T rhs) {
+    return lhs - static_cast<Bfloat16>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator-(T lhs,
+                                                              Bfloat16 rhs) {
+    return lhs - static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator-(Bfloat16 lhs,
+                                                              T rhs) {
+    return static_cast<T>(lhs) - rhs;
+  }
+
+  /**
+   * Multiplication operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns product of lhs and rhs
+   */
+  friend Bfloat16 operator*(Bfloat16 lhs, Bfloat16 rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator*(T lhs, Bfloat16 rhs) {
+    return static_cast<Bfloat16>(lhs) * rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator*(Bfloat16 lhs, T rhs) {
+    return lhs * static_cast<Bfloat16>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator*(T lhs,
+                                                              Bfloat16 rhs) {
+    return lhs * static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator*(Bfloat16 lhs,
+                                                              T rhs) {
+    return static_cast<T>(lhs) * rhs;
+  }
+
+  /**
+   * Division operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns quotient
+   */
+  friend Bfloat16 operator/(Bfloat16 lhs, Bfloat16 rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator/(T lhs, Bfloat16 rhs) {
+    return static_cast<Bfloat16>(lhs) / rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfIntegral<T> operator/(Bfloat16 lhs, T rhs) {
+    return lhs / static_cast<Bfloat16>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator/(T lhs,
+                                                              Bfloat16 rhs) {
+    return lhs / static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableBfloat16ArithmeticIfFloatingPoint<T> operator/(Bfloat16 lhs,
+                                                              T rhs) {
+    return static_cast<T>(lhs) / rhs;
+  }
+
+  /**
+   * Convert Bfloat16 to string representation.
+   *
+   * @param[in] value object to convert.
+   */
+  friend std::string to_string(const Bfloat16 &value);
+
+  /**
+   * Append string representation of Bfloat16 object to a stream.
+   *
+   * @param[in] os stream to use.
+   * @param[in] value object to convert.
+   * @returns used stream.
+   */
+  friend std::ostream &operator<<(std::ostream &os, const Bfloat16 &value);
 };
 
 /**
@@ -206,194 +402,6 @@ static_assert(sizeof(bfloat16) == 2, "wrong size of bfloat16 type");
 template <> struct is_floating_point<Bfloat16> : std::true_type {};
 
 template <> struct is_custom_type<Bfloat16> : std::true_type {};
-
-template <typename T>
-using EnableBfloat16ArithmeticIfIntegral =
-    std::enable_if_t<std::is_integral_v<T>, Bfloat16>;
-
-template <typename T>
-using EnableBfloat16ArithmeticIfFloatingPoint =
-    std::enable_if_t<std::is_floating_point_v<T>, T>;
-
-/**
- * Addition operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns sum of lhs and rhs
- */
-Bfloat16 operator+(Bfloat16 lhs, Bfloat16 rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator+(T lhs, Bfloat16 rhs) {
-  return static_cast<Bfloat16>(lhs) + rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator+(Bfloat16 lhs, T rhs) {
-  return lhs + static_cast<Bfloat16>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator+(T lhs, Bfloat16 rhs) {
-  return lhs + static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator+(Bfloat16 lhs, T rhs) {
-  return static_cast<T>(lhs) + rhs;
-}
-
-/**
- * Subtraction operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns difference between lhs and rhs
- */
-Bfloat16 operator-(Bfloat16 lhs, Bfloat16 rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator-(T lhs, Bfloat16 rhs) {
-  return static_cast<Bfloat16>(lhs) - rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator-(Bfloat16 lhs, T rhs) {
-  return lhs - static_cast<Bfloat16>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator-(T lhs, Bfloat16 rhs) {
-  return lhs - static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator-(Bfloat16 lhs, T rhs) {
-  return static_cast<T>(lhs) - rhs;
-}
-
-/**
- * Multiplication operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns product of lhs and rhs
- */
-Bfloat16 operator*(Bfloat16 lhs, Bfloat16 rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator*(T lhs, Bfloat16 rhs) {
-  return static_cast<Bfloat16>(lhs) * rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator*(Bfloat16 lhs, T rhs) {
-  return lhs * static_cast<Bfloat16>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator*(T lhs, Bfloat16 rhs) {
-  return lhs * static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator*(Bfloat16 lhs, T rhs) {
-  return static_cast<T>(lhs) * rhs;
-}
-
-/**
- * Division operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns quotient
- */
-Bfloat16 operator/(Bfloat16 lhs, Bfloat16 rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator/(T lhs, Bfloat16 rhs) {
-  return static_cast<Bfloat16>(lhs) / rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfIntegral<T> operator/(Bfloat16 lhs, T rhs) {
-  return lhs / static_cast<Bfloat16>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator/(T lhs, Bfloat16 rhs) {
-  return lhs / static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableBfloat16ArithmeticIfFloatingPoint<T> operator/(Bfloat16 lhs, T rhs) {
-  return static_cast<T>(lhs) / rhs;
-}
-
-/**
- * Convert Bfloat16 to string representation.
- *
- * @param[in] value object to convert.
- */
-std::string to_string(const Bfloat16 &value);
-
-/**
- * Append string representation of Bfloat16 object to a stream.
- *
- * @param[in] os stream to use.
- * @param[in] value object to convert.
- * @returns used stream.
- */
-std::ostream &operator<<(std::ostream &os, const Bfloat16 &value);
 
 /**
  * Checks whether the value is NaN.

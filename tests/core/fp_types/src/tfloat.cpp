@@ -415,22 +415,22 @@ TEST_CASE("tfloat - Division operator") {
 TEST_CASE("tfloat - abs") {
   SECTION("+zero") {
     const auto a = cassian::Tfloat::encode(0x00000000);
-    REQUIRE(cassian::abs(a) == a);
+    REQUIRE(abs(a) == a);
   }
 
   SECTION("-zero") {
     const auto a = cassian::Tfloat::encode(0x80000000);
-    REQUIRE(cassian::abs(a) == -a);
+    REQUIRE(abs(a) == -a);
   }
 
   SECTION("one") {
     const auto a = cassian::Tfloat::encode(0x3f800000);
-    REQUIRE(cassian::abs(a) == a);
+    REQUIRE(abs(a) == a);
   }
 
   SECTION("-one") {
     const auto a = cassian::Tfloat::encode(0xbf800000);
-    REQUIRE(cassian::abs(a) == -a);
+    REQUIRE(abs(a) == -a);
   }
 }
 
@@ -443,21 +443,21 @@ TEST_CASE("tfloat - sqrt") {
 TEST_CASE("tfloat - to_string") {
   SECTION("zero") {
     const cassian::Tfloat input(0.0F);
-    const std::string output = cassian::to_string(input);
+    const std::string output = to_string(input);
     const std::string expected = "0x00000000";
     REQUIRE(output == expected);
   }
 
   SECTION("denorm") {
     const cassian::Tfloat input = cassian::Tfloat::encode(0x00002000U);
-    const std::string output = cassian::to_string(input);
+    const std::string output = to_string(input);
     const std::string expected = "0x00002000";
     REQUIRE(output == expected);
   }
 
   SECTION("one") {
     const cassian::Tfloat input(1.0F);
-    const std::string output = cassian::to_string(input);
+    const std::string output = to_string(input);
     const std::string expected = "0x3f800000";
     REQUIRE(output == expected);
   }
@@ -490,12 +490,12 @@ TEST_CASE("tfloat - stream operator") {
 TEST_CASE("tfloat - isnan") {
   SECTION("with NaN") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x7fffe000);
-    REQUIRE(cassian::isnan(a));
+    REQUIRE(isnan(a));
   }
 
   SECTION("with zero") {
     const cassian::Tfloat a(0.0F);
-    REQUIRE_FALSE(cassian::isnan(a));
+    REQUIRE_FALSE(isnan(a));
   }
 }
 
@@ -505,7 +505,7 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(1.0F);
     const cassian::Tfloat denorm =
         std::numeric_limits<cassian::Tfloat>::denorm_min();
-    REQUIRE(cassian::nextafter(a, b) == denorm);
+    REQUIRE(nextafter(a, b) == denorm);
   }
 
   SECTION("zero -> -one") {
@@ -513,7 +513,7 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(-1.0F);
     const cassian::Tfloat denorm =
         std::numeric_limits<cassian::Tfloat>::denorm_min();
-    REQUIRE(cassian::nextafter(a, b) == -denorm);
+    REQUIRE(nextafter(a, b) == -denorm);
   }
 
   SECTION("1.5 -> greater than 1.5") {
@@ -521,7 +521,7 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(2.0F);
     const cassian::Tfloat epsilon =
         std::numeric_limits<cassian::Tfloat>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+    REQUIRE(nextafter(a, b) == a + epsilon);
   }
 
   SECTION("1.5 -> lesser than 1.5") {
@@ -529,7 +529,7 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(0.0F);
     const cassian::Tfloat epsilon =
         std::numeric_limits<cassian::Tfloat>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a - epsilon);
+    REQUIRE(nextafter(a, b) == a - epsilon);
   }
 
   SECTION("-1.5 -> greater than -1.5") {
@@ -537,7 +537,7 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(-0.5F);
     const cassian::Tfloat epsilon =
         std::numeric_limits<cassian::Tfloat>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+    REQUIRE(nextafter(a, b) == a + epsilon);
   }
 
   SECTION("-1.5 -> greater than zero") {
@@ -545,7 +545,7 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(0.5F);
     const cassian::Tfloat epsilon =
         std::numeric_limits<cassian::Tfloat>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+    REQUIRE(nextafter(a, b) == a + epsilon);
   }
 
   SECTION("-1.5 -> lesser than -1.5") {
@@ -553,27 +553,27 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(-2.0F);
     const cassian::Tfloat epsilon =
         std::numeric_limits<cassian::Tfloat>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a - epsilon);
+    REQUIRE(nextafter(a, b) == a - epsilon);
   }
 
   SECTION("x -> greater than x (high exponent)") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x70000000);
     const cassian::Tfloat b = cassian::Tfloat::encode(0x78000000);
     const cassian::Tfloat expected = cassian::Tfloat::encode(0x70002000);
-    REQUIRE(cassian::nextafter(a, b) == expected);
+    REQUIRE(nextafter(a, b) == expected);
   }
 
   SECTION("x -> lesser than x (high exponent)") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x70000000);
     const cassian::Tfloat b = cassian::Tfloat::encode(0x60000000);
     const cassian::Tfloat expected = cassian::Tfloat::encode(0x6fffe000);
-    REQUIRE(cassian::nextafter(a, b) == expected);
+    REQUIRE(nextafter(a, b) == expected);
   }
 
   SECTION("zero -> zero") {
     const cassian::Tfloat a(0.0F);
     const cassian::Tfloat b(0.0F);
-    REQUIRE(cassian::nextafter(a, b) == b);
+    REQUIRE(nextafter(a, b) == b);
   }
 }
 

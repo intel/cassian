@@ -416,49 +416,49 @@ TEST_CASE("bfloat16 - Division operator") {
 TEST_CASE("bfloat16 - abs") {
   SECTION("+zero") {
     const auto a = cassian::Bfloat16::encode(0x0000);
-    REQUIRE(cassian::abs(a) == a);
+    REQUIRE(abs(a) == a);
   }
 
   SECTION("-zero") {
     const auto a = cassian::Bfloat16::encode(0x8000);
-    REQUIRE(cassian::abs(a) == -a);
+    REQUIRE(abs(a) == -a);
   }
 
   SECTION("one") {
     const auto a = cassian::Bfloat16::encode(0x3f80);
-    REQUIRE(cassian::abs(a) == a);
+    REQUIRE(abs(a) == a);
   }
 
   SECTION("-one") {
     const auto a = cassian::Bfloat16::encode(0xbf80);
-    REQUIRE(cassian::abs(a) == -a);
+    REQUIRE(abs(a) == -a);
   }
 }
 
 TEST_CASE("bfloat16 - sqrt") {
   const cassian::Bfloat16 a(2.0F);
   const float b = 2.0F;
-  REQUIRE(cassian::sqrt(a) == cassian::Bfloat16(std::sqrt(b)));
+  REQUIRE(sqrt(a) == cassian::Bfloat16(std::sqrt(b)));
 }
 
 TEST_CASE("bfloat16 - to_string") {
   SECTION("zero") {
     const cassian::Bfloat16 input(0.0F);
-    const std::string output = cassian::to_string(input);
+    const std::string output = to_string(input);
     const std::string expected = "0x0000";
     REQUIRE(output == expected);
   }
 
   SECTION("denorm") {
     const cassian::Bfloat16 input = cassian::Bfloat16::encode(0x0001);
-    const std::string output = cassian::to_string(input);
+    const std::string output = to_string(input);
     const std::string expected = "0x0001";
     REQUIRE(output == expected);
   }
 
   SECTION("one") {
     const cassian::Bfloat16 input(1.0F);
-    const std::string output = cassian::to_string(input);
+    const std::string output = to_string(input);
     const std::string expected = "0x3f80";
     REQUIRE(output == expected);
   }
@@ -491,12 +491,12 @@ TEST_CASE("bfloat16 - stream operator") {
 TEST_CASE("bfloat16 - isnan") {
   SECTION("with NaN") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7fff);
-    REQUIRE(cassian::isnan(a));
+    REQUIRE(isnan(a));
   }
 
   SECTION("with zero") {
     const cassian::Bfloat16 a(0.0F);
-    REQUIRE_FALSE(cassian::isnan(a));
+    REQUIRE_FALSE(isnan(a));
   }
 }
 
@@ -506,7 +506,7 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(1.0F);
     const cassian::Bfloat16 denorm =
         std::numeric_limits<cassian::Bfloat16>::denorm_min();
-    REQUIRE(cassian::nextafter(a, b) == denorm);
+    REQUIRE(nextafter(a, b) == denorm);
   }
 
   SECTION("zero -> -one") {
@@ -514,7 +514,7 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(-1.0F);
     const cassian::Bfloat16 denorm =
         std::numeric_limits<cassian::Bfloat16>::denorm_min();
-    REQUIRE(cassian::nextafter(a, b) == -denorm);
+    REQUIRE(nextafter(a, b) == -denorm);
   }
 
   SECTION("1.5 -> greater than 1.5") {
@@ -522,7 +522,7 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(2.0F);
     const cassian::Bfloat16 epsilon =
         std::numeric_limits<cassian::Bfloat16>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+    REQUIRE(nextafter(a, b) == a + epsilon);
   }
 
   SECTION("1.5 -> lesser than 1.5") {
@@ -530,7 +530,7 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(0.0F);
     const cassian::Bfloat16 epsilon =
         std::numeric_limits<cassian::Bfloat16>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a - epsilon);
+    REQUIRE(nextafter(a, b) == a - epsilon);
   }
 
   SECTION("-1.5 -> greater than -1.5") {
@@ -538,7 +538,7 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(-0.5F);
     const cassian::Bfloat16 epsilon =
         std::numeric_limits<cassian::Bfloat16>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+    REQUIRE(nextafter(a, b) == a + epsilon);
   }
 
   SECTION("-1.5 -> greater than zero") {
@@ -546,7 +546,7 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(0.5F);
     const cassian::Bfloat16 epsilon =
         std::numeric_limits<cassian::Bfloat16>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a + epsilon);
+    REQUIRE(nextafter(a, b) == a + epsilon);
   }
 
   SECTION("-1.5 -> lesser than -1.5") {
@@ -554,27 +554,27 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(-2.0F);
     const cassian::Bfloat16 epsilon =
         std::numeric_limits<cassian::Bfloat16>::epsilon();
-    REQUIRE(cassian::nextafter(a, b) == a - epsilon);
+    REQUIRE(nextafter(a, b) == a - epsilon);
   }
 
   SECTION("x -> greater than x (high exponent)") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7000);
     const cassian::Bfloat16 b = cassian::Bfloat16::encode(0x7800);
     const cassian::Bfloat16 expected = cassian::Bfloat16::encode(0x7001);
-    REQUIRE(cassian::nextafter(a, b) == expected);
+    REQUIRE(nextafter(a, b) == expected);
   }
 
   SECTION("x -> lesser than x (high exponent)") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7000);
     const cassian::Bfloat16 b = cassian::Bfloat16::encode(0x6000);
     const cassian::Bfloat16 expected = cassian::Bfloat16::encode(0x6fff);
-    REQUIRE(cassian::nextafter(a, b) == expected);
+    REQUIRE(nextafter(a, b) == expected);
   }
 
   SECTION("zero -> zero") {
     const cassian::Bfloat16 a(0.0F);
     const cassian::Bfloat16 b(0.0F);
-    REQUIRE(cassian::nextafter(a, b) == b);
+    REQUIRE(nextafter(a, b) == b);
   }
 }
 

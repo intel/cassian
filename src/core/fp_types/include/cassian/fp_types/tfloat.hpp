@@ -189,6 +189,194 @@ private:
    * Binary representation
    */
   storage_t data;
+
+  template <typename T>
+  using EnableTfloatArithmeticIfIntegral =
+      std::enable_if_t<std::is_integral_v<T>, Tfloat>;
+
+  template <typename T>
+  using EnableTfloatArithmeticIfFloatingPoint =
+      std::enable_if_t<std::is_floating_point_v<T>, T>;
+
+  /**
+   * Addition operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns sum of lhs and rhs
+   */
+  friend Tfloat operator+(Tfloat lhs, Tfloat rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator+(T lhs, Tfloat rhs) {
+    return static_cast<Tfloat>(lhs) + rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator+(Tfloat lhs, T rhs) {
+    return lhs + static_cast<Tfloat>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator+(T lhs, Tfloat rhs) {
+    return lhs + static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator+(Tfloat lhs, T rhs) {
+    return static_cast<T>(lhs) + rhs;
+  }
+
+  /**
+   * Subtraction operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns difference between lhs and rhs
+   */
+  friend Tfloat operator-(Tfloat lhs, Tfloat rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator-(T lhs, Tfloat rhs) {
+    return static_cast<Tfloat>(lhs) - rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator-(Tfloat lhs, T rhs) {
+    return lhs - static_cast<Tfloat>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator-(T lhs, Tfloat rhs) {
+    return lhs - static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator-(Tfloat lhs, T rhs) {
+    return static_cast<T>(lhs) - rhs;
+  }
+
+  /**
+   * Multiplication operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns product of lhs and rhs
+   */
+  friend Tfloat operator*(Tfloat lhs, Tfloat rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator*(T lhs, Tfloat rhs) {
+    return static_cast<Tfloat>(lhs) * rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator*(Tfloat lhs, T rhs) {
+    return lhs * static_cast<Tfloat>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator*(T lhs, Tfloat rhs) {
+    return lhs * static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator*(Tfloat lhs, T rhs) {
+    return static_cast<T>(lhs) * rhs;
+  }
+
+  /**
+   * Division operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns quotient
+   */
+  friend Tfloat operator/(Tfloat lhs, Tfloat rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator/(T lhs, Tfloat rhs) {
+    return static_cast<Tfloat>(lhs) / rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfIntegral<T> operator/(Tfloat lhs, T rhs) {
+    return lhs / static_cast<Tfloat>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator/(T lhs, Tfloat rhs) {
+    return lhs / static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableTfloatArithmeticIfFloatingPoint<T> operator/(Tfloat lhs, T rhs) {
+    return static_cast<T>(lhs) / rhs;
+  }
+
+  /**
+   * Convert Tfloat to string representation.
+   *
+   * @param[in] value object to convert.
+   */
+  friend std::string to_string(const Tfloat &value);
+
+  /**
+   * Append string representation of Tfloat object to a stream.
+   *
+   * @param[in] os stream to use.
+   * @param[in] value object to convert.
+   * @returns used stream.
+   */
+  friend std::ostream &operator<<(std::ostream &os, const Tfloat &value);
 };
 
 /**
@@ -199,194 +387,6 @@ using tfloat = Tfloat;
 template <> struct is_floating_point<Tfloat> : std::true_type {};
 
 template <> struct is_custom_type<Tfloat> : std::true_type {};
-
-template <typename T>
-using EnableTfloatArithmeticIfIntegral =
-    std::enable_if_t<std::is_integral_v<T>, Tfloat>;
-
-template <typename T>
-using EnableTfloatArithmeticIfFloatingPoint =
-    std::enable_if_t<std::is_floating_point_v<T>, T>;
-
-/**
- * Addition operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns sum of lhs and rhs
- */
-Tfloat operator+(Tfloat lhs, Tfloat rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator+(T lhs, Tfloat rhs) {
-  return static_cast<Tfloat>(lhs) + rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator+(Tfloat lhs, T rhs) {
-  return lhs + static_cast<Tfloat>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator+(T lhs, Tfloat rhs) {
-  return lhs + static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator+(Tfloat lhs, T rhs) {
-  return static_cast<T>(lhs) + rhs;
-}
-
-/**
- * Subtraction operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns difference between lhs and rhs
- */
-Tfloat operator-(Tfloat lhs, Tfloat rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator-(T lhs, Tfloat rhs) {
-  return static_cast<Tfloat>(lhs) - rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator-(Tfloat lhs, T rhs) {
-  return lhs - static_cast<Tfloat>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator-(T lhs, Tfloat rhs) {
-  return lhs - static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator-(Tfloat lhs, T rhs) {
-  return static_cast<T>(lhs) - rhs;
-}
-
-/**
- * Multiplication operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns product of lhs and rhs
- */
-Tfloat operator*(Tfloat lhs, Tfloat rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator*(T lhs, Tfloat rhs) {
-  return static_cast<Tfloat>(lhs) * rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator*(Tfloat lhs, T rhs) {
-  return lhs * static_cast<Tfloat>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator*(T lhs, Tfloat rhs) {
-  return lhs * static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator*(Tfloat lhs, T rhs) {
-  return static_cast<T>(lhs) * rhs;
-}
-
-/**
- * Division operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns quotient
- */
-Tfloat operator/(Tfloat lhs, Tfloat rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator/(T lhs, Tfloat rhs) {
-  return static_cast<Tfloat>(lhs) / rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfIntegral<T> operator/(Tfloat lhs, T rhs) {
-  return lhs / static_cast<Tfloat>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator/(T lhs, Tfloat rhs) {
-  return lhs / static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableTfloatArithmeticIfFloatingPoint<T> operator/(Tfloat lhs, T rhs) {
-  return static_cast<T>(lhs) / rhs;
-}
-
-/**
- * Convert Tfloat to string representation.
- *
- * @param[in] value object to convert.
- */
-std::string to_string(const Tfloat &value);
-
-/**
- * Append string representation of Tfloat object to a stream.
- *
- * @param[in] os stream to use.
- * @param[in] value object to convert.
- * @returns used stream.
- */
-std::ostream &operator<<(std::ostream &os, const Tfloat &value);
 
 /**
  * Checks whether the value is NaN.

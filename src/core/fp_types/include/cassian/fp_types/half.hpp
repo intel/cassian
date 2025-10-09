@@ -30,7 +30,7 @@ public:
   /**
    * Default constructor
    */
-  constexpr Half() : data(0){};
+  constexpr Half() : data(0) {}
 
   /**
    * Constructor from float
@@ -220,423 +220,568 @@ protected:
    * Binary representation
    */
   storage_t data;
+
+  /**
+   * Metafunction to enable arithmetic operators for Half and integer mix
+   *
+   * @tparam T type
+   */
+  template <typename T>
+  using EnableHalfArithmeticIfIntegral =
+      std::enable_if_t<std::is_integral_v<T>, Half>;
+
+  /**
+   * Metafunction to enable arithmetic operators for Half and floating point mix
+   *
+   * @tparam T type
+   */
+  template <typename T>
+  using EnableHalfArithmeticIfFloatingPoint =
+      std::enable_if_t<std::is_floating_point_v<T>, T>;
+
+  /**
+   * Addition operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns sum of lhs and rhs
+   */
+  friend Half operator+(Half lhs, Half rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator+(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) + rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator+(Half lhs, T rhs) {
+    return lhs + static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator+(T lhs, Half rhs) {
+    return lhs + static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator+(Half lhs, T rhs) {
+    return static_cast<T>(lhs) + rhs;
+  }
+
+  /**
+   * Subtruction operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns difference between lhs and rhs
+   */
+  friend Half operator-(Half lhs, Half rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator-(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) - rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator-(Half lhs, T rhs) {
+    return lhs - static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator-(T lhs, Half rhs) {
+    return lhs - static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator-(Half lhs, T rhs) {
+    return static_cast<T>(lhs) - rhs;
+  }
+
+  /**
+   * Multiplication operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns product of lhs and rhs
+   */
+  friend Half operator*(Half lhs, Half rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator*(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) * rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator*(Half lhs, T rhs) {
+    return lhs * static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator*(T lhs, Half rhs) {
+    return lhs * static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator*(Half lhs, T rhs) {
+    return static_cast<T>(lhs) * rhs;
+  }
+
+  /**
+   * Division operator
+   *
+   * @param[in] lhs left-hand side value
+   * @param[in] rhs right-hand side value
+   * @returns quotient
+   */
+  friend Half operator/(Half lhs, Half rhs);
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator/(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) / rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfIntegral<T> operator/(Half lhs, T rhs) {
+    return lhs / static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator/(T lhs, Half rhs) {
+    return lhs / static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfArithmeticIfFloatingPoint<T> operator/(Half lhs, T rhs) {
+    return static_cast<T>(lhs) / rhs;
+  }
+
+  /**
+   * Metafunction to enable comparison operators for Half and integer mix
+   *
+   * @tparam T type
+   */
+  template <typename T>
+  using EnableHalfComparisonIfIntegral =
+      std::enable_if_t<std::is_integral_v<T>, bool>;
+
+  /**
+   * Metafunction to enable comparison operators for Half and floating point mix
+   *
+   * @tparam T type
+   */
+  template <typename T>
+  using EnableHalfComparisonIfFloatingPoint =
+      std::enable_if_t<std::is_floating_point_v<T>, bool>;
+
+  /**
+   * Equal operator.
+   *
+   * @param[in] lhs Value to compare against.
+   * @param[in] rhs Value to compare against.
+   * @returns true if both values are equal.
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator==(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) == rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator==(Half lhs, T rhs) {
+    return lhs == static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator==(T lhs, Half rhs) {
+    return lhs == static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator==(Half lhs, T rhs) {
+    return static_cast<T>(lhs) == rhs;
+  }
+
+  /**
+   * Not equal operator.
+   *
+   * @param[in] lhs Value to compare against.
+   * @param[in] rhs Value to compare against.
+   * @returns true if values are not equal.
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator!=(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) != rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator!=(Half lhs, T rhs) {
+    return lhs != static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator!=(T lhs, Half rhs) {
+    return lhs != static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator!=(Half lhs, T rhs) {
+    return static_cast<T>(lhs) != rhs;
+  }
+
+  /**
+   * Less than operator.
+   *
+   * @param[in] lhs Value to compare against.
+   * @param[in] rhs Value to compare against.
+   * @returns true if lhs is less than rhs.
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator<(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) < rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator<(Half lhs, T rhs) {
+    return lhs < static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator<(T lhs, Half rhs) {
+    return lhs < static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator<(Half lhs, T rhs) {
+    return static_cast<T>(lhs) < rhs;
+  }
+
+  /**
+   * Greater than operator.
+   *
+   * @param[in] lhs Value to compare against.
+   * @param[in] rhs Value to compare against.
+   * @returns true if lhs is greater than rhs.
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator>(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) > rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator>(Half lhs, T rhs) {
+    return lhs > static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator>(T lhs, Half rhs) {
+    return lhs > static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator>(Half lhs, T rhs) {
+    return static_cast<T>(lhs) > rhs;
+  }
+
+  /**
+   * Less than or equal operator.
+   *
+   * @param[in] lhs Value to compare against.
+   * @param[in] rhs Value to compare against.
+   * @returns true if lhs is less than or equal to rhs.
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator<=(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) <= rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator<=(Half lhs, T rhs) {
+    return lhs <= static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator<=(T lhs, Half rhs) {
+    return lhs <= static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator<=(Half lhs, T rhs) {
+    return static_cast<T>(lhs) <= rhs;
+  }
+
+  /**
+   * Greater than or equal operator.
+   *
+   * @param[in] lhs Value to compare against.
+   * @param[in] rhs Value to compare against.
+   * @returns true if lhs is greater than or equal to rhs.
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator>=(T lhs, Half rhs) {
+    return static_cast<Half>(lhs) >= rhs;
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfIntegral<T> operator>=(Half lhs, T rhs) {
+    return lhs >= static_cast<Half>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator>=(T lhs, Half rhs) {
+    return lhs >= static_cast<T>(rhs);
+  }
+
+  /**
+   * @overload
+   */
+  template <typename T>
+  friend EnableHalfComparisonIfFloatingPoint<T> operator>=(Half lhs, T rhs) {
+    return static_cast<T>(lhs) >= rhs;
+  }
+
+  /**
+   * Convert Half to string representation.
+   *
+   * @param[in] value object to convert.
+   */
+  friend std::string to_string(const Half &value);
+
+  /**
+   * Append string representation of Half object to a stream.
+   *
+   * @param[in] os stream to use.
+   * @param[in] value object to convert.
+   * @returns used stream.
+   */
+  friend std::ostream &operator<<(std::ostream &os, const Half &value);
+
+  /**
+   * Checks whether the value is NaN.
+   *
+   * @param[in] value object to use.
+   */
+  friend bool isnan(Half value);
+
+  /**
+   * Checks whether the value is Inf.
+   *
+   * @param[in] value object to use.
+   */
+  friend bool isinf(Half value);
+
+  /**
+   * Computes the absolute value of a Half value arg.
+   *
+   * @param[in] value object to use.
+   * @returns absolute value.
+   */
+  friend Half abs(Half value);
+
+  /**
+   * Computes the square root of a Half value arg.
+   *
+   * @param[in] value object to use.
+   * @returns square root.
+   */
+  friend Half sqrt(Half value);
+
+  /**
+   * Computes the next representable value of from in the direction of to.
+   *
+   * @param[in] from base value.
+   * @param[in] to value toward which the return value is approximated.
+   * @returns the next representable value.
+   */
+  friend Half nextafter(const Half from, const Half to);
+
+  friend Half acos(Half value);
+
+  friend Half acosh(Half value);
+
+  friend Half sin(Half value);
+
+  friend Half sinh(Half value);
+
+  friend Half asin(Half value);
+
+  friend Half asinh(Half value);
+
+  friend Half tan(Half value);
+
+  friend Half tanh(Half value);
+
+  friend Half atan(Half value);
+
+  friend Half atan2(Half value_a, Half value_b);
+
+  friend Half atanh(Half value);
+
+  friend Half cbrt(Half value);
+
+  friend Half copysign(Half value_a, Half value_b);
+
+  friend Half cos(Half value);
+
+  friend Half cosh(Half value);
+
+  friend Half fabs(Half value);
+
+  friend Half tgamma(Half value);
+
+  friend Half fmod(Half value_a, Half value_b);
+
+  friend Half fmax(Half value_a, Half value_b);
+
+  friend Half fmin(Half value_a, Half value_b);
+
+  friend Half pow(Half value_a, Half value_b);
+
+  friend Half pow(Half value_a, int value_b);
+
+  friend Half remainder(Half value_a, Half value_b);
+
+  friend Half rint(Half value);
+
+  friend Half trunc(Half value);
+
+  friend Half round(Half value);
+
+  friend int ilogb(Half value);
+
+  friend Half erfc(Half value);
+
+  friend Half erf(Half value);
+
+  friend Half exp(Half value);
+
+  friend Half exp2(Half value);
+
+  friend Half expm1(Half value);
+
+  friend Half fdim(Half value_a, Half value_b);
+
+  friend Half fma(Half value_a, Half value_b, Half value_c);
+
+  friend Half ldexp(Half value_a, int value_b);
+
+  friend Half hypot(Half value_a, Half value_b);
+
+  friend Half lgamma(Half value);
+
+  friend Half log(Half value);
+
+  friend Half log2(Half value);
+
+  friend Half log10(Half value);
+
+  friend Half log1p(Half value);
+
+  friend Half logb(Half value);
+
+  friend Half floor(Half value);
+
+  friend Half ceil(Half value);
+
+  friend Half nearbyint(Half value);
 };
-
-/**
- * Metafunction to enable arithmetic operators for Half and integer mix
- *
- * @tparam T type
- */
-template <typename T>
-using EnableHalfArithmeticIfIntegral =
-    std::enable_if_t<std::is_integral_v<T>, Half>;
-
-/**
- * Metafunction to enable arithmetic operators for Half and floating point mix
- *
- * @tparam T type
- */
-template <typename T>
-using EnableHalfArithmeticIfFloatingPoint =
-    std::enable_if_t<std::is_floating_point_v<T>, T>;
-
-/**
- * Addition operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns sum of lhs and rhs
- */
-Half operator+(Half lhs, Half rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator+(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) + rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator+(Half lhs, T rhs) {
-  return lhs + static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator+(T lhs, Half rhs) {
-  return lhs + static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator+(Half lhs, T rhs) {
-  return static_cast<T>(lhs) + rhs;
-}
-
-/**
- * Subtruction operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns difference between lhs and rhs
- */
-Half operator-(Half lhs, Half rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator-(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) - rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator-(Half lhs, T rhs) {
-  return lhs - static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator-(T lhs, Half rhs) {
-  return lhs - static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator-(Half lhs, T rhs) {
-  return static_cast<T>(lhs) - rhs;
-}
-
-/**
- * Multiplication operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns product of lhs and rhs
- */
-Half operator*(Half lhs, Half rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator*(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) * rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator*(Half lhs, T rhs) {
-  return lhs * static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator*(T lhs, Half rhs) {
-  return lhs * static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator*(Half lhs, T rhs) {
-  return static_cast<T>(lhs) * rhs;
-}
-
-/**
- * Division operator
- *
- * @param[in] lhs left-hand side value
- * @param[in] rhs right-hand side value
- * @returns quotient
- */
-Half operator/(Half lhs, Half rhs);
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator/(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) / rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfIntegral<T> operator/(Half lhs, T rhs) {
-  return lhs / static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator/(T lhs, Half rhs) {
-  return lhs / static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfArithmeticIfFloatingPoint<T> operator/(Half lhs, T rhs) {
-  return static_cast<T>(lhs) / rhs;
-}
-
-/**
- * Metafunction to enable comparison operators for Half and integer mix
- *
- * @tparam T type
- */
-template <typename T>
-using EnableHalfComparisonIfIntegral =
-    std::enable_if_t<std::is_integral_v<T>, bool>;
-
-/**
- * Metafunction to enable comparison operators for Half and floating point mix
- *
- * @tparam T type
- */
-template <typename T>
-using EnableHalfComparisonIfFloatingPoint =
-    std::enable_if_t<std::is_floating_point_v<T>, bool>;
-
-/**
- * Equal operator.
- *
- * @param[in] lhs Value to compare against.
- * @param[in] rhs Value to compare against.
- * @returns true if both values are equal.
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator==(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) == rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator==(Half lhs, T rhs) {
-  return lhs == static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator==(T lhs, Half rhs) {
-  return lhs == static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator==(Half lhs, T rhs) {
-  return static_cast<T>(lhs) == rhs;
-}
-
-/**
- * Not equal operator.
- *
- * @param[in] lhs Value to compare against.
- * @param[in] rhs Value to compare against.
- * @returns true if values are not equal.
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator!=(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) != rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator!=(Half lhs, T rhs) {
-  return lhs != static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator!=(T lhs, Half rhs) {
-  return lhs != static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator!=(Half lhs, T rhs) {
-  return static_cast<T>(lhs) != rhs;
-}
-
-/**
- * Less than operator.
- *
- * @param[in] lhs Value to compare against.
- * @param[in] rhs Value to compare against.
- * @returns true if lhs is less than rhs.
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator<(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) < rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator<(Half lhs, T rhs) {
-  return lhs < static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator<(T lhs, Half rhs) {
-  return lhs < static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator<(Half lhs, T rhs) {
-  return static_cast<T>(lhs) < rhs;
-}
-
-/**
- * Greater than operator.
- *
- * @param[in] lhs Value to compare against.
- * @param[in] rhs Value to compare against.
- * @returns true if lhs is greater than rhs.
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator>(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) > rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator>(Half lhs, T rhs) {
-  return lhs > static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator>(T lhs, Half rhs) {
-  return lhs > static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator>(Half lhs, T rhs) {
-  return static_cast<T>(lhs) > rhs;
-}
-
-/**
- * Less than or equal operator.
- *
- * @param[in] lhs Value to compare against.
- * @param[in] rhs Value to compare against.
- * @returns true if lhs is less than or equal to rhs.
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator<=(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) <= rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator<=(Half lhs, T rhs) {
-  return lhs <= static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator<=(T lhs, Half rhs) {
-  return lhs <= static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator<=(Half lhs, T rhs) {
-  return static_cast<T>(lhs) <= rhs;
-}
-
-/**
- * Greater than or equal operator.
- *
- * @param[in] lhs Value to compare against.
- * @param[in] rhs Value to compare against.
- * @returns true if lhs is greater than or equal to rhs.
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator>=(T lhs, Half rhs) {
-  return static_cast<Half>(lhs) >= rhs;
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfIntegral<T> operator>=(Half lhs, T rhs) {
-  return lhs >= static_cast<Half>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator>=(T lhs, Half rhs) {
-  return lhs >= static_cast<T>(rhs);
-}
-
-/**
- * @overload
- */
-template <typename T>
-EnableHalfComparisonIfFloatingPoint<T> operator>=(Half lhs, T rhs) {
-  return static_cast<T>(lhs) >= rhs;
-}
 
 /**
  * Alias for type name
@@ -646,151 +791,6 @@ using half = Half;
 template <> struct is_floating_point<Half> : std::true_type {};
 
 template <> struct is_custom_type<Half> : std::true_type {};
-
-/**
- * Convert Half to string representation.
- *
- * @param[in] value object to convert.
- */
-std::string to_string(const Half &value);
-
-/**
- * Append string representation of Half object to a stream.
- *
- * @param[in] os stream to use.
- * @param[in] value object to convert.
- * @returns used stream.
- */
-std::ostream &operator<<(std::ostream &os, const Half &value);
-
-/**
- * Checks whether the value is NaN.
- *
- * @param[in] value object to use.
- */
-bool isnan(Half value);
-
-/**
- * Checks whether the value is Inf.
- *
- * @param[in] value object to use.
- */
-bool isinf(Half value);
-
-/**
- * Computes the absolute value of a Half value arg.
- *
- * @param[in] value object to use.
- * @returns absolute value.
- */
-Half abs(Half value);
-
-/**
- * Computes the square root of a Half value arg.
- *
- * @param[in] value object to use.
- * @returns square root.
- */
-Half sqrt(Half value);
-
-/**
- * Computes the next representable value of from in the direction of to.
- *
- * @param[in] from base value.
- * @param[in] to value toward which the return value is approximated.
- * @returns the next representable value.
- */
-Half nextafter(const Half from, const Half to);
-
-Half acos(Half value);
-
-Half acosh(Half value);
-
-Half sin(Half value);
-
-Half sinh(Half value);
-
-Half asin(Half value);
-
-Half asinh(Half value);
-
-Half tan(Half value);
-
-Half tanh(Half value);
-
-Half atan(Half value);
-
-Half atan2(Half value_a, Half value_b);
-
-Half atanh(Half value);
-
-Half cbrt(Half value);
-
-Half copysign(Half value_a, Half value_b);
-
-Half cos(Half value);
-
-Half cosh(Half value);
-
-Half fabs(Half value);
-
-Half tgamma(Half value);
-
-Half fmod(Half value_a, Half value_b);
-
-Half fmax(Half value_a, Half value_b);
-
-Half fmin(Half value_a, Half value_b);
-
-Half pow(Half value_a, Half value_b);
-
-Half pow(Half value_a, int value_b);
-
-Half remainder(Half value_a, Half value_b);
-
-Half rint(Half value);
-
-Half trunc(Half value);
-
-Half round(Half value);
-
-Half ilogb(Half value);
-
-Half erfc(Half value);
-
-Half erf(Half value);
-
-Half exp(Half value);
-
-Half exp2(Half value);
-
-Half expm1(Half value);
-
-Half fdim(Half value_a, Half value_b);
-
-Half fma(Half value_a, Half value_b, Half value_c);
-
-Half ldexp(Half value_a, int value_b);
-
-Half hypot(Half value_a, Half value_b);
-
-Half lgamma(Half value);
-
-Half log(Half value);
-
-Half log2(Half value);
-
-Half log10(Half value);
-
-Half log1p(Half value);
-
-Half logb(Half value);
-
-Half floor(Half value);
-
-Half ceil(Half value);
-
-Half nearbyint(Half value);
 
 } // namespace cassian
 
