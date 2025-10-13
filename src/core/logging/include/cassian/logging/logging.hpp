@@ -34,21 +34,32 @@ public:
     if (log_level_ <= get_threshold()) {
       const std::string prefix_str =
           prefix_ == Prefix::with_prefix ? prefix(log_level_) : "";
-      if (log_level_ <= LogLevel::error) {
-        std::cerr << prefix_str << message;
-      } else {
-        std::cout << prefix_str << message;
-      }
+      stream() << prefix_str << message;
       prefix_ = Prefix::no_prefix;
     }
     return *this;
   }
+
+  Logger &setf(std::ostream &(*manip)(std::ostream &)) {
+    if (log_level_ <= get_threshold()) {
+      stream().setf(manip(stream()).flags());
+    }
+    return *this;
+  }
+
   friend void set_threshold(LogLevel threshold);
   friend bool is_debug();
+
+  friend Logger &flush(Logger &logger);
 
 private:
   LogLevel get_threshold();
   static std::string prefix(LogLevel log_level);
+  std::ostream &stream() {
+    return (log_level_ <= LogLevel::error) ? std::cerr : std::cout;
+  }
+  template <typename T>
+  friend Logger &operator<<(Logger &logger, const T &message);
 
   LogLevel log_level_;
   Prefix prefix_;
@@ -71,6 +82,8 @@ void set_threshold(LogLevel threshold);
  */
 bool is_debug();
 
+Logger &flush(Logger &logger);
+
 /**
  * Log message.
  *
@@ -82,6 +95,27 @@ bool is_debug();
 template <typename T> Logger &operator<<(Logger &logger, const T &message) {
   return logger.log(message);
 }
+/**
+ * @brief Pass through logger.
+ *
+ * @param[in] logger logger instance.
+ * @returns logger instance.
+ */
+Logger &operator<<(Logger &, Logger &logger);
+
+/**
+ * @brief Overloads the stream insertion operator to allow manipulators for
+ * Logger.
+ *
+ * This operator enables the use of custom manipulators with the Logger class,
+ * similar to how std::endl works with std::ostream. The manipulator is a
+ * function that takes and returns a reference to a Logger object.
+ *
+ * @param logger Reference to the Logger object to be manipulated.
+ * @param manip Pointer to a manipulator function that operates on Logger.
+ * @return Reference to the Logger object after manipulation.
+ */
+Logger &operator<<(Logger &logger, Logger &(*manip)(Logger &));
 
 /**
  * Log message with trace level.
@@ -127,4 +161,5 @@ Logger &fatal(Prefix prefix = Prefix::with_prefix);
 
 } // namespace logging
 } // namespace cassian
+
 #endif

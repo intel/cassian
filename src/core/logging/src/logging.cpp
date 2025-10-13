@@ -19,6 +19,17 @@ Logger &Logger::operator()(LogLevel log_level, Prefix prefix) {
 void set_threshold(LogLevel threshold) { logger.threshold_ = threshold; }
 bool is_debug() { return logger.get_threshold() >= LogLevel::debug; }
 
+Logger &operator<<(Logger & /*unused*/, Logger &logger) { return logger; }
+
+Logger &operator<<(Logger &logger, Logger &(*manip)(Logger &)) {
+  return manip(logger);
+}
+
+Logger &flush(Logger &logger) {
+  logger.stream().flush();
+  return logger;
+}
+
 LogLevel Logger::get_threshold() { return threshold_; }
 
 std::string Logger::prefix(LogLevel log_level) {
