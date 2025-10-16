@@ -668,6 +668,13 @@ protected:
   friend bool isinf(Half value);
 
   /**
+   * Checks whether the value is denormalized.
+   *
+   * @param[in] value object to use.
+   */
+  friend bool isdenorm(Half value);
+
+  /**
    * Computes the absolute value of a Half value arg.
    *
    * @param[in] value object to use.
@@ -781,6 +788,14 @@ protected:
   friend Half ceil(Half value);
 
   friend Half nearbyint(Half value);
+
+  /**
+   * Returns zero if value is denormalized. Otherwise, returns value.
+   *
+   * @param[in] value object to use.
+   * @returns zero or value.
+   */
+  friend Half flush_to_zero(Half value);
 };
 
 /**

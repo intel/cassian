@@ -285,6 +285,13 @@ bool isinf(Half value) {
          (value.decode() & mantissa_mask) == 0;
 }
 
+bool isdenorm(Half value) {
+  const int16_t exponent_mask = 0x7c00;
+  const int16_t mantissa_mask = 0x03ff;
+  return (value.decode() & exponent_mask) == 0 &&
+         (value.decode() & mantissa_mask) != 0;
+}
+
 Half abs(Half value) { return Half::encode(value.decode() & ~(1 << 15)); }
 
 Half sqrt(Half value) { return Half(std::sqrt(static_cast<float>(value))); }
@@ -437,5 +444,13 @@ Half logb(Half value) { return Half(std::logb(static_cast<float>(value))); }
 
 Half nearbyint(Half value) {
   return Half(std::nearbyint(static_cast<float>(value)));
+}
+
+Half flush_to_zero(Half value) {
+  if (isdenorm(value)) {
+    const uint16_t sign_mask = 0x8000;
+    return Half::encode(value.decode() & sign_mask);
+  }
+  return value;
 }
 } // namespace cassian

@@ -411,6 +411,20 @@ template <> struct is_custom_type<Bfloat16> : std::true_type {};
 bool isnan(Bfloat16 value);
 
 /**
+ * Checks whether the value is Infinity.
+ *
+ * @param[in] value object to use.
+ */
+bool isinf(Bfloat16 value);
+
+/**
+ * Checks whether the value is denormalized.
+ *
+ * @param[in] value object to use.
+ */
+bool isdenorm(Bfloat16 value);
+
+/**
  * Computes the absolute value of a Bfloat16 value arg.
  *
  * @param[in] value object to use.
@@ -434,6 +448,14 @@ Bfloat16 sqrt(Bfloat16 value);
  * @returns the next representable value.
  */
 Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to);
+
+/**
+ * Returns zero if value is denormalized. Otherwise, returns value.
+ *
+ * @param[in] value object to use.
+ * @returns zero or value.
+ */
+Bfloat16 flush_to_zero(Bfloat16 value);
 
 } // namespace cassian
 

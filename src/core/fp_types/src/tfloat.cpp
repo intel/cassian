@@ -124,6 +124,20 @@ bool isnan(Tfloat value) {
          (value.decode() & mantissa_mask) != 0;
 }
 
+bool isinf(Tfloat value) {
+  const int32_t exponent_mask = 0x7f800000;
+  const int32_t mantissa_mask = 0x007fe000;
+  return (value.decode() & exponent_mask) == exponent_mask &&
+         (value.decode() & mantissa_mask) == 0;
+}
+
+bool isdenorm(Tfloat value) {
+  const int32_t exponent_mask = 0x7f800000;
+  const int32_t mantissa_mask = 0x007fe000;
+  return (value.decode() & exponent_mask) == 0 &&
+         (value.decode() & mantissa_mask) != 0;
+}
+
 Tfloat abs(Tfloat value) {
   const uint32_t sign_mask = 0x80000000;
   return Tfloat::encode(value.decode() & ~sign_mask);
@@ -157,6 +171,14 @@ Tfloat nextafter(const Tfloat from, const Tfloat to) {
   }
 
   return Tfloat::encode(from_data);
+}
+
+Tfloat flush_to_zero(Tfloat value) {
+  if (isdenorm(value)) {
+    const uint32_t sign_mask = 0x80000000;
+    return Tfloat::encode(value.decode() & sign_mask);
+  }
+  return value;
 }
 
 } // namespace cassian

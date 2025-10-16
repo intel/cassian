@@ -724,4 +724,96 @@ TEST_CASE("half - nextafter") {
   }
 }
 
+TEST_CASE("half isinf") {
+  SECTION("with +inf") {
+    const cassian::Half a = cassian::Half::encode(0x7c00);
+    REQUIRE(isinf(a));
+  }
+
+  SECTION("with -inf") {
+    const cassian::Half a = cassian::Half::encode(0xfc00);
+    REQUIRE(isinf(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Half a(0.0F);
+    REQUIRE_FALSE(isinf(a));
+  }
+  SECTION("with NaN") {
+    const cassian::Half a = cassian::Half::encode(0x7f00);
+    REQUIRE_FALSE(isinf(a));
+  }
+}
+
+TEST_CASE("half isdenorm") {
+  SECTION("with denorm") {
+    const cassian::Half a = cassian::Half::encode(0x0001);
+    REQUIRE(isdenorm(a));
+  }
+  SECTION("with -denorm") {
+    const cassian::Half a = cassian::Half::encode(0x8001);
+    REQUIRE(isdenorm(a));
+  }
+
+  SECTION("with normal") {
+    const cassian::Half a(1.0F);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Half a(0.0F);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with -zero") {
+    const cassian::Half a = cassian::Half::encode(0x8000);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with inf") {
+    const cassian::Half a = cassian::Half::encode(0x7c00);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with NaN") {
+    const cassian::Half a = cassian::Half::encode(0x7f00);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+}
+
+TEST_CASE("half flush_to_zero") {
+  SECTION("with denorm") {
+    const cassian::Half a = cassian::Half::encode(0x0001);
+    REQUIRE(flush_to_zero(a) == cassian::Half::encode(0x0000));
+  }
+  SECTION("with -denorm") {
+    const cassian::Half a = cassian::Half::encode(0x8001);
+    REQUIRE(flush_to_zero(a) == cassian::Half::encode(0x8000));
+  }
+
+  SECTION("with normal") {
+    const cassian::Half a(1.0F);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with zero") {
+    const cassian::Half a(0.0F);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with -zero") {
+    const cassian::Half a = cassian::Half::encode(0x8000);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with inf") {
+    const cassian::Half a = cassian::Half::encode(0x7c00);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with NaN") {
+    const cassian::Half a = cassian::Half::encode(0x7f00);
+    REQUIRE(flush_to_zero(a).nan_sensitive_eq(a));
+  }
+}
 } // namespace

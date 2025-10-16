@@ -131,6 +131,20 @@ bool isnan(Bfloat16 value) {
          (value.decode() & mantissa_mask) != 0;
 }
 
+bool isinf(Bfloat16 value) {
+  const int16_t exponent_mask = 0x7f80;
+  const int16_t mantissa_mask = 0x007f;
+  return (value.decode() & exponent_mask) == exponent_mask &&
+         (value.decode() & mantissa_mask) == 0;
+}
+
+bool isdenorm(Bfloat16 value) {
+  const int16_t exponent_mask = 0x7f80;
+  const int16_t mantissa_mask = 0x007f;
+  return (value.decode() & exponent_mask) == 0 &&
+         (value.decode() & mantissa_mask) != 0;
+}
+
 Bfloat16 abs(Bfloat16 value) {
   const uint16_t sign_mask = 0x8000;
   return Bfloat16::encode(value.decode() & ~sign_mask);
@@ -165,4 +179,11 @@ Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to) {
   return Bfloat16::encode(from_data);
 }
 
+Bfloat16 flush_to_zero(Bfloat16 value) {
+  if (isdenorm(value)) {
+    const uint16_t sign_mask = 0x8000;
+    return Bfloat16::encode(value.decode() & sign_mask);
+  }
+  return value;
+}
 } // namespace cassian

@@ -577,4 +577,77 @@ TEST_CASE("tfloat - nextafter") {
   }
 }
 
+TEST_CASE("tfloat - isinf") {
+  SECTION("with infinity") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x7f800000);
+    REQUIRE(isinf(a));
+  }
+
+  SECTION("with -infinity") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0xff800000);
+    REQUIRE(isinf(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Tfloat a(0.0F);
+    REQUIRE_FALSE(isinf(a));
+  }
+
+  SECTION("with NaN") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x7fffe000);
+    REQUIRE_FALSE(isinf(a));
+  }
+}
+
+TEST_CASE("tfloat isdenorm") {
+  SECTION("with denorm") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x00002000);
+    REQUIRE(isdenorm(a));
+  }
+  SECTION("with -denorm") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x80002000);
+    REQUIRE(isdenorm(a));
+  }
+
+  SECTION("with normal") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x00f04000);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x00000000);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with NaN") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x7fffe000);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+}
+
+TEST_CASE("tfloat flush_to_zero") {
+  SECTION("with denorm") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x00002000);
+    REQUIRE(flush_to_zero(a) == cassian::Tfloat(0.0F));
+  }
+  SECTION("with -denorm") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x80002000);
+    REQUIRE(flush_to_zero(a) == cassian::Tfloat(-0.0F));
+  }
+
+  SECTION("with normal") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x00f04000);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with zero") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x00000000);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with NaN") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x7fffe000);
+    REQUIRE(flush_to_zero(a).nan_sensitive_eq(a));
+  }
+}
 } // namespace

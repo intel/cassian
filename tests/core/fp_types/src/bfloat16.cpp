@@ -578,4 +578,100 @@ TEST_CASE("bfloat16 - nextafter") {
   }
 }
 
+TEST_CASE("bfloat16 isinf") {
+  SECTION("with +inf") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7f80);
+    REQUIRE(isinf(a));
+  }
+
+  SECTION("with -inf") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0xff80);
+    REQUIRE(isinf(a));
+  }
+
+  SECTION("with NaN") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7fff);
+    REQUIRE_FALSE(isinf(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Bfloat16 a(0.0F);
+    REQUIRE_FALSE(isinf(a));
+  }
+}
+
+TEST_CASE("bfloat16 isdenorm") {
+  SECTION("with denorm") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x007f);
+    REQUIRE(isdenorm(a));
+  }
+
+  SECTION("with -denorm") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x807f);
+    REQUIRE(isdenorm(a));
+  }
+
+  SECTION("with norm") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x3f80);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with zero") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x0000);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with -zero") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x8000);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with inf") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7f80);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+
+  SECTION("with NaN") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7fff);
+    REQUIRE_FALSE(isdenorm(a));
+  }
+}
+
+TEST_CASE("bfloat16 flush_to_zero") {
+  SECTION("with denorm") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x007f);
+    REQUIRE(flush_to_zero(a) == cassian::Bfloat16::encode(0x0000));
+  }
+
+  SECTION("with -denorm") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x807f);
+    REQUIRE(flush_to_zero(a) == cassian::Bfloat16::encode(0x8000));
+  }
+
+  SECTION("with norm") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x3f80);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with zero") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x0000);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with -zero") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x8000);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with inf") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7f80);
+    REQUIRE(flush_to_zero(a) == a);
+  }
+
+  SECTION("with NaN") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7fff);
+    REQUIRE(flush_to_zero(a).nan_sensitive_eq(a));
+  }
+}
+
 } // namespace

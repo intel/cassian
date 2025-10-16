@@ -396,6 +396,20 @@ template <> struct is_custom_type<Tfloat> : std::true_type {};
 bool isnan(Tfloat value);
 
 /**
+ * Checks whether the value is infinity.
+ *
+ * @param[in] value object to use.
+ */
+bool isinf(Tfloat value);
+
+/**
+ * Checks whether the value is denormalized.
+ *
+ * @param[in] value object to use.
+ */
+bool isdenorm(Tfloat value);
+
+/**
  * Computes the absolute value of a Tfloat value arg.
  *
  * @param[in] value object to use.
@@ -419,6 +433,14 @@ Tfloat sqrt(Tfloat value);
  * @returns the next representable value.
  */
 Tfloat nextafter(const Tfloat from, const Tfloat to);
+
+/**
+ * Returns zero if value is denormalized. Otherwise, returns value.
+ *
+ * @param[in] value object to use.
+ * @returns zero or value.
+ */
+Tfloat flush_to_zero(Tfloat value);
 
 } // namespace cassian
 

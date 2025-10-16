@@ -30,6 +30,16 @@ template <typename T> T abs(T const &value) {
   }
 }
 
+template <typename T> T flush_to_zero(T const &value) {
+  static_assert(
+      std::is_floating_point_v<T>,
+      "flush_to_zero template is only meant to be deduced for std "
+      "floating point types, other types should have non template overload");
+  if (std::fpclassify(value) == FP_SUBNORMAL) {
+    return std::copysign(0.0, value);
+  }
+  return value;
+}
 } // namespace cassian
 
 #endif
