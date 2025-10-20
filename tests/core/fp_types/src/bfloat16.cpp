@@ -14,6 +14,7 @@
 #include <catch2/catch.hpp>
 
 #include <cassian/fp_types/bfloat16.hpp>
+#include <cassian/fp_types/math.hpp>
 
 #include "common.hpp"
 
@@ -600,40 +601,40 @@ TEST_CASE("bfloat16 isinf") {
   }
 }
 
-TEST_CASE("bfloat16 isdenorm") {
+TEST_CASE("bfloat16 issubnormal") {
   SECTION("with denorm") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x007f);
-    REQUIRE(isdenorm(a));
+    REQUIRE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with -denorm") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x807f);
-    REQUIRE(isdenorm(a));
+    REQUIRE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with norm") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x3f80);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with zero") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x0000);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with -zero") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x8000);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with inf") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7f80);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with NaN") {
     const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x7fff);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 }
 

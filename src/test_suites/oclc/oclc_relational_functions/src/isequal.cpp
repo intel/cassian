@@ -251,7 +251,7 @@ TEMPLATE_TEST_CASE("isequal", "", ca::clc_float_t, ca::clc_float2_t,
                                local_work_size, runtime);
   }
 
-  SECTION("all components of x and y are denormalized") {
+  SECTION("all components of x and y are denormal") {
     const auto value_x =
         input_host_type(std::numeric_limits<input_host_type>::denorm_min());
     const auto value_y =

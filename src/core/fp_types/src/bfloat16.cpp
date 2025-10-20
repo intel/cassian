@@ -138,11 +138,22 @@ bool isinf(Bfloat16 value) {
          (value.decode() & mantissa_mask) == 0;
 }
 
-bool isdenorm(Bfloat16 value) {
+int fpclassify(Bfloat16 value) {
   const int16_t exponent_mask = 0x7f80;
   const int16_t mantissa_mask = 0x007f;
-  return (value.decode() & exponent_mask) == 0 &&
-         (value.decode() & mantissa_mask) != 0;
+  if ((value.decode() & exponent_mask) == 0) {
+    if ((value.decode() & mantissa_mask) != 0) {
+      return FP_SUBNORMAL;
+    }
+    return FP_ZERO;
+  }
+  if ((value.decode() & exponent_mask) == exponent_mask) {
+    if ((value.decode() & mantissa_mask) != 0) {
+      return FP_NAN;
+    }
+    return FP_INFINITE;
+  }
+  return FP_NORMAL;
 }
 
 Bfloat16 abs(Bfloat16 value) {
@@ -179,11 +190,9 @@ Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to) {
   return Bfloat16::encode(from_data);
 }
 
-Bfloat16 flush_to_zero(Bfloat16 value) {
-  if (isdenorm(value)) {
-    const uint16_t sign_mask = 0x8000;
-    return Bfloat16::encode(value.decode() & sign_mask);
-  }
-  return value;
+Bfloat16 copysign(Bfloat16 magnitude, Bfloat16 sign) {
+  const uint16_t sign_mask = 0x8000;
+  return Bfloat16::encode((magnitude.decode() & ~sign_mask) |
+                          (sign.decode() & sign_mask));
 }
 } // namespace cassian

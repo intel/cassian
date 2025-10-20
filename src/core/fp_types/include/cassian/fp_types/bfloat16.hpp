@@ -418,11 +418,13 @@ bool isnan(Bfloat16 value);
 bool isinf(Bfloat16 value);
 
 /**
- * Checks whether the value is denormalized.
+ * Categorizes floating point values into the following categories:
+ * zero, subnormal, normal, infinite, NAN
  *
  * @param[in] value object to use.
+ * @returns classification value.
  */
-bool isdenorm(Bfloat16 value);
+int fpclassify(Bfloat16 value);
 
 /**
  * Computes the absolute value of a Bfloat16 value arg.
@@ -450,12 +452,13 @@ Bfloat16 sqrt(Bfloat16 value);
 Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to);
 
 /**
- * Returns zero if value is denormalized. Otherwise, returns value.
+ * Value with magnitude of first argument and sign of second argument.
  *
- * @param[in] value object to use.
- * @returns zero or value.
+ * @param[in] magnitude.
+ * @param[in] sign.
+ * @returns value.
  */
-Bfloat16 flush_to_zero(Bfloat16 value);
+Bfloat16 copysign(Bfloat16 magnitude, Bfloat16 sign);
 
 } // namespace cassian
 

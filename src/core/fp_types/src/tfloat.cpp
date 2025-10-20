@@ -131,11 +131,22 @@ bool isinf(Tfloat value) {
          (value.decode() & mantissa_mask) == 0;
 }
 
-bool isdenorm(Tfloat value) {
+int fpclassify(Tfloat value) {
   const int32_t exponent_mask = 0x7f800000;
   const int32_t mantissa_mask = 0x007fe000;
-  return (value.decode() & exponent_mask) == 0 &&
-         (value.decode() & mantissa_mask) != 0;
+  if ((value.decode() & exponent_mask) == 0) {
+    if ((value.decode() & mantissa_mask) != 0) {
+      return FP_SUBNORMAL;
+    }
+    return FP_ZERO;
+  }
+  if ((value.decode() & exponent_mask) == exponent_mask) {
+    if ((value.decode() & mantissa_mask) != 0) {
+      return FP_NAN;
+    }
+    return FP_INFINITE;
+  }
+  return FP_NORMAL;
 }
 
 Tfloat abs(Tfloat value) {
@@ -173,12 +184,10 @@ Tfloat nextafter(const Tfloat from, const Tfloat to) {
   return Tfloat::encode(from_data);
 }
 
-Tfloat flush_to_zero(Tfloat value) {
-  if (isdenorm(value)) {
-    const uint32_t sign_mask = 0x80000000;
-    return Tfloat::encode(value.decode() & sign_mask);
-  }
-  return value;
+Tfloat copysign(Tfloat magnitude, Tfloat sign) {
+  const uint32_t sign_mask = 0x80000000;
+  return Tfloat::encode((magnitude.decode() & ~sign_mask) |
+                        (sign.decode() & sign_mask));
 }
 
 } // namespace cassian

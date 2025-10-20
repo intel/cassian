@@ -16,4 +16,4 @@ OpenCL C functionality.
 * Input values:
   * `Random` - Random values from function domain, randomized across all of the work items.
   * `Special` - Special values for given function.
-  * `Denorms`(TODO) - Denormalized values for given function.
+  * `Denorms`(TODO) - denormal values for given function.

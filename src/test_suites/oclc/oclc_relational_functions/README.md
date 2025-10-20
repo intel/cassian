@@ -31,7 +31,7 @@ OpenCL C functionality.
     * All components of x are signaling NaN, all components of y are infinity.
     * All components of x and y are infinity.
     * All components of x are infinity, all components of y are normal.
-    * All components of x and y are denormalized.
+    * All components of x and y are denormal.
     * All components of x and y differ by epsilon.
     * Random values.
 
@@ -59,7 +59,7 @@ OpenCL C functionality.
     * All components of x are signaling NaN, all components of y are infinity.
     * All components of x and y are infinity.
     * All components of x are infinity, all components of y are normal.
-    * All components of x and y are denormalized.
+    * All components of x and y are denormal.
     * All components of x and y differ by epsilon.
     * Random values.
 

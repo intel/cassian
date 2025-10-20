@@ -16,6 +16,7 @@
 #include <catch2/catch.hpp>
 
 #include <cassian/fp_types/half.hpp>
+#include <cassian/fp_types/math.hpp>
 
 #include "common.hpp"
 
@@ -745,39 +746,39 @@ TEST_CASE("half isinf") {
   }
 }
 
-TEST_CASE("half isdenorm") {
+TEST_CASE("half issubnormal") {
   SECTION("with denorm") {
     const cassian::Half a = cassian::Half::encode(0x0001);
-    REQUIRE(isdenorm(a));
+    REQUIRE(fpclassify(a) == FP_SUBNORMAL);
   }
   SECTION("with -denorm") {
     const cassian::Half a = cassian::Half::encode(0x8001);
-    REQUIRE(isdenorm(a));
+    REQUIRE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with normal") {
     const cassian::Half a(1.0F);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with zero") {
     const cassian::Half a(0.0F);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with -zero") {
     const cassian::Half a = cassian::Half::encode(0x8000);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with inf") {
     const cassian::Half a = cassian::Half::encode(0x7c00);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with NaN") {
     const cassian::Half a = cassian::Half::encode(0x7f00);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 }
 

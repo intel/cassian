@@ -403,11 +403,13 @@ bool isnan(Tfloat value);
 bool isinf(Tfloat value);
 
 /**
- * Checks whether the value is denormalized.
+ * Categorizes floating point values into the following categories:
+ * zero, subnormal, normal, infinite, NAN
  *
  * @param[in] value object to use.
+ * @returns classification value.
  */
-bool isdenorm(Tfloat value);
+int fpclassify(Tfloat value);
 
 /**
  * Computes the absolute value of a Tfloat value arg.
@@ -435,12 +437,13 @@ Tfloat sqrt(Tfloat value);
 Tfloat nextafter(const Tfloat from, const Tfloat to);
 
 /**
- * Returns zero if value is denormalized. Otherwise, returns value.
+ * Value with magnitude of first argument and sign of second argument.
  *
- * @param[in] value object to use.
- * @returns zero or value.
+ * @param[in] magnitude.
+ * @param[in] sign.
+ * @returns value.
  */
-Tfloat flush_to_zero(Tfloat value);
+Tfloat copysign(Tfloat magnitude, Tfloat sign);
 
 } // namespace cassian
 

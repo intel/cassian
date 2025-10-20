@@ -668,11 +668,13 @@ protected:
   friend bool isinf(Half value);
 
   /**
-   * Checks whether the value is denormalized.
+   * Categorizes floating point values into the following categories:
+   * zero, subnormal, normal, infinite, NAN
    *
    * @param[in] value object to use.
+   * @returns classification value.
    */
-  friend bool isdenorm(Half value);
+  friend int fpclassify(Half value);
 
   /**
    * Computes the absolute value of a Half value arg.
@@ -723,6 +725,13 @@ protected:
 
   friend Half cbrt(Half value);
 
+  /**
+   * Value with magnitude of first argument and sign of second argument.
+   *
+   * @param[in] magnitude.
+   * @param[in] sign.
+   * @returns value.
+   */
   friend Half copysign(Half value_a, Half value_b);
 
   friend Half cos(Half value);
@@ -788,14 +797,6 @@ protected:
   friend Half ceil(Half value);
 
   friend Half nearbyint(Half value);
-
-  /**
-   * Returns zero if value is denormalized. Otherwise, returns value.
-   *
-   * @param[in] value object to use.
-   * @returns zero or value.
-   */
-  friend Half flush_to_zero(Half value);
 };
 
 /**

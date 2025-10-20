@@ -13,6 +13,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <cassian/fp_types/math.hpp>
 #include <cassian/fp_types/tfloat.hpp>
 
 #include "common.hpp"
@@ -599,29 +600,29 @@ TEST_CASE("tfloat - isinf") {
   }
 }
 
-TEST_CASE("tfloat isdenorm") {
+TEST_CASE("tfloat issubnormal") {
   SECTION("with denorm") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x00002000);
-    REQUIRE(isdenorm(a));
+    REQUIRE(fpclassify(a) == FP_SUBNORMAL);
   }
   SECTION("with -denorm") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x80002000);
-    REQUIRE(isdenorm(a));
+    REQUIRE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with normal") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x00f04000);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with zero") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x00000000);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 
   SECTION("with NaN") {
     const cassian::Tfloat a = cassian::Tfloat::encode(0x7fffe000);
-    REQUIRE_FALSE(isdenorm(a));
+    REQUIRE_FALSE(fpclassify(a) == FP_SUBNORMAL);
   }
 }
 
