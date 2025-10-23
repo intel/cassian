@@ -71,10 +71,6 @@ public:
 
   using function_type = decltype(FUNCTION);
 
-public:
-  OclcFunction() = default;
-  static constexpr auto get_arg_num() { return arg_num; }
-  static constexpr auto get_function() { return function; }
   static constexpr auto get_address_space() {
     switch (address_space) {
     case AddressSpace::clc_global:
@@ -95,7 +91,7 @@ public:
   static constexpr auto get_function_string() {
     return Catch::StringMaker<function_type>::convert(function);
   }
-  auto get_is_store() const {
+  static constexpr auto get_is_store() {
     switch (function) {
     case Function::fract:
     case Function::frexp:
@@ -130,8 +126,7 @@ public:
     }
   }
 
-  auto get_build_options() const {
-    const std::string function_string = get_function_string();
+  static auto get_build_options() {
     std::stringstream ss;
     ss << "-DOUTPUT_TYPE=" << OUTPUT_TYPE::device_type;
     ss << " -DINPUT_TYPE_1=" << INPUT_TYPE_1::device_type;
@@ -143,7 +138,7 @@ public:
       ss << " -DINPUT_TYPE_2=" << INPUT_TYPE_2::device_type;
       ss << " -DINPUT_TYPE_3=" << INPUT_TYPE_3::device_type;
     }
-    if (get_address_space() == "private") {
+    if constexpr (address_space == AddressSpace::clc_private) {
       ss << " -DUSE_PRIVATE";
       // Private is forbidden in kernel args. Use global instead of private
       // Inside the kernel then assigne global value to private variable;
@@ -152,15 +147,17 @@ public:
       ss << " -DADDRESS_SPACE=" << get_address_space();
     }
 
-    if (function_string == "correctly_rounded_sqrt") {
-      ss << " -DFUNCTION=sqrt -cl-fp32-correctly-rounded-divide-sqrt";
+    if constexpr (std::is_same_v<function_type, Function>) {
+      if constexpr (function == Function::correctly_rounded_sqrt) {
+        ss << " -DFUNCTION=sqrt -cl-fp32-correctly-rounded-divide-sqrt";
+      }
     } else {
-      ss << " -DFUNCTION=" << function_string;
+      ss << " -DFUNCTION=" << get_function_string();
     }
     return ss.str();
   }
 
-  auto get_build_options_relaxed() const {
+  static auto get_build_options_relaxed() {
     std::stringstream ss;
     ss << get_build_options();
     ss << " -cl-fast-relaxed-math";
@@ -176,7 +173,7 @@ template <typename TestType> auto test_name_with_function() {
   return ss.str();
 }
 
-template <class T> constexpr auto get_gentype_values() {
+template <typename T> constexpr auto get_gentype_values() {
   using input_type_1 = typename T::input_type_1;
   using input_type_2 = typename T::input_type_2;
   using input_type_3 = typename T::input_type_3;
@@ -1139,8 +1136,7 @@ test_gentype(const INPUT &input, std::vector<INPUT_B> &argument_2_output,
 }
 
 template <class T, typename INPUT>
-void run_section(const T &oclc_function, INPUT &input,
-                 const TestConfig &config) {
+void run_section(INPUT &input, const TestConfig &config) {
   using output_type = typename T::output_type;
   using input_a_type = typename T::input_type_1;
   using input_b_type = typename T::input_type_2;
@@ -1170,10 +1166,10 @@ void run_section(const T &oclc_function, INPUT &input,
   }
   std::vector<input_b_type> argument_2_output(work_size);
   std::vector<input_c_type> argument_3_output(work_size);
-  const std::string build_options = oclc_function.get_build_options();
+  const std::string build_options = T::get_build_options();
   const auto result = test_gentype<output_type, INPUT, input_b_type>(
       input, argument_2_output, argument_3_output, build_options, config,
-      oclc_function.get_is_store());
+      T::get_is_store());
   if constexpr (T::get_is_native()) {
     SUCCEED();
     return;
@@ -1182,14 +1178,14 @@ void run_section(const T &oclc_function, INPUT &input,
                            result, reference_vector,
                            get_ulp_values<output_type>(T::function, work_size),
                            input.input_a, input.input_b, input.input_c));
-  if (oclc_function.get_is_store() && T::arg_num == 2) {
+  if (T::get_is_store() && T::arg_num == 2) {
     REQUIRE_THAT(
         argument_2_output,
         ca::UlpComparator(argument_2_output, reference_vector_2,
                           get_ulp_values<input_b_type>(T::function, work_size),
                           input.input_a, input.input_b, input.input_c));
   }
-  if (oclc_function.get_is_store() && T::arg_num == 3) {
+  if (T::get_is_store() && T::arg_num == 3) {
     REQUIRE_THAT(
         argument_3_output,
         ca::UlpComparator(argument_3_output, reference_vector_3,
@@ -1210,8 +1206,7 @@ template <typename T>
 constexpr bool has_derived_check_method_v = has_derived_check_method<T>::value;
 
 template <class T, typename INPUT>
-void run_section_relaxed(const T &oclc_function, INPUT &input,
-                         const TestConfig &config) {
+void run_section_relaxed(INPUT &input, const TestConfig &config) {
   using output_type = typename T::output_type;
   using scalar_output_type = typename T::scalar_output_type;
   using input_a_type = typename T::input_type_1;
@@ -1269,11 +1264,11 @@ void run_section_relaxed(const T &oclc_function, INPUT &input,
 
   std::vector<input_b_type> argument_2_output(work_size);
   std::vector<input_c_type> argument_3_output(work_size);
-  const std::string build_options = oclc_function.get_build_options_relaxed();
+  const std::string build_options = T::get_build_options_relaxed();
 
   const auto result = test_gentype<output_type, INPUT, input_b_type>(
       input, argument_2_output, argument_3_output, build_options, config,
-      oclc_function.get_is_store());
+      T::get_is_store());
 
   if constexpr (T::get_is_native()) {
     return;
@@ -1343,10 +1338,9 @@ std::vector<T> create_input_vector(const T &input, const uint32_t &arg_index,
 }
 
 template <class T, SectionType section_type>
-void run_specific_section(const T &oclc_function,
-                          const std::vector<Value<T>> &input_values) {
-  const auto function_string = oclc_function.get_function_string();
-  const auto build_options = oclc_function.get_build_options();
+void run_specific_section(const std::vector<Value<T>> &input_values) {
+  const auto function_string = T::get_function_string();
+  const auto build_options = T::get_build_options();
   const TestConfig &config = get_test_config();
   const auto work_size = config.work_size();
   using input_type_1 = typename T::input_type_1;
@@ -1372,16 +1366,15 @@ void run_specific_section(const T &oclc_function,
       ca::logging::debug() << "Input B: " << ca::to_string(input_b) << '\n';
       ca::logging::debug() << "Input C: " << ca::to_string(input_c) << '\n';
       auto input = Input(input_a, input_b, input_c);
-      run_section(oclc_function, input, config);
+      run_section<T, decltype(input)>(input, config);
     }
   }
 }
 
 template <class T, SectionType section_type>
-void run_specific_section_relaxed(const T &oclc_function,
-                                  const std::vector<Value<T>> &input_values) {
-  const auto function_string = oclc_function.get_function_string();
-  const auto build_options = oclc_function.get_build_options_relaxed();
+void run_specific_section_relaxed(const std::vector<Value<T>> &input_values) {
+  const auto function_string = T::get_function_string();
+  const auto build_options = T::get_build_options_relaxed();
 
   const TestConfig &config = get_test_config();
   const auto work_size = config.work_size();
@@ -1408,26 +1401,21 @@ void run_specific_section_relaxed(const T &oclc_function,
       ca::logging::debug() << "Input B: " << ca::to_string(input_b) << '\n';
       ca::logging::debug() << "Input C: " << ca::to_string(input_c) << '\n';
       auto input = Input(input_a, input_b, input_c);
-      run_section_relaxed(oclc_function, input, config);
+      run_section_relaxed<T, decltype(input)>(input, config);
     }
   }
 }
 
-template <class T> void run_multiple_test_sections(const T &oclc_function) {
+template <class T> void run_multiple_test_sections() {
   const auto input = get_gentype_values<T>();
-  run_specific_section<T, SectionType::random>(oclc_function,
-                                               input.random_values);
-  run_specific_section<T, SectionType::edge>(oclc_function,
-                                             input.edge_case_values);
+  run_specific_section<T, SectionType::random>(input.random_values);
+  run_specific_section<T, SectionType::edge>(input.edge_case_values);
 }
 
-template <class T>
-void run_multiple_test_sections_relaxed(const T &oclc_function) {
+template <class T> void run_multiple_test_sections_relaxed() {
   const auto input = get_gentype_values<T>();
-  run_specific_section_relaxed<T, SectionType::random>(oclc_function,
-                                                       input.random_values);
-  run_specific_section_relaxed<T, SectionType::edge>(oclc_function,
-                                                     input.random_values);
+  run_specific_section_relaxed<T, SectionType::random>(input.random_values);
+  run_specific_section_relaxed<T, SectionType::edge>(input.edge_case_values);
 }
 
 #endif

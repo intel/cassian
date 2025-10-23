@@ -70,16 +70,16 @@ struct Test {
     }
 
     SECTION("global") {
-      run_multiple_test_sections(
-          FunctionAlias<TestType, AddressSpace::clc_global>());
+      run_multiple_test_sections<
+          FunctionAlias<TestType, AddressSpace::clc_global>>();
     }
     SECTION("local") {
-      run_multiple_test_sections(
-          FunctionAlias<TestType, AddressSpace::clc_local>());
+      run_multiple_test_sections<
+          FunctionAlias<TestType, AddressSpace::clc_local>>();
     }
     SECTION("private") {
-      run_multiple_test_sections(
-          FunctionAlias<TestType, AddressSpace::clc_private>());
+      run_multiple_test_sections<
+          FunctionAlias<TestType, AddressSpace::clc_private>>();
     }
   }
 };

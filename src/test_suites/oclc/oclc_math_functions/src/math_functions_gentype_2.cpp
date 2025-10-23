@@ -116,7 +116,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("functions", "", GentypeFunctions,
     return;
   }
 
-  run_multiple_test_sections(TestType());
+  run_multiple_test_sections<TestType>();
 }
 
 } // namespace

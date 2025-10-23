@@ -163,12 +163,12 @@ struct TestRelaxed {
     }
 
     SECTION("global") {
-      run_multiple_test_sections_relaxed(
-          FunctionAlias<TestType, AddressSpace::clc_global>());
+      run_multiple_test_sections_relaxed<
+          FunctionAlias<TestType, AddressSpace::clc_global>>();
     }
     SECTION("local") {
-      run_multiple_test_sections_relaxed(
-          FunctionAlias<TestType, AddressSpace::clc_local>());
+      run_multiple_test_sections_relaxed<
+          FunctionAlias<TestType, AddressSpace::clc_local>>();
     }
   }
 };
@@ -189,7 +189,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("functions relaxed", "",
     return;
   }
 
-  run_multiple_test_sections_relaxed(TestType());
+  run_multiple_test_sections_relaxed<TestType>();
 }
 
 } // namespace

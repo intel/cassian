@@ -132,7 +132,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("functions", "", FloatFunctions,
     return;
   }
 
-  run_multiple_test_sections(TestType());
+  run_multiple_test_sections<TestType>();
 }
 
 template <typename T>
@@ -152,7 +152,7 @@ TEMPLATE_LIST_TEST_CASE_CUSTOM_NAME("functions", "", CRFunctions,
     return;
   }
 
-  run_multiple_test_sections(TestType());
+  run_multiple_test_sections<TestType>();
 }
 
 } // namespace

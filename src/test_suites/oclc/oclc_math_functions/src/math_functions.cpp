@@ -29,7 +29,9 @@ namespace ca = cassian;
 namespace {
 
 auto run_each_test = [](auto &&... oclc_function) {
-  (run_multiple_test_sections(oclc_function), ...);
+  (run_multiple_test_sections<
+       std::remove_reference_t<decltype(oclc_function)>>(),
+   ...);
 };
 
 using Gentype = ca::TupleConcat<ca::TypesFloat, ca::TypesDouble>::type;
