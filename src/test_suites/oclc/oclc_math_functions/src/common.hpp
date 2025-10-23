@@ -46,7 +46,7 @@ class UnknownTypeException : public std::runtime_error {
 };
 
 using FloatingPointScalarTypes =
-    ca::TupleConcat<ca::clc_float_t, ca::clc_double_t>;
+    ca::TupleConcat<ca::clc_float_t, ca::clc_double_t>::type;
 
 enum class AddressSpace {
   clc_global,

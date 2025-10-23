@@ -20,12 +20,12 @@
   template <typename TestType> static void TestFunc();                         \
   namespace {                                                                  \
   namespace INTERNAL_CATCH_MAKE_NAMESPACE(TestName) {                          \
-    INTERNAL_CATCH_TYPE_GEN                                                    \
-    template <typename... Types> struct TestName {                             \
-      template <typename TestType> inline auto name_func() {                   \
+    template <typename...> struct TestName;                                    \
+    template <typename... Types> struct TestName<std::tuple<Types...>> {       \
+      template <typename TestType> inline static auto name_func() {            \
         return NameFunc;                                                       \
       }                                                                        \
-      void reg_tests() {                                                       \
+      static void reg_tests() {                                                \
         using expander = int[];                                                \
         (void)expander{                                                        \
             (Catch::AutoReg(                                                   \
@@ -36,9 +36,7 @@
       }                                                                        \
     };                                                                         \
     static int INTERNAL_CATCH_UNIQUE_NAME(globalRegistrar) = []() {            \
-      using TestInit = typename convert<TestName, TmplList>::type;             \
-      TestInit t;                                                              \
-      t.reg_tests();                                                           \
+      TestName<TmplList>::reg_tests();                                         \
       return 0;                                                                \
     }();                                                                       \
   }                                                                            \
