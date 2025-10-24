@@ -65,8 +65,8 @@ T generate_value(const ca::scalar_type_v<T> &min,
 }
 
 template <typename T> T generate_value() {
-  const auto max = std::numeric_limits<ca::scalar_type_v<T>>::max();
-  return ca::generate_value<T>(-max, max, 0);
+  using lim = std::numeric_limits<ca::scalar_type_v<T>>;
+  return ca::generate_value<T>(lim::lowest(), lim::max(), 0);
 }
 
 template <typename T>
