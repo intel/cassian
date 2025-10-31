@@ -150,6 +150,8 @@ public:
     if constexpr (std::is_same_v<function_type, Function>) {
       if constexpr (function == Function::correctly_rounded_sqrt) {
         ss << " -DFUNCTION=sqrt -cl-fp32-correctly-rounded-divide-sqrt";
+      } else {
+        ss << " -DFUNCTION=" << get_function_string();
       }
     } else {
       ss << " -DFUNCTION=" << get_function_string();
