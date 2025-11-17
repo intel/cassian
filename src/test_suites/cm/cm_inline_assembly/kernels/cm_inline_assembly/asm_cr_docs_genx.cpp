@@ -20,7 +20,7 @@ extern "C" _GENX_MAIN_ void test(svmptr_t in0 [[type("svmptr_t")]],
   cm_svm_block_read(in0, vin0);
   cm_svm_block_read(in1, vin1);
 
-  asm("setp (M1, 16) %0 %1" : "=cr"(vpred) : "r"(vin0));
+  asm("setp (M1_NM, 16) %0 %1" : "=cr"(vpred) : "r"(vin0));
   asm("cmp.eq (M1, 16) %0 %1 %2" : "=r"(vout) : "r"(vin0), "r"(vin1));
 
   cm_svm_block_write(pred, vpred);
