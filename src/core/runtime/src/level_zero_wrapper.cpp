@@ -121,5 +121,9 @@ LevelZeroWrapper::LevelZeroWrapper() {
       library_->get_function("zeModuleGetNativeBinary"));
   zeDeviceGetSubDevices = reinterpret_cast<ze_pfnDeviceGetSubDevices_t>(
       library_->get_function("zeDeviceGetSubDevices"));
+  zeCommandListAppendLaunchKernelWithParameters =
+      reinterpret_cast<ze_pfnCommandListAppendLaunchKernelWithParameters_t>(
+          library_->get_function(
+              "zeCommandListAppendLaunchKernelWithParameters"));
 }
 } // namespace cassian

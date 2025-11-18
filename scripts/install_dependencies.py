@@ -159,7 +159,7 @@ def install_level_zero(install_directory, tmp_directory, architecture, clear=Fal
     level_zero_headers_install_directory = level_zero_install_directory / "include"
 
     subprocess.run(
-        "git clone https://github.com/oneapi-src/level-zero.git --depth 1 --branch v1.19.2",
+        "git clone https://github.com/oneapi-src/level-zero.git --depth 1 --branch v1.26.0",
         cwd=tmp_directory,
         shell=True,
         check=True,

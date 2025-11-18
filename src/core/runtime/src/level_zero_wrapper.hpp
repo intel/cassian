@@ -68,6 +68,8 @@ public:
   ze_pfnImageViewCreateExp_t zeImageViewCreateExp = nullptr;
   ze_pfnModuleGetNativeBinary_t zeModuleGetNativeBinary = nullptr;
   ze_pfnDeviceGetSubDevices_t zeDeviceGetSubDevices = nullptr;
+  ze_pfnCommandListAppendLaunchKernelWithParameters_t
+      zeCommandListAppendLaunchKernelWithParameters = nullptr;
 
 private:
   std::unique_ptr<Library> library_;
