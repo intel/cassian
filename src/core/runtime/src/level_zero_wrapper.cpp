@@ -121,9 +121,14 @@ LevelZeroWrapper::LevelZeroWrapper() {
       library_->get_function("zeModuleGetNativeBinary"));
   zeDeviceGetSubDevices = reinterpret_cast<ze_pfnDeviceGetSubDevices_t>(
       library_->get_function("zeDeviceGetSubDevices"));
-  zeCommandListAppendLaunchKernelWithParameters =
-      reinterpret_cast<ze_pfnCommandListAppendLaunchKernelWithParameters_t>(
-          library_->get_function(
-              "zeCommandListAppendLaunchKernelWithParameters"));
+
+  try {
+    zeCommandListAppendLaunchKernelWithParameters =
+        reinterpret_cast<ze_pfnCommandListAppendLaunchKernelWithParameters_t>(
+            library_->get_function(
+                "zeCommandListAppendLaunchKernelWithParameters"));
+  } catch (LibraryFunctionNotFoundException &e) {
+    zeCommandListAppendLaunchKernelWithParameters = nullptr;
+  }
 }
 } // namespace cassian
