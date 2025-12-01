@@ -25,7 +25,7 @@ namespace ca = cassian;
 
 namespace {
 
-template <typename TYPE, typename V = typename TYPE::host_type::value_type>
+template <typename TYPE, typename V = typename TYPE::host_type>
 void test_printf_arguments(ca::Runtime *runtime, const size_t global_work_size,
                            const std::string &format, const V value,
                            const std::string &program_type) {
@@ -111,7 +111,8 @@ std::vector<std::string> flags_hash() { return {"#", "-+ #012.3h", " +#"}; }
 
 template <typename TestType>
 void run_test(const std::function<std::vector<std::string>()> &flags) {
-  using type = typename TestType::scalar_type::host_type;
+  using scalar_host_type = typename TestType::scalar_type::host_type;
+  using host_type = typename TestType::host_type;
   const TestConfig &config = get_test_config();
 
   ca::Requirements requirements;
@@ -122,12 +123,13 @@ void run_test(const std::function<std::vector<std::string>()> &flags) {
 
   const auto size = config.work_size();
   ca::logging::debug() << "Type: " << std::string(TestType::type_name) << "\n";
-  for (const auto &format : formats<type>()) {
+  for (const auto &format : formats<scalar_host_type>()) {
     for (const auto &flag : flags()) {
       const std::string full_format = get_full_format(format, flag);
       ca::logging::debug() << "Format: " << full_format << "\n";
-      REQUIRE_NOTHROW(test_printf_arguments<TestType>(
-          config.runtime(), size, full_format, 1, config.program_type()));
+      REQUIRE_NOTHROW(test_printf_arguments<TestType>(config.runtime(), size,
+                                                      full_format, host_type(1),
+                                                      config.program_type()));
     }
   }
 }
