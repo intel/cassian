@@ -92,7 +92,7 @@ public:
     if (list_size == N) {
       std::copy(list.begin(), list.end(), data_.begin());
       if (N < SIZE_IN_MEMORY) {
-        std::fill(data_.begin() + N, data_.end(), 0);
+        std::fill(data_.begin() + N, data_.end(), static_cast<T>(0));
       }
     } else {
       throw VectorBadNumberOfElementsException("initializer list", N,
@@ -112,7 +112,7 @@ public:
     if (vector.size() == N) {
       std::move(vector.begin(), vector.end(), data_.begin());
       if (N < SIZE_IN_MEMORY) {
-        std::fill(data_.begin() + N, data_.end(), 0);
+        std::fill(data_.begin() + N, data_.end(), static_cast<T>(0));
       }
     } else {
       throw VectorBadNumberOfElementsException("std::vector", N, vector_size);
