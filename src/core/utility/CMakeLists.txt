@@ -29,10 +29,8 @@ target_include_directories(
          $<INSTALL_INTERFACE:include>
   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
-target_link_libraries(
-  utility
-  PUBLIC cassian::vector cassian::logging
-  PRIVATE Catch2::Catch2)
+target_link_libraries(utility PUBLIC cassian::vector cassian::logging
+                                     Catch2::Catch2)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION
                                                  VERSION_LESS 9.1)

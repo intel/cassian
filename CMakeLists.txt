@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(VERSION 0.0.0)
 include(cmake/git_tag.cmake)
-if(CASSIAN_GIT_TAG)
+if(CASSIAN_GIT_TAG MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9_.+-]+)?$")
   set(VERSION ${CASSIAN_GIT_TAG})
 endif()
 
