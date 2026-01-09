@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Intel Corporation
+ * Copyright (C) 2022-2026 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -335,6 +335,11 @@ void calculate_dimensions(std::array<size_t, N> &global_work_size,
 
   for (auto &gws : global_work_size) {
     gws = global_work_size_per_dimension;
+  }
+
+  if constexpr (N >= 3) {
+    constexpr size_t max_last_dimension = 8;
+    global_work_size[2] = std::min(global_work_size[2], max_last_dimension);
   }
 
   // TODO: Support multiple work groups
