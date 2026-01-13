@@ -1074,7 +1074,9 @@ bool LevelZeroRuntime::is_feature_supported(const Feature feature) const {
   case Feature::integer_dp4a_packed: {
     return (device_module_properties.flags & ZE_DEVICE_MODULE_FLAG_DP4A) != 0;
   }
-
+  case Feature::extended_bit_operations: {
+    return false;
+  }
   default:
     return false;
   }

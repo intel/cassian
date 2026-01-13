@@ -764,6 +764,9 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     return (get_device_property(DeviceProperty::dot_product_capabilities) &
             CL_DEVICE_INTEGER_DOT_PRODUCT_INPUT_4x8BIT_PACKED_KHR) != 0;
   }
+  case Feature::extended_bit_operations: {
+    return extensions_.count("cl_khr_extended_bit_ops") != 0U;
+  }
   default:
     return false;
   }

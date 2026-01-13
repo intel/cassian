@@ -4,9 +4,10 @@
 # SPDX-License-Identifier: MIT
 #
 
-list(APPEND PUBLIC_HEADERS "include/cassian/reference/dp4a.hpp")
+list(APPEND PUBLIC_HEADERS "include/cassian/reference/dp4a.hpp"
+     "include/cassian/reference/extended_bit_operations.hpp")
 list(APPEND PRIVATE_HEADERS)
-list(APPEND SOURCES "src/dp4a.cpp")
+list(APPEND SOURCES "src/dp4a.cpp" "src/extended_bit_operations.cpp")
 
 add_library(reference ${PUBLIC_HEADERS} ${PRIVATE_HEADERS} ${SOURCES})
 add_library(cassian::reference ALIAS reference)
