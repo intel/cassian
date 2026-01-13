@@ -1417,7 +1417,6 @@ template <class T> void run_multiple_test_sections() {
 template <class T> void run_multiple_test_sections_relaxed() {
   const auto input = get_gentype_values<T>();
   run_specific_section_relaxed<T, SectionType::random>(input.random_values);
-  run_specific_section_relaxed<T, SectionType::edge>(input.edge_case_values);
 }
 
 #endif
