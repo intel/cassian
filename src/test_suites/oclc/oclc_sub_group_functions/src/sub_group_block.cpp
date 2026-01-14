@@ -76,7 +76,11 @@ void print_test_info(TestExtensionType test_extension_type,
                         << ", channel order: "
                         << to_string(test_description.image_config.order)
                         << ", datatype: " << TEST_TYPE::device_type
-                        << ", function: " << function_to_print << "\n";
+                        << ", function: " << function_to_print
+                        << ", image_width: "
+                        << test_description.image_config.dim.width
+                        << ", image_height: "
+                        << test_description.image_config.dim.height << "\n";
   } else {
     ca::logging::info() << "Testing datatype: " << TEST_TYPE::device_type
                         << ", function: " << function_to_print << "\n";
@@ -89,7 +93,7 @@ void test_subgroup_block(const TestConfig &config,
                          const TestFunctionType test_function_type) {
   ca::Runtime *runtime = config.runtime();
   const std::string program_type = config.program_type();
-  const size_t global_work_size_per_dimension = config.work_size();
+  const size_t global_work_size_per_dimension = 256;
   std::array<size_t, N> global_work_size = {};
   std::array<size_t, N> local_work_size = {};
   size_t global_work_size_total = 1;
@@ -115,6 +119,7 @@ void test_subgroup_block(const TestConfig &config,
     }
   }
   using scalar_type = typename TEST_TYPE::scalar_type::host_type;
+  using host_type = typename TEST_TYPE::host_type;
 
   bool image_case = false;
   std::vector<std::string> modified_names;
@@ -140,9 +145,21 @@ void test_subgroup_block(const TestConfig &config,
   test_description.kernel_func_names = modified_names;
   test_description.test_extension_type = test_extension_type;
   test_description.test_function_type = test_function_type;
-  std::vector<scalar_type> input_data_values(global_work_size_total, 0);
-  std::vector<scalar_type> output_data_values(global_work_size_total, 0);
-  std::iota(input_data_values.begin(), input_data_values.end(), 0);
+  if constexpr (ca::is_vector_v<host_type>) {
+    global_work_size_total = global_work_size_total / host_type::vector_size;
+  }
+  std::vector<host_type> input_data_values(global_work_size_total);
+  std::vector<host_type> output_data_values(global_work_size_total);
+
+  if constexpr (ca::is_vector_v<host_type>) {
+    for (size_t i = 0; i < input_data_values.size(); ++i) {
+      for (int j = 0; j < host_type::vector_size; ++j) {
+        input_data_values[i][j] = static_cast<scalar_type>(i);
+      }
+    }
+  } else {
+    std::iota(input_data_values.begin(), input_data_values.end(), 0);
+  }
   using vector_type_check = typename TEST_TYPE::host_type;
   uint32_t vector_size = 1;
   if constexpr (ca::is_vector_v<vector_type_check>) {
@@ -150,10 +167,10 @@ void test_subgroup_block(const TestConfig &config,
   }
 
   TestArguments arg1(input_data_values.data(),
-                     input_data_values.size() * sizeof(scalar_type),
+                     input_data_values.size() * sizeof(host_type),
                      input_data_values.size());
   TestArguments arg2(output_data_values.data(),
-                     output_data_values.size() * sizeof(scalar_type),
+                     output_data_values.size() * sizeof(host_type),
                      output_data_values.size());
 
   if ((test_extension_type == block_image ||
@@ -167,9 +184,17 @@ void test_subgroup_block(const TestConfig &config,
   if ((test_extension_type == block_image ||
        test_extension_type == media_block_image) &&
       (test_function_type == write_ft || test_function_type == read_write_ft)) {
-    std::iota(output_data_values.begin(), output_data_values.end(), 0);
-    std::sort(output_data_values.begin(), output_data_values.end(),
-              std::greater<scalar_type>());
+    if constexpr (ca::is_vector_v<host_type>) {
+      for (size_t i = 0; i < output_data_values.size(); ++i) {
+        for (int j = 0; j < host_type::vector_size; ++j) {
+          output_data_values[i][j] = static_cast<scalar_type>(i);
+        }
+      }
+    } else {
+      std::iota(output_data_values.begin(), output_data_values.end(), 0);
+      std::sort(output_data_values.begin(), output_data_values.end(),
+                std::greater<host_type>());
+    }
   }
 
   if ((test_extension_type == block_image ||
@@ -190,13 +215,12 @@ void test_subgroup_block(const TestConfig &config,
     arg1.image_dim_1 = image_height;
     arg1.data = output_data_values.data();
     arg1.data_count = output_data_values.size();
-    arg1.data_size = output_data_values.size() * sizeof(scalar_type);
+    arg1.data_size = output_data_values.size() * sizeof(host_type);
     test_description.test_args.push_back(arg1);
   } else {
     test_description.test_args.push_back(arg1);
     test_description.test_args.push_back(arg2);
   }
-  recalculate_dimensions<TEST_TYPE, N>(global_work_size, local_work_size);
   std::vector<size_t> block_widths{1};
   std::vector<size_t> block_heights{1};
   std::vector<size_t> sub_group_sizes{8};
@@ -280,9 +304,10 @@ void test_subgroup_block(const TestConfig &config,
             if (test_description.elements_per_pixel == 0) {
               continue;
             }
+
             print_test_info<TEST_TYPE>(test_extension_type, test_description);
-            const std::vector<std::vector<scalar_type>> outputs =
-                run_test<scalar_type, TEST_TYPE, N>(
+            const std::vector<std::vector<host_type>> outputs =
+                run_test<host_type, TEST_TYPE, N>(
                     test_description, global_work_size, local_work_size,
                     runtime, program_type);
             if (test_description.test_function_type == read_ft) {
@@ -298,10 +323,10 @@ void test_subgroup_block(const TestConfig &config,
     }
   } else {
     print_test_info<TEST_TYPE>(test_extension_type, test_description);
-    const std::vector<std::vector<scalar_type>> outputs =
-        run_test<scalar_type, TEST_TYPE, N>(test_description, global_work_size,
-                                            local_work_size, runtime,
-                                            program_type);
+    const std::vector<std::vector<host_type>> outputs =
+        run_test<host_type, TEST_TYPE, N>(test_description, global_work_size,
+                                          local_work_size, runtime,
+                                          program_type);
     REQUIRE_THAT(outputs[0], Catch::Equals(outputs[1]));
   }
 }
