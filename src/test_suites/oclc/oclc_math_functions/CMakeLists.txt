@@ -19,7 +19,6 @@ list(
   "src/main.cpp"
   "src/common.cpp"
   "src/test_config.cpp"
-  "src/math_functions.cpp"
   "src/math_functions_float.cpp"
   "src/math_functions_gentype_1.cpp"
   "src/math_functions_gentype_2.cpp"
