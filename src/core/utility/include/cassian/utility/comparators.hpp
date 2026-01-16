@@ -88,6 +88,12 @@ template <class T> inline std::string dec_hex_pair(const T &v) {
     os.setf(std::ios::scientific);
     os << std::setprecision(std::numeric_limits<T>::max_digits10) << v;
     return os.str() + " (" + raw_bits(v) + ")";
+  } else if constexpr (cassian::is_floating_point_v<T>) {
+    std::ostringstream os;
+    os.setf(std::ios::scientific);
+    os << std::setprecision(std::numeric_limits<T>::max_digits10)
+       << static_cast<float>(v);
+    return os.str() + " (0x" + cassian::to_string(v) + ")";
   } else if constexpr (is_vector_v<T>) {
     std::ostringstream os;
     os << '{';
