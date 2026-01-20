@@ -14,5 +14,5 @@ global atomic_flag global_flag = ATOMIC_FLAG_INIT;
 
 kernel void test_kernel(global DATA_TYPE *output) {
   const size_t global_id = get_global_id(0);
-  *output = atomic_load(&global_flag);
+  *output = atomic_load(ATOMIC_ADDRESS_SPACE_CAST(&global_flag));
 }

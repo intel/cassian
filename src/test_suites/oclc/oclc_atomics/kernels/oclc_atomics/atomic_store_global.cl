@@ -15,11 +15,12 @@ kernel void test_kernel(const global DATA_TYPE *input,
   const size_t global_id = get_global_id(0);
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
-  atomic_store_explicit(&output[global_id], input[global_id], MEMORY_ORDER,
-                        MEMORY_SCOPE);
+  atomic_store_explicit(ATOMIC_ADDRESS_SPACE_CAST(&output[global_id]),
+                        input[global_id], MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  atomic_store_explicit(&output[global_id], input[global_id], MEMORY_ORDER);
+  atomic_store_explicit(ATOMIC_ADDRESS_SPACE_CAST(&output[global_id]),
+                        input[global_id], MEMORY_ORDER);
 #else
-  atomic_store(&output[global_id], input[global_id]);
+  atomic_store(ATOMIC_ADDRESS_SPACE_CAST(&output[global_id]), input[global_id]);
 #endif
 }

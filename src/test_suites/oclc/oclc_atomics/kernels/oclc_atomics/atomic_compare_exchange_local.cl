@@ -24,31 +24,35 @@ test_kernel(global DATA_TYPE *value, global DATA_TYPE *expected,
 #if defined(FAILURE_MEMORY_ORDER) && defined(SUCCESS_MEMORY_ORDER) &&          \
     defined(MEMORY_SCOPE)
   result[global_id] = atomic_compare_exchange_weak_explicit(
-      &local_atomic[local_id], &expected[global_id], desired[global_id],
-      SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER, MEMORY_SCOPE);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), &expected[global_id],
+      desired[global_id], SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER,
+      MEMORY_SCOPE);
 
 #elif defined(FAILURE_MEMORY_ORDER) && defined(SUCCESS_MEMORY_ORDER)
   result[global_id] = atomic_compare_exchange_weak_explicit(
-      &local_atomic[local_id], &expected[global_id], desired[global_id],
-      SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), &expected[global_id],
+      desired[global_id], SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER);
 #else
   result[global_id] = atomic_compare_exchange_weak(
-      &local_atomic[local_id], &expected[global_id], desired[global_id]);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), &expected[global_id],
+      desired[global_id]);
 #endif
 #elif COMPARISON_TYPE == strong
 #if defined(FAILURE_MEMORY_ORDER) && defined(SUCCESS_MEMORY_ORDER) &&          \
     defined(MEMORY_SCOPE)
   result[global_id] = atomic_compare_exchange_strong_explicit(
-      &local_atomic[local_id], &expected[global_id], desired[global_id],
-      SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER, MEMORY_SCOPE);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), &expected[global_id],
+      desired[global_id], SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER,
+      MEMORY_SCOPE);
 
 #elif defined(FAILURE_MEMORY_ORDER) && defined(SUCCESS_MEMORY_ORDER)
   result[global_id] = atomic_compare_exchange_strong_explicit(
-      &local_atomic[local_id], &expected[global_id], desired[global_id],
-      SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), &expected[global_id],
+      desired[global_id], SUCCESS_MEMORY_ORDER, FAILURE_MEMORY_ORDER);
 #else
   result[global_id] = atomic_compare_exchange_strong(
-      &local_atomic[local_id], &expected[global_id], desired[global_id]);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), &expected[global_id],
+      desired[global_id]);
 #endif
 #endif
 

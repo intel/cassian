@@ -15,11 +15,12 @@ kernel void test_kernel(global atomic_flag *value, global int *fetched) {
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
   fetched[global_id] = (int)atomic_flag_test_and_set_explicit(
-      &value[global_id], MEMORY_ORDER, MEMORY_SCOPE);
+      ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]), MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  fetched[global_id] =
-      (int)atomic_flag_test_and_set_explicit(&value[global_id], MEMORY_ORDER);
+  fetched[global_id] = (int)atomic_flag_test_and_set_explicit(
+      ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]), MEMORY_ORDER);
 #else
-  fetched[global_id] = (int)atomic_flag_test_and_set(&value[global_id]);
+  fetched[global_id] = (int)atomic_flag_test_and_set(
+      ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]));
 #endif
 }

@@ -14,10 +14,12 @@ kernel void test_kernel(global atomic_flag *value) {
   const size_t global_id = get_global_id(0);
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
-  atomic_flag_clear_explicit(&value[global_id], MEMORY_ORDER, MEMORY_SCOPE);
+  atomic_flag_clear_explicit(ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]),
+                             MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  atomic_flag_clear_explicit(&value[global_id], MEMORY_ORDER);
+  atomic_flag_clear_explicit(ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]),
+                             MEMORY_ORDER);
 #else
-  atomic_flag_clear(&value[global_id]);
+  atomic_flag_clear(ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]));
 #endif
 }

@@ -127,4 +127,30 @@ template <typename T> std::string data_type_build_option() {
   return std::string(" -D DATA_TYPE=") + T::device_type;
 }
 
+enum class AddressSpaceCastMode { original, generic };
+std::string to_string(AddressSpaceCastMode ascm);
+
+const std::vector<AddressSpaceCastMode> address_space_casts_modes_all = {
+    AddressSpaceCastMode::original, AddressSpaceCastMode::generic};
+
+std::string
+pointer_to_named_address_space_atomic_cast_to_generic_build_option_impl(
+    const MemoryType memory_type, const AddressSpaceCastMode ascm,
+    const std::string &device_atomic_type);
+
+std::string
+pointer_to_named_address_space_atomic_flag_cast_to_generic_build_option(
+    const MemoryType memory_type, const AddressSpaceCastMode ascm);
+
+template <typename T>
+std::string pointer_to_named_address_space_atomic_cast_to_generic_build_option(
+    const MemoryType memory_type, const AddressSpaceCastMode ascm) {
+  return pointer_to_named_address_space_atomic_cast_to_generic_build_option_impl(
+      memory_type, ascm, T::device_atomic_type);
+}
+
+void cast_mode_requirements(cassian::Requirements &requirements,
+                            const std::string &program_type,
+                            AddressSpaceCastMode cast_mode);
+
 #endif

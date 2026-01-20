@@ -14,11 +14,12 @@ kernel void test_kernel(global ATOMIC_TYPE *input, global DATA_TYPE *output) {
   const size_t global_id = get_global_id(0);
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
-  output[global_id] =
-      atomic_load_explicit(&input[global_id], MEMORY_ORDER, MEMORY_SCOPE);
+  output[global_id] = atomic_load_explicit(
+      ATOMIC_ADDRESS_SPACE_CAST(&input[global_id]), MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  output[global_id] = atomic_load_explicit(&input[global_id], MEMORY_ORDER);
+  output[global_id] = atomic_load_explicit(
+      ATOMIC_ADDRESS_SPACE_CAST(&input[global_id]), MEMORY_ORDER);
 #else
-  output[global_id] = atomic_load(&input[global_id]);
+  output[global_id] = atomic_load(ATOMIC_ADDRESS_SPACE_CAST(&input[global_id]));
 #endif
 }

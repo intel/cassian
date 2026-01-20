@@ -22,13 +22,15 @@ test_kernel(global DATA_TYPE *value, const global DATA_TYPE *operand,
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
   fetched[global_id] = atomic_exchange_explicit(
-      &local_atomic[local_id], operand[global_id], MEMORY_ORDER, MEMORY_SCOPE);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), operand[global_id],
+      MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
   fetched[global_id] = atomic_exchange_explicit(
-      &local_atomic[local_id], operand[global_id], MEMORY_ORDER);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), operand[global_id],
+      MEMORY_ORDER);
 #else
-  fetched[global_id] =
-      atomic_exchange(&local_atomic[local_id], operand[global_id]);
+  fetched[global_id] = atomic_exchange(
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), operand[global_id]);
 #endif
 
   value[global_id] = atomic_load_explicit(

@@ -20,12 +20,14 @@ test_kernel(global DATA_TYPE *value, global int *fetched) {
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
   fetched[global_id] = (int)atomic_flag_test_and_set_explicit(
-      &local_flag[local_id], MEMORY_ORDER, MEMORY_SCOPE);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_flag[local_id]), MEMORY_ORDER,
+      MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
   fetched[global_id] = (int)atomic_flag_test_and_set_explicit(
-      &local_flag[local_id], MEMORY_ORDER);
+      ATOMIC_ADDRESS_SPACE_CAST(&local_flag[local_id]), MEMORY_ORDER);
 #else
-  fetched[global_id] = (int)atomic_flag_test_and_set(&local_flag[local_id]);
+  fetched[global_id] = (int)atomic_flag_test_and_set(
+      ATOMIC_ADDRESS_SPACE_CAST(&local_flag[local_id]));
 #endif
 
   value[global_id] = atomic_load_explicit(

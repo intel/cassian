@@ -18,11 +18,13 @@ test_kernel(global DATA_TYPE *value) {
   local atomic_flag local_flag[WORK_GROUP_SIZE];
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
-  atomic_flag_clear_explicit(&local_flag[local_id], MEMORY_ORDER, MEMORY_SCOPE);
+  atomic_flag_clear_explicit(ATOMIC_ADDRESS_SPACE_CAST(&local_flag[local_id]),
+                             MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  atomic_flag_clear_explicit(&local_flag[local_id], MEMORY_ORDER);
+  atomic_flag_clear_explicit(ATOMIC_ADDRESS_SPACE_CAST(&local_flag[local_id]),
+                             MEMORY_ORDER);
 #else
-  atomic_flag_clear(&local_flag[local_id]);
+  atomic_flag_clear(ATOMIC_ADDRESS_SPACE_CAST(&local_flag[local_id]));
 #endif
   value[global_id] = atomic_load_explicit(
       &local_flag[local_id], memory_order_relaxed, memory_scope_work_group);

@@ -234,3 +234,53 @@ cassian::Kernel create_kernel(const std::string &path,
   return runtime->create_kernel(kernel_name, source, build_options,
                                 program_type);
 }
+
+std::string to_string(AddressSpaceCastMode ascm) {
+  switch (ascm) {
+  case AddressSpaceCastMode::generic:
+    return "generic";
+  case AddressSpaceCastMode::original:
+    return "original";
+  default:
+    return "unknown";
+  }
+}
+
+std::string
+pointer_to_named_address_space_atomic_cast_to_generic_build_option_impl(
+    const MemoryType memory_type, const AddressSpaceCastMode ascm,
+    const std::string &device_atomic_type) {
+  if (ascm == AddressSpaceCastMode::generic) {
+    switch (memory_type) {
+    // case MemoryType::private:
+    case MemoryType::global:
+    case MemoryType::local:
+      return std::string(" -D ATOMIC_ADDRESS_SPACE_CAST(ptr)=\"((generic ") +
+             device_atomic_type + "*)ptr)\"";
+    // case MemoryType::constant: -- illegal
+    default:
+      break;
+    }
+  }
+  return " -D ATOMIC_ADDRESS_SPACE_CAST(ptr)=(ptr)";
+}
+
+std::string
+pointer_to_named_address_space_atomic_flag_cast_to_generic_build_option(
+    const MemoryType memory_type, const AddressSpaceCastMode ascm) {
+  return pointer_to_named_address_space_atomic_cast_to_generic_build_option_impl(
+      memory_type, ascm, "atomic_flag");
+}
+
+void cast_mode_requirements(cassian::Requirements &requirements,
+                            const std::string &program_type,
+                            AddressSpaceCastMode cast_mode) {
+  switch (cast_mode) {
+  case AddressSpaceCastMode::generic:
+    requirements.openclc_feature("__opencl_c_generic_address_space",
+                                 program_type);
+    return;
+  default:
+    return;
+  }
+}

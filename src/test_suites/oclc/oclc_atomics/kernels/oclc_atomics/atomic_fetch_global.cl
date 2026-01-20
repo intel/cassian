@@ -16,11 +16,11 @@ kernel void test_kernel(global ATOMIC_TYPE *value,
   const size_t global_id = get_global_id(0);
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
-  fetched[global_id] = FUNCTION(&value[global_id], operand[global_id],
-                                MEMORY_ORDER, MEMORY_SCOPE);
+  fetched[global_id] = FUNCTION(ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]),
+                                operand[global_id], MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  fetched[global_id] =
-      FUNCTION(&value[global_id], operand[global_id], MEMORY_ORDER);
+  fetched[global_id] = FUNCTION(ATOMIC_ADDRESS_SPACE_CAST(&value[global_id]),
+                                operand[global_id], MEMORY_ORDER);
 #else
   fetched[global_id] = FUNCTION(&value[global_id], operand[global_id]);
 #endif

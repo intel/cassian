@@ -18,13 +18,14 @@ test_kernel(const global DATA_TYPE *input, global DATA_TYPE *output) {
   local ATOMIC_TYPE local_atomic[WORK_GROUP_SIZE];
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
-  atomic_store_explicit(&local_atomic[local_id], input[global_id], MEMORY_ORDER,
-                        MEMORY_SCOPE);
+  atomic_store_explicit(ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]),
+                        input[global_id], MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  atomic_store_explicit(&local_atomic[local_id], input[global_id],
-                        MEMORY_ORDER);
+  atomic_store_explicit(ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]),
+                        input[global_id], MEMORY_ORDER);
 #else
-  atomic_store(&local_atomic[local_id], input[global_id]);
+  atomic_store(ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]),
+               input[global_id]);
 #endif
 
   output[global_id] = atomic_load_explicit(

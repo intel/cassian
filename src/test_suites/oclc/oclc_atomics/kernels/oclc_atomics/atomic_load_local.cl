@@ -21,11 +21,13 @@ test_kernel(const global DATA_TYPE *input, global DATA_TYPE *output) {
 
 #if defined(MEMORY_SCOPE) && defined(MEMORY_ORDER)
   output[global_id] =
-      atomic_load_explicit(&local_atomic[local_id], MEMORY_ORDER, MEMORY_SCOPE);
+      atomic_load_explicit(ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]),
+                           MEMORY_ORDER, MEMORY_SCOPE);
 #elif defined(MEMORY_ORDER)
-  output[global_id] =
-      atomic_load_explicit(&local_atomic[local_id], MEMORY_ORDER);
+  output[global_id] = atomic_load_explicit(
+      ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]), MEMORY_ORDER);
 #else
-  output[global_id] = atomic_load(&local_atomic[local_id]);
+  output[global_id] =
+      atomic_load(ATOMIC_ADDRESS_SPACE_CAST(&local_atomic[local_id]));
 #endif
 }
