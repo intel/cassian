@@ -373,17 +373,6 @@ void calculate_dimensions(std::array<size_t, N> &global_work_size,
   }
 }
 
-template <typename TEST_TYPE, size_t N>
-void recalculate_dimensions(std::array<size_t, N> &global_work_size,
-                            std::array<size_t, N> &local_work_size) {
-  using vector_type_check = typename TEST_TYPE::host_type;
-  if constexpr (ca::is_vector_v<vector_type_check> && N != 1) {
-    global_work_size[1] = global_work_size[1] / vector_type_check::vector_size;
-    if (local_work_size[1] > global_work_size[1]) {
-      local_work_size[1] = global_work_size[1];
-    }
-  }
-}
 struct LocalWorkgroupInfo {
   size_t workgroups_count;
   size_t workgroup_size_scalar;

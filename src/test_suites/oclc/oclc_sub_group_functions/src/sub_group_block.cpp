@@ -147,6 +147,14 @@ void test_subgroup_block(const TestConfig &config,
   test_description.test_function_type = test_function_type;
   if constexpr (ca::is_vector_v<host_type>) {
     global_work_size_total = global_work_size_total / host_type::vector_size;
+    const size_t index_to_modify = (N == 1) ? 0 : 1;
+    global_work_size[index_to_modify] /= host_type::vector_size;
+    if (global_work_size[index_to_modify] == 0) {
+      throw std::runtime_error("Calculated global work size is 0");
+    }
+    if (local_work_size[index_to_modify] > global_work_size[index_to_modify]) {
+      local_work_size[index_to_modify] = global_work_size[index_to_modify];
+    }
   }
   std::vector<host_type> input_data_values(global_work_size_total);
   std::vector<host_type> output_data_values(global_work_size_total);
