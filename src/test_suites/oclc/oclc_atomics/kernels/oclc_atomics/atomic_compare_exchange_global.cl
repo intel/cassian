@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2026 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -10,6 +10,7 @@
 #pragma OPENCL EXTENSION cl_khr_int64_extended_atomics : enable
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #pragma OPENCL EXTENSION cl_intel_spirv_subgroups : enable
+#pragma OPENCL EXTENSION cl_khr_fp16 : enable
 
 kernel void test_kernel(global ATOMIC_TYPE *value, global DATA_TYPE *expected,
                         const global DATA_TYPE *desired, global int *result) {

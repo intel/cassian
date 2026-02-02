@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2026 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#pragma OPENCL EXTENSION cl_khr_fp16 : enable
 
 kernel void math_macros(global TYPE *output) {
   const size_t tid = get_global_id(0);

@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2022 Intel Corporation
+ * Copyright (C) 2022-2026 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
  */
 
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#pragma OPENCL EXTENSION cl_khr_fp16 : enable
 
 #if defined(TWO_ARG_FUNCTION)
 kernel void test(global OUTPUT_TYPE *output_value,
