@@ -905,7 +905,7 @@ template <> struct OpenCLCBfloat16AsUshort<1> {
   using scalar_type = OpenCLCBfloat16AsUshort<1>;
   using logical_type = OpenCLCShort<1>;
   static constexpr char device_type[] = "ushort";
-  static constexpr char type_name[] = "bfloat16";
+  static constexpr char type_name[] = "bfloat16_as_ushort";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -915,7 +915,7 @@ template <> struct OpenCLCBfloat16AsUshort<2> {
   using scalar_type = OpenCLCBfloat16AsUshort<1>;
   using logical_type = OpenCLCShort<2>;
   static constexpr char device_type[] = "ushort2";
-  static constexpr char type_name[] = "bfloat162";
+  static constexpr char type_name[] = "bfloat162_as_ushort2";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -925,7 +925,7 @@ template <> struct OpenCLCBfloat16AsUshort<3> {
   using scalar_type = OpenCLCBfloat16AsUshort<1>;
   using logical_type = OpenCLCShort<3>;
   static constexpr char device_type[] = "ushort3";
-  static constexpr char type_name[] = "bfloat163";
+  static constexpr char type_name[] = "bfloat163_as_ushort3";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -935,7 +935,7 @@ template <> struct OpenCLCBfloat16AsUshort<4> {
   using scalar_type = OpenCLCBfloat16AsUshort<1>;
   using logical_type = OpenCLCShort<4>;
   static constexpr char device_type[] = "ushort4";
-  static constexpr char type_name[] = "bfloat164";
+  static constexpr char type_name[] = "bfloat164_as_ushort4";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -945,7 +945,7 @@ template <> struct OpenCLCBfloat16AsUshort<8> {
   using scalar_type = OpenCLCBfloat16AsUshort<1>;
   using logical_type = OpenCLCShort<8>;
   static constexpr char device_type[] = "ushort8";
-  static constexpr char type_name[] = "bfloat168";
+  static constexpr char type_name[] = "bfloat168_as_ushort8";
   static constexpr char type_abbr[] = "bf16";
 };
 
@@ -955,7 +955,7 @@ template <> struct OpenCLCBfloat16AsUshort<16> {
   using scalar_type = OpenCLCBfloat16AsUshort<1>;
   using logical_type = OpenCLCShort<16>;
   static constexpr char device_type[] = "ushort16";
-  static constexpr char type_name[] = "bfloat1616";
+  static constexpr char type_name[] = "bfloat1616_as_ushort16";
   static constexpr char type_abbr[] = "bf16";
 };
 
