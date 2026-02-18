@@ -36,10 +36,10 @@ enum class PrecisionRequirementType : uint32_t {
   undefined
 };
 
-template <typename T> struct PrecisionRequirement {
+template <typename T, typename REFERENCE> struct PrecisionRequirement {
   PrecisionRequirementType type = PrecisionRequirementType::ulp_value;
-  T value = static_cast<T>(0);
-  T value2 = static_cast<T>(0);
+  REFERENCE value = static_cast<REFERENCE>(0);
+  REFERENCE value2 = static_cast<REFERENCE>(0);
 };
 
 // --- helpers for hex formatting ---
@@ -144,7 +144,7 @@ REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
 template <typename RESULT_TYPE, typename REFERENCE_TYPE>
 bool match_results_ulp(const RESULT_TYPE &result,
                        const REFERENCE_TYPE &reference,
-                       const RESULT_TYPE ulp_value) {
+                       const REFERENCE_TYPE ulp_value) {
   using std::isinf;
   using std::isnan;
   // this if constexpr is needed for msvc compatibility, isnan doesn't work with
@@ -161,21 +161,22 @@ bool match_results_ulp(const RESULT_TYPE &result,
     }
   }
   const auto ulp_distance = calculate_ulp_distance(result, reference);
-  if (ulp_distance <= static_cast<REFERENCE_TYPE>(ulp_value)) {
+  if (ulp_distance <= ulp_value) {
     return true;
   }
   return false;
 }
 
-template <typename TYPE> bool match_range(TYPE result, TYPE start, TYPE end) {
-  return result >= start && result <= end;
+template <typename TYPE, typename REFERENCE_TYPE>
+bool match_range(TYPE result, REFERENCE_TYPE start, REFERENCE_TYPE end) {
+  return result >= static_cast<TYPE>(start) && result <= static_cast<TYPE>(end);
 }
 
 template <typename RESULT_TYPE, typename REFERENCE_TYPE,
           EnableIfIsScalar<RESULT_TYPE> = 0>
 bool match_results_error_value(const RESULT_TYPE &result,
                                const REFERENCE_TYPE &reference,
-                               RESULT_TYPE error_value) {
+                               REFERENCE_TYPE error_value) {
   using std::fabs;
   using std::isnan;
   if constexpr (!std::is_integral_v<RESULT_TYPE>) {
@@ -187,9 +188,7 @@ bool match_results_error_value(const RESULT_TYPE &result,
                    << " reference = " << detail_hex_fmt::dec_hex_pair(reference)
                    << " error_value = "
                    << detail_hex_fmt::dec_hex_pair(error_value) << '\n';
-  return fabs(static_cast<REFERENCE_TYPE>(result) -
-              static_cast<REFERENCE_TYPE>(reference)) <=
-         static_cast<REFERENCE_TYPE>(error_value);
+  return fabs(static_cast<REFERENCE_TYPE>(result) - reference) <= error_value;
 }
 
 template <typename RESULT_TYPE, typename REFERENCE_TYPE,
@@ -198,12 +197,15 @@ class PrecisionComparator : public Catch::MatcherBase<RESULT_TYPE> {
   RESULT_TYPE result;
   REFERENCE_TYPE reference;
   std::tuple<INPUT_TYPES...> inputs;
-  std::vector<PrecisionRequirement<scalar_type_v<RESULT_TYPE>>> requirements;
+  std::vector<PrecisionRequirement<scalar_type_v<RESULT_TYPE>,
+                                   scalar_type_v<REFERENCE_TYPE>>>
+      requirements;
 
 public:
   PrecisionComparator(
       const RESULT_TYPE &result, const REFERENCE_TYPE &reference,
-      const PrecisionRequirement<scalar_type_v<RESULT_TYPE>> &requirement,
+      const PrecisionRequirement<scalar_type_v<RESULT_TYPE>,
+                                 scalar_type_v<REFERENCE_TYPE>> &requirement,
       INPUT_TYPES... inputs)
       : result(result), reference(reference),
         inputs(inputs...), requirements{requirement} {
@@ -213,7 +215,8 @@ public:
 
   PrecisionComparator(
       const RESULT_TYPE &result, const REFERENCE_TYPE &reference,
-      const std::vector<PrecisionRequirement<scalar_type_v<RESULT_TYPE>>>
+      const std::vector<PrecisionRequirement<scalar_type_v<RESULT_TYPE>,
+                                             scalar_type_v<REFERENCE_TYPE>>>
           &requirement,
       INPUT_TYPES... inputs)
       : result(result), reference(reference), requirements(requirement),
@@ -369,16 +372,17 @@ private:
 
 template <class OUTPUT_TYPE, class REFERENCE_TYPE, class... INPUTS>
 class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
-  using scalar_type = scalar_type_v<OUTPUT_TYPE>;
+  using reference_scalar_type = scalar_type_v<REFERENCE_TYPE>;
   std::vector<REFERENCE_TYPE> reference;
-  std::vector<scalar_type> ulp_values;
+  std::vector<reference_scalar_type> ulp_values;
   std::vector<OUTPUT_TYPE> result;
   std::tuple<INPUTS...> input;
 
 public:
   UlpComparator(const std::vector<OUTPUT_TYPE> &result,
                 const std::vector<REFERENCE_TYPE> &reference,
-                const std::vector<scalar_type> &ulp_values, INPUTS... input)
+                const std::vector<reference_scalar_type> &ulp_values,
+                INPUTS... input)
       : reference(reference), result(result), ulp_values(ulp_values),
         input(input...) {}
 

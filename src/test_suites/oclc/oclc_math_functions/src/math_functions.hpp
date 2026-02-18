@@ -748,7 +748,9 @@ std::vector<ca::scalar_type_v<T>> get_ulp_values(const Function &function,
 }
 
 template <typename OUTPUT_TYPE, typename INPUT_TYPE_1, typename INPUT_TYPE_2>
-std::vector<ca::PrecisionRequirement<ca::scalar_type_v<OUTPUT_TYPE>>>
+std::vector<ca::PrecisionRequirement<
+    ca::scalar_type_v<OUTPUT_TYPE>,
+    replace_fp_with_double_t<ca::scalar_type_v<OUTPUT_TYPE>>>>
 requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
                       const INPUT_TYPE_2 &input_b) {
   using ca::PrecisionRequirement;
@@ -757,14 +759,17 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   using scalar_type = ca::scalar_type_v<INPUT_TYPE_1>;
   using scalar_type_t2 = ca::scalar_type_v<INPUT_TYPE_2>;
   using scalar_type_output = ca::scalar_type_v<OUTPUT_TYPE>;
+  using reference_type = replace_fp_with_double_t<scalar_type_output>;
+  using precision_requirement_t =
+      PrecisionRequirement<scalar_type_output, reference_type>;
   constexpr auto epsilon = std::numeric_limits<scalar_type>::epsilon();
-  std::vector<PrecisionRequirement<scalar_type_output>> requirements;
+  std::vector<precision_requirement_t> requirements;
 
   switch (function) {
   case Function::asin:
   case Function::atan:
   case Function::acos: {
-    PrecisionRequirement<scalar_type_output> requirement;
+    precision_requirement_t requirement;
     requirement.type = PrecisionRequirementType::ulp_value;
     requirement.value = 4096.0F;
     requirements.emplace_back(requirement);
@@ -778,7 +783,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
 
   case Function::exp2:
   case Function::exp: {
-    PrecisionRequirement<scalar_type> requirement;
+    precision_requirement_t requirement;
     requirement.type = PrecisionRequirementType::ulp_value;
 
     if constexpr (ca::is_vector_v<INPUT_TYPE_1>) {
@@ -806,7 +811,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::asinh:
   case Function::acospi:
   case Function::acosh: {
-    PrecisionRequirement<scalar_type> requirement;
+    precision_requirement_t requirement;
     requirement.type = PrecisionRequirementType::ulp_value;
     requirement.value = 8192.0F;
     requirements.emplace_back(requirement);
@@ -822,7 +827,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::log10:
   case Function::log: {
     auto give_requirement = [&requirements, epsilon](scalar_type x) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       if (x >= 0.5F && x <= 2.0F) {
         requirement.type = PrecisionRequirementType::error_value;
         requirement.value = std::pow(2.0F, -21);
@@ -846,7 +851,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::tanpi:
   case Function::atanh: {
     auto give_requirement = [&requirements, epsilon](scalar_type x) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       if (x >= -1 && x <= 1) {
         requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 8192.0F;
@@ -870,7 +875,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::sin:
   case Function::cos: {
     auto give_requirement = [&requirements](scalar_type x) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       if (x >= -M_PI && x <= M_PI) {
         requirement.type = PrecisionRequirementType::error_value;
         requirement.value = std::pow(2.0F, -11);
@@ -893,7 +898,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::sinpi:
   case Function::cospi: {
     auto give_requirement = [&requirements](scalar_type x) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       if (x >= -1 && x <= 1) {
         requirement.type = PrecisionRequirementType::error_value;
         requirement.value = std::pow(2.0F, -11);
@@ -916,7 +921,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::sinh:
   case Function::cosh: {
     auto give_requirement = [&requirements, epsilon](scalar_type x) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       if (x >= -88 && x <= 88) {
         requirement.type = PrecisionRequirementType::ulp_value;
         requirement.value = 8192.0F;
@@ -939,7 +944,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::pow: {
     auto give_requirement = [&requirements, epsilon](scalar_type x,
                                                      scalar_type_t2 y) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       scalar_type y_range = std::pow(2.0F, 24);
 
       if ((x == 0 && y == 0) || (x < 0 && std::floor(y) != y) ||
@@ -969,7 +974,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::pown: {
     auto give_requirement = [&requirements, epsilon](scalar_type x,
                                                      scalar_type_t2 y) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       scalar_type y_range = std::pow(2.0F, 24);
 
       if (std::floor(y) != y) {
@@ -1002,7 +1007,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::rootn: {
     auto give_requirement = [&requirements, epsilon](scalar_type x,
                                                      scalar_type_t2 y) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       if ((x > 0 && y != 0) || (x < 0 && (static_cast<int>(y) % 2 == 1)) ||
           (x == 0 && y > 0)) {
         requirement.type = PrecisionRequirementType::ulp_value;
@@ -1030,7 +1035,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::powr: {
     auto give_requirement = [&requirements, epsilon](scalar_type x,
                                                      scalar_type_t2 y) {
-      PrecisionRequirement<scalar_type> requirement;
+      precision_requirement_t requirement;
       if (x >= 0) {
         if (x == 0 && y == 0) {
           requirement.type = PrecisionRequirementType::undefined;
@@ -1176,23 +1181,24 @@ void run_section(INPUT &input, const TestConfig &config) {
     SUCCEED();
     return;
   }
-  REQUIRE_THAT(result, ca::UlpComparator(
-                           result, reference_vector,
-                           get_ulp_values<output_type>(T::function, work_size),
-                           input.input_a, input.input_b, input.input_c));
+  REQUIRE_THAT(
+      result,
+      ca::UlpComparator(result, reference_vector,
+                        get_ulp_values<reference_type>(T::function, work_size),
+                        input.input_a, input.input_b, input.input_c));
   if (T::get_is_store() && T::arg_num == 2) {
-    REQUIRE_THAT(
-        argument_2_output,
-        ca::UlpComparator(argument_2_output, reference_vector_2,
-                          get_ulp_values<input_b_type>(T::function, work_size),
-                          input.input_a, input.input_b, input.input_c));
+    REQUIRE_THAT(argument_2_output,
+                 ca::UlpComparator(
+                     argument_2_output, reference_vector_2,
+                     get_ulp_values<reference_type2>(T::function, work_size),
+                     input.input_a, input.input_b, input.input_c));
   }
   if (T::get_is_store() && T::arg_num == 3) {
-    REQUIRE_THAT(
-        argument_3_output,
-        ca::UlpComparator(argument_3_output, reference_vector_3,
-                          get_ulp_values<input_c_type>(T::function, work_size),
-                          input.input_a, input.input_b, input.input_c));
+    REQUIRE_THAT(argument_3_output,
+                 ca::UlpComparator(
+                     argument_3_output, reference_vector_3,
+                     get_ulp_values<reference_type3>(T::function, work_size),
+                     input.input_a, input.input_b, input.input_c));
   }
 }
 
@@ -1277,9 +1283,10 @@ void run_section_relaxed(INPUT &input, const TestConfig &config) {
   }
 
   for (size_t i = 0; i < work_size; i++) {
-    std::vector<ca::PrecisionRequirement<scalar_output_type>> req =
-        requirements_function<output_type>(T::function, input.input_a[i],
-                                           input.input_b[i]);
+    std::vector<ca::PrecisionRequirement<
+        scalar_output_type, replace_fp_with_double_t<scalar_output_type>>>
+        req = requirements_function<output_type>(T::function, input.input_a[i],
+                                                 input.input_b[i]);
 
     // Try comparison with standard reference first
     bool standard_comparison_passed = false;

@@ -31,7 +31,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
     const double result = 10.0;
     const double error_value = 1.0;
 
-    PrecisionRequirement<double> error_requirement{
+    PrecisionRequirement<double, double> error_requirement{
         PrecisionRequirementType::error_value, error_value};
     PrecisionComparator error_comparator(result, reference, error_requirement);
 
@@ -48,7 +48,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double reference_nan = std::numeric_limits<double>::quiet_NaN();
         const double result_nan = std::numeric_limits<double>::quiet_NaN();
 
-        PrecisionRequirement<double> error_requirement{
+        PrecisionRequirement<double, double> error_requirement{
             PrecisionRequirementType::error_value, error_value};
         PrecisionComparator error_comparator(result_nan, reference_nan,
                                              error_requirement);
@@ -70,7 +70,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
       SECTION("nan reference - non nan result") {
         const double reference_nan = std::numeric_limits<double>::quiet_NaN();
 
-        PrecisionRequirement<double> error_requirement{
+        PrecisionRequirement<double, double> error_requirement{
             PrecisionRequirementType::error_value, error_value};
         PrecisionComparator error_comparator(result, reference_nan,
                                              error_requirement);
@@ -87,7 +87,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = 10.0;
         const double ulp_value = 0.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -99,7 +99,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = 2.0;
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -111,7 +111,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = std::nextafter(2.0, 4.0);
         const double ulp_value = 2.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -123,7 +123,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = std::nextafter(std::nextafter(2.0, 4.0), 4.0);
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -135,7 +135,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = 0x1p1;
         const double ulp_value = 0x1p52;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -147,7 +147,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = -4.0;
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -159,7 +159,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = std::numeric_limits<double>::quiet_NaN();
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -173,7 +173,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = 20.0;
         const double ulp_value = 0.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -185,7 +185,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = 2.0;
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -197,7 +197,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = 0x1p1;
         const double ulp_value = 0x1p51;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -209,7 +209,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = -4.0;
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -221,7 +221,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = std::numeric_limits<double>::quiet_NaN();
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -233,7 +233,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
         const double result = 1.0;
         const double ulp_value = 1.0;
 
-        PrecisionRequirement<double> ulp_requirement{
+        PrecisionRequirement<double, double> ulp_requirement{
             PrecisionRequirementType::ulp_value, ulp_value};
         PrecisionComparator ulp_comparator(result, reference, ulp_requirement);
 
@@ -248,7 +248,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
     const double min_value = 9.0;
     const double max_value = 11.0;
 
-    PrecisionRequirement<double> range_requirement{
+    PrecisionRequirement<double, double> range_requirement{
         PrecisionRequirementType::value_range, min_value, max_value};
     PrecisionComparator range_comparator(result, reference, range_requirement);
 
@@ -275,7 +275,8 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
     const double reference = 10.0;
     const double result = 0.0;
 
-    PrecisionRequirement<double> any_requirement{PrecisionRequirementType::any};
+    PrecisionRequirement<double, double> any_requirement{
+        PrecisionRequirementType::any};
     PrecisionComparator any_comparator(result, reference, any_requirement);
 
     REQUIRE(any_comparator.match(result));
@@ -285,7 +286,7 @@ TEST_CASE("PrecisionComparator - scalar", "[PrecisionComparator]") {
     const double reference = 10.0;
     const double result = 0.0;
 
-    PrecisionRequirement<double> any_requirement{
+    PrecisionRequirement<double, double> any_requirement{
         PrecisionRequirementType::undefined};
     PrecisionComparator any_comparator(result, reference, any_requirement);
 
@@ -299,10 +300,10 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
     const ca::Vector<double, 3> result = {10.0, 15.0, 20.0};
     double error_value = 1.0;
 
-    std::vector<PrecisionRequirement<double>> error_requirements(
+    std::vector<PrecisionRequirement<double, double>> error_requirements(
         reference.size(),
-        PrecisionRequirement<double>{PrecisionRequirementType::error_value,
-                                     error_value});
+        PrecisionRequirement<double, double>{
+            PrecisionRequirementType::error_value, error_value});
     PrecisionComparator error_comparator(result, reference, error_requirements);
 
     SECTION("matches") {
@@ -339,10 +340,10 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
         const ca::Vector<double, 3> result = {10.0, 15.0, 20.0};
         const double ulp_value = 0.0;
 
-        std::vector<PrecisionRequirement<double>> ulp_requirements(
+        std::vector<PrecisionRequirement<double, double>> ulp_requirements(
             reference.size(),
-            PrecisionRequirement<double>{PrecisionRequirementType::ulp_value,
-                                         ulp_value});
+            PrecisionRequirement<double, double>{
+                PrecisionRequirementType::ulp_value, ulp_value});
         PrecisionComparator ulp_comparator(result, reference, ulp_requirements);
 
         REQUIRE(ulp_comparator.match(result));
@@ -355,10 +356,10 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
         const ca::Vector<double, 3> result = {2.0, 2.0, 2.0};
         const double ulp_value = 2.0;
 
-        std::vector<PrecisionRequirement<double>> ulp_requirements(
+        std::vector<PrecisionRequirement<double, double>> ulp_requirements(
             reference.size(),
-            PrecisionRequirement<double>{PrecisionRequirementType::ulp_value,
-                                         ulp_value});
+            PrecisionRequirement<double, double>{
+                PrecisionRequirementType::ulp_value, ulp_value});
         PrecisionComparator ulp_comparator(result, reference, ulp_requirements);
 
         REQUIRE(ulp_comparator.match(result));
@@ -371,10 +372,10 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
         const ca::Vector<double, 3> result = {20.0, 30.0, 40.0};
         const double ulp_value = 0.0;
 
-        std::vector<PrecisionRequirement<double>> ulp_requirements(
+        std::vector<PrecisionRequirement<double, double>> ulp_requirements(
             reference.size(),
-            PrecisionRequirement<double>{PrecisionRequirementType::ulp_value,
-                                         ulp_value});
+            PrecisionRequirement<double, double>{
+                PrecisionRequirementType::ulp_value, ulp_value});
         PrecisionComparator ulp_comparator(result, reference, ulp_requirements);
 
         REQUIRE_FALSE(ulp_comparator.match(result));
@@ -388,10 +389,10 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
         const ca::Vector<double, 3> result = {2.0, 2.0, 2.0};
         const double ulp_value = 1.0;
 
-        std::vector<PrecisionRequirement<double>> ulp_requirements(
+        std::vector<PrecisionRequirement<double, double>> ulp_requirements(
             reference.size(),
-            PrecisionRequirement<double>{PrecisionRequirementType::ulp_value,
-                                         ulp_value});
+            PrecisionRequirement<double, double>{
+                PrecisionRequirementType::ulp_value, ulp_value});
         PrecisionComparator ulp_comparator(result, reference, ulp_requirements);
 
         REQUIRE_FALSE(ulp_comparator.match(result));
@@ -404,10 +405,10 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
         const ca::Vector<double, 3> result = {2.0, 2.0, 2.0};
         const double ulp_value = 1.0;
 
-        std::vector<PrecisionRequirement<double>> ulp_requirements(
+        std::vector<PrecisionRequirement<double, double>> ulp_requirements(
             reference.size(),
-            PrecisionRequirement<double>{PrecisionRequirementType::ulp_value,
-                                         ulp_value});
+            PrecisionRequirement<double, double>{
+                PrecisionRequirementType::ulp_value, ulp_value});
         PrecisionComparator ulp_comparator(result, reference, ulp_requirements);
 
         REQUIRE_FALSE(ulp_comparator.match(result));
@@ -421,10 +422,10 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
     double min_value = 9.0;
     double max_value = 21.0;
 
-    std::vector<PrecisionRequirement<double>> range_requirements(
+    std::vector<PrecisionRequirement<double, double>> range_requirements(
         reference.size(),
-        PrecisionRequirement<double>{PrecisionRequirementType::value_range,
-                                     min_value, max_value});
+        PrecisionRequirement<double, double>{
+            PrecisionRequirementType::value_range, min_value, max_value});
     PrecisionComparator range_comparator(result, reference, range_requirements);
 
     SECTION("matches") {
@@ -452,15 +453,16 @@ TEST_CASE("PrecisionComparator - vector", "[PrecisionComparator]") {
     const double max_value = 11.0;
     const ca::Vector<double, 5> result = {20.0, 15.0, 10.0, 0.0, 0.0};
 
-    std::vector<PrecisionRequirement<double>> requirements = {
-        PrecisionRequirement<double>{PrecisionRequirementType::error_value,
-                                     error_value},
-        PrecisionRequirement<double>{PrecisionRequirementType::ulp_value,
-                                     ulp_value},
-        PrecisionRequirement<double>{PrecisionRequirementType::value_range,
-                                     min_value, max_value},
-        PrecisionRequirement<double>{PrecisionRequirementType::any},
-        PrecisionRequirement<double>{PrecisionRequirementType::undefined}};
+    std::vector<PrecisionRequirement<double, double>> requirements = {
+        PrecisionRequirement<double, double>{
+            PrecisionRequirementType::error_value, error_value},
+        PrecisionRequirement<double, double>{
+            PrecisionRequirementType::ulp_value, ulp_value},
+        PrecisionRequirement<double, double>{
+            PrecisionRequirementType::value_range, min_value, max_value},
+        PrecisionRequirement<double, double>{PrecisionRequirementType::any},
+        PrecisionRequirement<double, double>{
+            PrecisionRequirementType::undefined}};
 
     PrecisionComparator comparator(result, reference, requirements);
 
