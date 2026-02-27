@@ -92,9 +92,9 @@ Tfloat Tfloat::operator-() const {
 }
 
 bool Tfloat::nan_sensitive_eq(const Tfloat &rhs) const {
-  const int32_t type_mask = 0xffffe000;
-  const int32_t exponent_mask = 0x7f800000;
-  const int32_t mantissa_mask = 0x007fe000;
+  const uint32_t type_mask = 0xffffe000;
+  const uint32_t exponent_mask = 0x7f800000;
+  const uint32_t mantissa_mask = 0x007fe000;
   const bool this_nan =
       (data & exponent_mask) == exponent_mask && (data & mantissa_mask) != 0;
   const bool rhs_nan = (rhs.data & exponent_mask) == exponent_mask &&
@@ -118,22 +118,22 @@ std::ostream &operator<<(std::ostream &os, const Tfloat &value) {
 }
 
 bool isnan(Tfloat value) {
-  const int32_t exponent_mask = 0x7f800000;
-  const int32_t mantissa_mask = 0x007fe000;
+  const uint32_t exponent_mask = 0x7f800000;
+  const uint32_t mantissa_mask = 0x007fe000;
   return (value.decode() & exponent_mask) == exponent_mask &&
          (value.decode() & mantissa_mask) != 0;
 }
 
 bool isinf(Tfloat value) {
-  const int32_t exponent_mask = 0x7f800000;
-  const int32_t mantissa_mask = 0x007fe000;
+  const uint32_t exponent_mask = 0x7f800000;
+  const uint32_t mantissa_mask = 0x007fe000;
   return (value.decode() & exponent_mask) == exponent_mask &&
          (value.decode() & mantissa_mask) == 0;
 }
 
 int fpclassify(Tfloat value) {
-  const int32_t exponent_mask = 0x7f800000;
-  const int32_t mantissa_mask = 0x007fe000;
+  const uint32_t exponent_mask = 0x7f800000;
+  const uint32_t mantissa_mask = 0x007fe000;
   if ((value.decode() & exponent_mask) == 0) {
     if ((value.decode() & mantissa_mask) != 0) {
       return FP_SUBNORMAL;
@@ -171,8 +171,8 @@ Tfloat nextafter(const Tfloat from, const Tfloat to) {
                : -std::numeric_limits<Tfloat>::denorm_min();
   }
 
-  int32_t from_data = from.decode();
-  int32_t to_data = to.decode();
+  uint32_t from_data = from.decode();
+  uint32_t to_data = to.decode();
 
   if (from_data >= 0) {
     from_data += (to_data >= from_data) ? 0x00002000 : -0x00002000;

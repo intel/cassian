@@ -100,8 +100,8 @@ Bfloat16 Bfloat16::operator-() const {
 }
 
 bool Bfloat16::nan_sensitive_eq(const Bfloat16 &rhs) const {
-  const int16_t exponent_mask = 0x7f80;
-  const int16_t mantissa_mask = 0x007f;
+  const uint16_t exponent_mask = 0x7f80;
+  const uint16_t mantissa_mask = 0x007f;
   const bool this_nan =
       (data & exponent_mask) == exponent_mask && (data & mantissa_mask) != 0;
   const bool rhs_nan = (rhs.data & exponent_mask) == exponent_mask &&
@@ -125,22 +125,22 @@ std::ostream &operator<<(std::ostream &os, const Bfloat16 &value) {
 }
 
 bool isnan(Bfloat16 value) {
-  const int16_t exponent_mask = 0x7f80;
-  const int16_t mantissa_mask = 0x007f;
+  const uint16_t exponent_mask = 0x7f80;
+  const uint16_t mantissa_mask = 0x007f;
   return (value.decode() & exponent_mask) == exponent_mask &&
          (value.decode() & mantissa_mask) != 0;
 }
 
 bool isinf(Bfloat16 value) {
-  const int16_t exponent_mask = 0x7f80;
-  const int16_t mantissa_mask = 0x007f;
+  const uint16_t exponent_mask = 0x7f80;
+  const uint16_t mantissa_mask = 0x007f;
   return (value.decode() & exponent_mask) == exponent_mask &&
          (value.decode() & mantissa_mask) == 0;
 }
 
 int fpclassify(Bfloat16 value) {
-  const int16_t exponent_mask = 0x7f80;
-  const int16_t mantissa_mask = 0x007f;
+  const uint16_t exponent_mask = 0x7f80;
+  const uint16_t mantissa_mask = 0x007f;
   if ((value.decode() & exponent_mask) == 0) {
     if ((value.decode() & mantissa_mask) != 0) {
       return FP_SUBNORMAL;
@@ -178,8 +178,8 @@ Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to) {
                : -std::numeric_limits<Bfloat16>::denorm_min();
   }
 
-  int16_t from_data = from.decode();
-  int16_t to_data = to.decode();
+  uint16_t from_data = from.decode();
+  uint16_t to_data = to.decode();
 
   if (from_data >= 0) {
     from_data += (to_data >= from_data) ? 1 : -1;

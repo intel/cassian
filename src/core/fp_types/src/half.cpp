@@ -272,22 +272,22 @@ std::ostream &operator<<(std::ostream &os, const Half &value) {
 }
 
 bool isnan(Half value) {
-  const int16_t exponent_mask = 0x7c00;
-  const int16_t mantissa_mask = 0x03ff;
+  const uint16_t exponent_mask = 0x7c00;
+  const uint16_t mantissa_mask = 0x03ff;
   return (value.decode() & exponent_mask) == exponent_mask &&
          (value.decode() & mantissa_mask) != 0;
 }
 
 bool isinf(Half value) {
-  const int16_t exponent_mask = 0x7c00;
-  const int16_t mantissa_mask = 0x03ff;
+  const uint16_t exponent_mask = 0x7c00;
+  const uint16_t mantissa_mask = 0x03ff;
   return (value.decode() & exponent_mask) == exponent_mask &&
          (value.decode() & mantissa_mask) == 0;
 }
 
 int fpclassify(Half value) {
-  const int16_t exponent_mask = 0x7c00;
-  const int16_t mantissa_mask = 0x03ff;
+  const uint16_t exponent_mask = 0x7c00;
+  const uint16_t mantissa_mask = 0x03ff;
   if ((value.decode() & exponent_mask) == 0) {
     if ((value.decode() & mantissa_mask) != 0) {
       return FP_SUBNORMAL;
@@ -389,8 +389,8 @@ Half nextafter(const Half from, const Half to) {
                        : -std::numeric_limits<Half>::denorm_min();
   }
 
-  int16_t from_data = from.decode();
-  int16_t to_data = to.decode();
+  uint16_t from_data = from.decode();
+  uint16_t to_data = to.decode();
 
   if (from_data >= 0) {
     from_data += (to_data >= from_data) ? 1 : -1;
