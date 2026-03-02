@@ -117,28 +117,35 @@ REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
                                       REFERENCE_TYPE reference) {
   using cassian::abs;
   using std::abs;
+  using std::isinf;
   if constexpr (!is_floating_point_v<RESULT_TYPE>) {
     static_assert(std::is_same_v<RESULT_TYPE, REFERENCE_TYPE>);
     return abs(reference - result);
-  }
-  int reference_frexp_exponent;
-  REFERENCE_TYPE normalized_fraction =
-      std::frexp(reference, &reference_frexp_exponent);
-  const int reference_exponent = reference_frexp_exponent - 1;
-  const int min_exponent = std::numeric_limits<RESULT_TYPE>::min_exponent - 1;
-  const int mantissa_length = std::numeric_limits<RESULT_TYPE>::digits;
-  int ulp_exponent;
-  if (normalized_fraction != 0.5) {
-    ulp_exponent =
-        std::max(reference_exponent, min_exponent) - mantissa_length + 1;
   } else {
-    ulp_exponent =
-        std::max(reference_exponent - 1, min_exponent) - mantissa_length + 1;
+    int reference_frexp_exponent;
+    REFERENCE_TYPE normalized_fraction =
+        std::frexp(reference, &reference_frexp_exponent);
+    const int reference_exponent = reference_frexp_exponent - 1;
+    const int min_exponent = std::numeric_limits<RESULT_TYPE>::min_exponent - 1;
+    const int mantissa_length = std::numeric_limits<RESULT_TYPE>::digits;
+    int ulp_exponent;
+    if (normalized_fraction != 0.5) {
+      ulp_exponent =
+          std::max(reference_exponent, min_exponent) - mantissa_length + 1;
+    } else {
+      ulp_exponent =
+          std::max(reference_exponent - 1, min_exponent) - mantissa_length + 1;
+    }
+    REFERENCE_TYPE absolute_distance = std::fabs(reference - result);
+    if (isinf(result)) {
+      int max_exp = std::numeric_limits<RESULT_TYPE>::max_exponent;
+      absolute_distance = std::fabs(
+          reference - std::exp2(static_cast<REFERENCE_TYPE>(max_exp + 1)));
+    }
+    const REFERENCE_TYPE ulp_distance =
+        std::scalbn(absolute_distance, -ulp_exponent);
+    return ulp_distance;
   }
-  const REFERENCE_TYPE absolute_distance = std::fabs(reference - result);
-  const REFERENCE_TYPE ulp_distance =
-      std::scalbn(absolute_distance, -ulp_exponent);
-  return ulp_distance;
 }
 
 template <typename RESULT_TYPE, typename REFERENCE_TYPE>
