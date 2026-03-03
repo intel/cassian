@@ -117,7 +117,11 @@ REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
                                       REFERENCE_TYPE reference) {
   using cassian::abs;
   using std::abs;
+  using std::copysign;
+  using std::exp2;
+  using std::fabs;
   using std::isinf;
+  using std::scalbn;
   if constexpr (!is_floating_point_v<RESULT_TYPE>) {
     static_assert(std::is_same_v<RESULT_TYPE, REFERENCE_TYPE>);
     return abs(reference - result);
@@ -136,14 +140,15 @@ REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
       ulp_exponent =
           std::max(reference_exponent - 1, min_exponent) - mantissa_length + 1;
     }
-    REFERENCE_TYPE absolute_distance = std::fabs(reference - result);
+    REFERENCE_TYPE absolute_distance = fabs(reference - result);
     if (isinf(result)) {
       int max_exp = std::numeric_limits<RESULT_TYPE>::max_exponent;
-      absolute_distance = std::fabs(
-          reference - std::exp2(static_cast<REFERENCE_TYPE>(max_exp + 1)));
+      absolute_distance = fabs(
+          reference - copysign(exp2(static_cast<REFERENCE_TYPE>(max_exp + 1)),
+                               static_cast<REFERENCE_TYPE>(result)));
     }
     const REFERENCE_TYPE ulp_distance =
-        std::scalbn(absolute_distance, -ulp_exponent);
+        scalbn(absolute_distance, -ulp_exponent);
     return ulp_distance;
   }
 }
