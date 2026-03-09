@@ -45,7 +45,7 @@ TEST_CASE("function", "") {
   }
 
   SECTION("function can be called") {
-    typedef int (*pfn_dummy_function)(int);
+    using pfn_dummy_function = int (*)(int);
     auto function = reinterpret_cast<pfn_dummy_function>(
         library->get_function("dummy_function"));
     REQUIRE(3 == function(3));
