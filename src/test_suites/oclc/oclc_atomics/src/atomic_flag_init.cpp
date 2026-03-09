@@ -5,7 +5,6 @@
  *
  */
 
-#include "common.hpp"
 #include <algorithm>
 #include <cassian/random/random.hpp>
 #include <cassian/runtime/openclc_types.hpp>
