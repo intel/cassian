@@ -140,7 +140,8 @@ REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
       ulp_exponent =
           std::max(reference_exponent - 1, min_exponent) - mantissa_length + 1;
     }
-    REFERENCE_TYPE absolute_distance = fabs(reference - result);
+    REFERENCE_TYPE absolute_distance =
+        fabs(reference - static_cast<REFERENCE_TYPE>(result));
     if (isinf(result)) {
       int max_exp = std::numeric_limits<RESULT_TYPE>::max_exponent;
       absolute_distance = fabs(
