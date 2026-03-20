@@ -144,9 +144,9 @@ REFERENCE_TYPE calculate_ulp_distance(RESULT_TYPE result,
         fabs(reference - static_cast<REFERENCE_TYPE>(result));
     if (isinf(result)) {
       int max_exp = std::numeric_limits<RESULT_TYPE>::max_exponent;
-      absolute_distance = fabs(
-          reference - copysign(exp2(static_cast<REFERENCE_TYPE>(max_exp + 1)),
-                               static_cast<REFERENCE_TYPE>(result)));
+      absolute_distance =
+          fabs(reference - copysign(exp2(static_cast<REFERENCE_TYPE>(max_exp)),
+                                    static_cast<REFERENCE_TYPE>(result)));
     }
     const REFERENCE_TYPE ulp_distance =
         scalbn(absolute_distance, -ulp_exponent);

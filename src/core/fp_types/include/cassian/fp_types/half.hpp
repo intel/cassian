@@ -921,7 +921,7 @@ public:
    * one more than the largest integer power of the radix that is a valid finite
    * floating-point value
    */
-  static constexpr int max_exponent = 15;
+  static constexpr int max_exponent = 16;
 
   /**
    * the largest integer power of 10 that is a valid finite floating-point value
