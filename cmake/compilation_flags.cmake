@@ -4,11 +4,7 @@
 # SPDX-License-Identifier: MIT
 #
 
-set(CMAKE_CXX_STANDARD 17)
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION
-                                                 VERSION_LESS 8.0)
-  add_definitions(-DCASSIAN_OLD_GNU)
-endif()
+set(CMAKE_CXX_STANDARD 20)
 
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")

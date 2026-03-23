@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <enum_definitions.hpp>
 #include <limits>
+#include <numbers>
 #include <ostream>
 #include <stdexcept>
 #include <string>
@@ -328,7 +329,7 @@ calculate_asinh_derived_check(const T &input, double ulp_tolerance = 4.0) {
 template <typename T>
 replace_fp_with_double_t<T> calculate_acospi(const T &input) {
   using std::acos;
-  double pi_value = static_cast<double>(M_PI);
+  double pi_value = std::numbers::pi;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
@@ -343,7 +344,7 @@ replace_fp_with_double_t<T> calculate_acospi(const T &input) {
 template <typename T>
 replace_fp_with_double_t<T> calculate_asinpi(const T &input) {
   using std::asin;
-  double pi_value = static_cast<double>(M_PI);
+  double pi_value = std::numbers::pi;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
@@ -402,7 +403,7 @@ replace_fp_with_double_t<T> calculate_atanh(const T &input_a) {
 template <typename T>
 replace_fp_with_double_t<T> calculate_atanpi(const T &input_a) {
   using std::atan;
-  double pi_value = static_cast<double>(M_PI);
+  double pi_value = std::numbers::pi;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
@@ -418,7 +419,7 @@ template <typename T>
 replace_fp_with_double_t<T> calculate_atan2pi(const T &input_a,
                                               const T &input_b) {
   using std::atan2;
-  double pi_value = static_cast<double>(M_PI);
+  double pi_value = std::numbers::pi;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
@@ -525,7 +526,7 @@ replace_fp_with_double_t<T> calculate_cospi_impl(const T &input) {
   using std::fabs;
   using std::fmod;
   using std::isinf;
-  const double pi_value = static_cast<double>(M_PI);
+  const double pi_value = std::numbers::pi;
   auto abs_mod = [](const double &x) { return fabs(fmod(x, 2.0)); };
   double integer_part{};
   const double fractional_part =
@@ -896,7 +897,7 @@ replace_fp_with_double_t<T> calculate_sinpi_impl(const T &input) {
   using std::isinf;
   using std::sin;
   using std::trunc;
-  const double pi_value = static_cast<double>(M_PI);
+  const double pi_value = std::numbers::pi;
   if (input == static_cast<T>(0.0)) {
     return copysign(0.0, static_cast<double>(input));
   } else if (isinf(input)) {
@@ -910,7 +911,7 @@ replace_fp_with_double_t<T> calculate_sinpi_impl(const T &input) {
 
 template <typename T>
 replace_fp_with_double_t<T> calculate_sinpi(const T &input) {
-  const double pi_value = static_cast<double>(M_PI);
+  const double pi_value = std::numbers::pi;
   if constexpr (ca::is_vector_v<T>) {
     replace_fp_with_double_t<T> result{};
     for (auto i = 0; i < T::vector_size; i++) {
@@ -958,7 +959,7 @@ replace_fp_with_double_t<T> calculate_tanpi_impl(const T &input) {
   using std::fmod;
   using std::isinf;
   using std::sin;
-  const double pi_value = static_cast<double>(M_PI);
+  const double pi_value = std::numbers::pi;
   auto abs_mod = [](const double &x) { return fabs(fmod(x, 2.0)); };
   double integer_part{};
   const double fractional_part =

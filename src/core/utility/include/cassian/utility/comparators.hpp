@@ -478,7 +478,7 @@ private:
       size_t max_size = std::max({std::get<I>(input).size()...});
       for (size_t i = 0; i < max_size; ++i) {
         std::apply(
-            [&os, i](const auto &... vecs) {
+            [&os, i](const auto &...vecs) {
               os << '{';
               ((vecs.size() > i
                     ? os << detail_hex_fmt::dec_hex_pair(vecs[i]) << ", "

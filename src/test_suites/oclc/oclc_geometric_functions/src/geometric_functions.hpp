@@ -273,11 +273,11 @@ class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
   std::vector<SCALAR_TYPE> ulp_values;
 
 public:
-  UlpComparator<OUTPUT_TYPE, INPUT_TYPE, SCALAR_TYPE>(
-      const std::vector<OUTPUT_TYPE> &result,
-      const std::vector<OUTPUT_TYPE> &reference,
-      const std::vector<INPUT_TYPE> &input_a,
-      const std::vector<INPUT_TYPE> &input_b, const Function &function)
+  UlpComparator(const std::vector<OUTPUT_TYPE> &result,
+                const std::vector<OUTPUT_TYPE> &reference,
+                const std::vector<INPUT_TYPE> &input_a,
+                const std::vector<INPUT_TYPE> &input_b,
+                const Function &function)
       : result(result), reference(reference), function(function) {
     ulp_values = get_ulp_values(input_a, input_b, function);
   }

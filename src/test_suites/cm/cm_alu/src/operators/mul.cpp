@@ -140,13 +140,12 @@ TEMPLATE_LIST_TEST_CASE("mul", "[cm][operators][arithmetic]", cases_t) {
     auto &gen =
         std::is_same_v<src0_t, src1_t> || ca::is_floating_point_v<dst_t>
             ? gen_same
-            : std::numeric_limits<dst_t>::max() >
-                          static_cast<dst_t>(
-                              std::numeric_limits<src0_t>::max()) &&
-                      std::numeric_limits<dst_t>::max() >
-                          static_cast<dst_t>(std::numeric_limits<src1_t>::max())
-                  ? gen_default
-                  : gen_reduced;
+        : std::numeric_limits<dst_t>::max() >
+                    static_cast<dst_t>(std::numeric_limits<src0_t>::max()) &&
+                std::numeric_limits<dst_t>::max() >
+                    static_cast<dst_t>(std::numeric_limits<src1_t>::max())
+            ? gen_default
+            : gen_reduced;
 
     test_case_t(config.runtime(), config.program_type(), "*", gen,
                 OperandType::vector, {OperandType::vector, OperandType::vector})

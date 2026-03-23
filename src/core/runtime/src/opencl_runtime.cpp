@@ -620,9 +620,9 @@ void OpenCLRuntime::release_kernel(const Kernel &kernel) {
 bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   switch (feature) {
   case Feature::fp16:
-    return extensions_.count("cl_khr_fp16") != 0U;
+    return extensions_.contains("cl_khr_fp16");
   case Feature::fp64:
-    return extensions_.count("cl_khr_fp64") != 0U;
+    return extensions_.contains("cl_khr_fp64");
   case Feature::read_write_images: {
     cl_uint read_write_image = 0;
     auto result = wrapper_.clGetDeviceInfo(
@@ -643,8 +643,8 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
   case Feature::sampling:
     return get_device_property(DeviceProperty::max_num_samplers) != 0;
   case Feature::int64_atomics:
-    return extensions_.count("cl_khr_int64_base_atomics") != 0U &&
-           extensions_.count("cl_khr_int64_extended_atomics") != 0U;
+    return extensions_.contains("cl_khr_int64_base_atomics") &&
+           extensions_.contains("cl_khr_int64_extended_atomics");
   case Feature::fp16_atomics_global_add: {
     return (get_device_property(DeviceProperty::fp16_atomics_capabilities) &
             CL_DEVICE_GLOBAL_FP_ATOMIC_ADD_EXT) != 0;
@@ -722,10 +722,10 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
             CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT) != 0;
   }
   case Feature::intel_required_subgroup_size: {
-    return extensions_.count("cl_intel_required_subgroup_size") != 0U;
+    return extensions_.contains("cl_intel_required_subgroup_size");
   }
   case Feature::simd8: {
-    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+    if (extensions_.contains("cl_intel_required_subgroup_size")) {
       auto sizes = cl_get_device_property<size_t>(
           devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
       if (std::find(std::begin(sizes), std::end(sizes), 8) != std::end(sizes)) {
@@ -735,7 +735,7 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     return false;
   }
   case Feature::simd16: {
-    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+    if (extensions_.contains("cl_intel_required_subgroup_size")) {
       auto sizes = cl_get_device_property<size_t>(
           devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
       if (std::find(std::begin(sizes), std::end(sizes), 16) !=
@@ -746,7 +746,7 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
     return false;
   }
   case Feature::simd32: {
-    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+    if (extensions_.contains("cl_intel_required_subgroup_size")) {
       auto sizes = cl_get_device_property<size_t>(
           devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
       if (std::find(std::begin(sizes), std::end(sizes), 32) !=
@@ -765,7 +765,7 @@ bool OpenCLRuntime::is_feature_supported(const Feature feature) const {
             CL_DEVICE_INTEGER_DOT_PRODUCT_INPUT_4x8BIT_PACKED_KHR) != 0;
   }
   case Feature::extended_bit_operations: {
-    return extensions_.count("cl_khr_extended_bit_ops") != 0U;
+    return extensions_.contains("cl_khr_extended_bit_ops");
   }
   default:
     return false;
@@ -802,7 +802,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
   case DeviceProperty::device_id:
     // No standard way to detect device ID. Using Intel extension
 #if defined(cl_intel_device_attribute_query)
-    if (extensions_.count("cl_intel_device_attribute_query") != 0U) {
+    if (extensions_.contains("cl_intel_device_attribute_query")) {
       return static_cast<int>(cl_get_device_property_at_index<cl_uint>(
           devices_[0], CL_DEVICE_ID_INTEL, 0));
     }
@@ -813,7 +813,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
   case DeviceProperty::ip_version:
     // No standard way to detect device ID. Using Intel extension
 #if defined(cl_intel_device_attribute_query)
-    if (extensions_.count("cl_intel_device_attribute_query") != 0U) {
+    if (extensions_.contains("cl_intel_device_attribute_query")) {
       return static_cast<int>(cl_get_device_property_at_index<cl_uint>(
           devices_[0], CL_DEVICE_IP_VERSION_INTEL, 0));
     }
@@ -821,7 +821,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     return 0;
   case DeviceProperty::simd_width: {
     // OpenCL has no way to detect SIMD width. Trying Intel extension
-    if (extensions_.count("cl_intel_required_subgroup_size") != 0U) {
+    if (extensions_.contains("cl_intel_required_subgroup_size")) {
       auto sizes = cl_get_device_property<size_t>(
           devices_[0], CL_DEVICE_SUB_GROUP_SIZES_INTEL);
       return static_cast<int>(
@@ -830,8 +830,8 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     return 0;
   }
   case DeviceProperty::fp32_atomics_capabilities: {
-    const bool test = extensions_.count("cl_ext_float_atomics") != 0U;
-    if (extensions_.count("cl_ext_float_atomics") != 0U) {
+    const bool test = extensions_.contains("cl_ext_float_atomics");
+    if (extensions_.contains("cl_ext_float_atomics")) {
       return static_cast<int>(
           cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
               devices_[0], CL_DEVICE_SINGLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
@@ -839,7 +839,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     return 0;
   }
   case DeviceProperty::fp64_atomics_capabilities: {
-    if (extensions_.count("cl_ext_float_atomics") != 0U) {
+    if (extensions_.contains("cl_ext_float_atomics")) {
       return static_cast<int>(
           cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
               devices_[0], CL_DEVICE_DOUBLE_FP_ATOMIC_CAPABILITIES_EXT, 0));
@@ -847,7 +847,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
     return 0;
   }
   case DeviceProperty::fp16_atomics_capabilities: {
-    if (extensions_.count("cl_ext_float_atomics") != 0U) {
+    if (extensions_.contains("cl_ext_float_atomics")) {
       return static_cast<int>(
           cl_get_device_property_at_index<cl_device_fp_atomic_capabilities_ext>(
               devices_[0], CL_DEVICE_HALF_FP_ATOMIC_CAPABILITIES_EXT, 0));
@@ -863,7 +863,7 @@ int OpenCLRuntime::get_device_property(const DeviceProperty property) const {
         cl_get_device_property_at_index<cl_device_fp_config>(
             devices_[0], CL_DEVICE_DOUBLE_FP_CONFIG, 0));
   case DeviceProperty::dot_product_capabilities:
-    if (extensions_.count("cl_khr_integer_dot_product") != 0U) {
+    if (extensions_.contains("cl_khr_integer_dot_product")) {
       return static_cast<int>(cl_get_device_property_at_index<
                               cl_device_integer_dot_product_capabilities_khr>(
           devices_[0], CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR, 0));

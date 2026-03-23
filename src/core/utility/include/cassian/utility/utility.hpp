@@ -13,17 +13,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#ifdef CASSIAN_OLD_GNU
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
 #include <filesystem>
-namespace fs = std::filesystem;
-#endif
 #include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
+
+namespace fs = std::filesystem;
 
 /**
  * Cassian namespace.

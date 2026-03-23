@@ -21,6 +21,7 @@
 #include <enum_definitions.hpp>
 #include <limits>
 #include <map>
+#include <numbers>
 #include <string>
 #include <variant>
 #include <vector>
@@ -414,7 +415,7 @@ OUTPUT_TYPE calculate_reference(const INPUT_TYPE_1 &input_value_a,
   case Function::degrees: {
     using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
     OUTPUT_TYPE result(0.0F);
-    constexpr scalar_type pi_const = 180.0F / M_PI;
+    constexpr scalar_type pi_const = 180.0F / std::numbers::pi;
     if constexpr (is_vector_a) {
       for (auto i = 0; i < OUTPUT_TYPE::vector_size; i++) {
         result[i] = pi_const * input_value_a[i];
@@ -427,7 +428,7 @@ OUTPUT_TYPE calculate_reference(const INPUT_TYPE_1 &input_value_a,
   case Function::radians: {
     using scalar_type = cassian::scalar_type_v<OUTPUT_TYPE>;
     OUTPUT_TYPE result(0.0F);
-    constexpr scalar_type pi_const = scalar_type(M_PI) / 180.0F;
+    constexpr scalar_type pi_const = scalar_type(std::numbers::pi) / 180.0F;
     if constexpr (is_vector_a && is_vector_output) {
       for (auto i = 0; i < OUTPUT_TYPE::vector_size; i++) {
         result[i] = pi_const * input_value_a[i];
@@ -522,8 +523,8 @@ class UlpComparator : public Catch::MatcherBase<std::vector<OUTPUT_TYPE>> {
   std::vector<cassian::scalar_type_v<OUTPUT_TYPE>> ulp_values;
 
 public:
-  UlpComparator<OUTPUT_TYPE>(const std::vector<OUTPUT_TYPE> &reference,
-                             const size_t &work_size, const Function &function)
+  UlpComparator(const std::vector<OUTPUT_TYPE> &reference,
+                const size_t &work_size, const Function &function)
       : reference(reference), function(function) {
     ulp_values = get_ulp_values<OUTPUT_TYPE>(function, work_size);
   }

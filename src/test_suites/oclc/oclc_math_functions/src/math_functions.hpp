@@ -19,6 +19,7 @@
 #include <enum_definitions.hpp>
 #include <limits>
 #include <math_input_values.hpp>
+#include <numbers>
 #include <ostream>
 #include <string>
 #include <type_traits>
@@ -876,7 +877,7 @@ requirements_function(const Function &function, const INPUT_TYPE_1 &input_a,
   case Function::cos: {
     auto give_requirement = [&requirements](scalar_type x) {
       precision_requirement_t requirement;
-      if (x >= -M_PI && x <= M_PI) {
+      if (x >= -std::numbers::pi && x <= std::numbers::pi) {
         requirement.type = PrecisionRequirementType::error_value;
         requirement.value = std::pow(2.0F, -11);
       } else {

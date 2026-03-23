@@ -21,11 +21,11 @@ test(svmptr_t in_surface [[type("svmptr_t")]],
 #pragma nounroll
   for (int i = 0; i < 8; i++) {
     asm("add (M1, 1) %[dst] %1 %[src2]"
-        : [ dst ] "=a"(in1_vector(i))
-        : [ src1 ] "r"(i), [ src2 ] "i"(10));
+        : [dst] "=a"(in1_vector(i))
+        : [src1] "r"(i), [src2] "i"(10));
     asm("add (M1, 1) %0 %[src1] %[src2]"
-        : [ dst ] "=a"(test_vector(i))
-        : [ src1 ] "a"(in0_vector(i)), [ src2 ] "a"(in1_vector(i)));
+        : [dst] "=a"(test_vector(i))
+        : [src1] "a"(in0_vector(i)), [src2] "a"(in1_vector(i)));
 
     etalon_vector(i) = in0_vector(i) + i + 10;
   }
