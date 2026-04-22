@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2026 Intel Corporation
  *
  * SPDX-License-Identifier: MIT
  *
@@ -13,10 +13,10 @@ const local DATA_TYPE *to_local_const_wrapper(const DATA_TYPE *input) {
 kernel void test_non_const(global uintptr_t *output) {
   const size_t id = get_global_id(0);
   local DATA_TYPE input;
-  output[id] = (uintptr_t)to_local_wrapper(&input);
+  output[id] = (uintptr_t)(to_local_wrapper(&input) != NULL);
 }
 kernel void test_const(global uintptr_t *output) {
   const size_t id = get_global_id(0);
   const local DATA_TYPE input;
-  output[id] = (uintptr_t)to_local_const_wrapper(&input);
+  output[id] = (uintptr_t)(to_local_const_wrapper(&input) != NULL);
 }
