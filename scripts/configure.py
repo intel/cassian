@@ -42,6 +42,7 @@ def main(args=None):
             docs=args.docs,
             no_tests=args.no_tests,
             packages=args.packages,
+            llvm_ir=args.llvm_ir,
         )
     except Exception:
         logger.exception("Fatal error")
@@ -101,6 +102,9 @@ def setup_parser(root_parser):
         default=Path("/opt/BullseyeCoverage"),
         help="path to Bullseye installation directory",
     )
+    root_parser.add_argument(
+        "--llvm-ir", action="store_true", help="enable llvm_ir kernels support"
+    )
 
 
 def enable_bullseye(bullseye_path):
@@ -127,6 +131,7 @@ def configure_cmake(
     docs=None,
     no_tests=None,
     packages=None,
+    llvm_ir=None,
 ):
     if not extra:
         extra = ""
@@ -152,6 +157,8 @@ def configure_cmake(
         extra += " -DBUILD_TESTING=OFF"
     if packages:
         extra += f' -DCPACK_GENERATOR="{packages}"'
+    if llvm_ir:
+        extra += " -DBUILD_LLVM_IR_KERNELS=ON"
     if sanitizer:
         if not build_type:
             build_type = "RelWithDebInfo"
