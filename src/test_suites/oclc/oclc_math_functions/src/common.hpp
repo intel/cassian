@@ -1580,6 +1580,34 @@ replace_fp_with_double_t<T> calculate_frexp(const T &input_a, T_1 &input_b) {
   }
 }
 
+template <typename T, typename T_1, unsigned long quo_bit_count = 7>
+T ocl_compatible_remquo(T input_a, T input_b, T_1 *quo_bits) {
+  constexpr unsigned long output_quo_bit_mask = (2 << quo_bit_count) - 1;
+
+  double a = static_cast<double>(input_a);
+  double b = static_cast<double>(input_b);
+
+  double rem = std::remainder(a, b);
+
+  double dquo = a / b;
+  long quo = 0;
+
+  double div_rem = std::remainder(dquo, 1.0);
+  if (div_rem == 0.5) {
+    // If there are two integers closest to x/y, k shall be the
+    // even one.
+    quo = floor(dquo);
+    quo += quo % 2;
+  } else {
+    quo = std::llround(dquo);
+  }
+
+  unsigned long tmp_quo_bits = std::abs(quo) & output_quo_bit_mask;
+  *quo_bits = static_cast<T_1>(copysign(tmp_quo_bits, quo));
+
+  return rem;
+}
+
 template <typename T, typename T_1>
 replace_fp_with_double_t<T> calculate_remquo(const T &input_a, const T &input_b,
                                              T_1 &input_c) {
@@ -1602,8 +1630,9 @@ replace_fp_with_double_t<T> calculate_remquo(const T &input_a, const T &input_b,
         input_c[i] = 0;
         continue;
       }
-      result[i] = remquo(static_cast<double>(input_a[i]),
-                         static_cast<double>(input_b[i]), &input_c[i]);
+      result[i] =
+          ocl_compatible_remquo(static_cast<double>(input_a[i]),
+                                static_cast<double>(input_b[i]), &input_c[i]);
     }
     return result;
   } else {
@@ -1613,8 +1642,8 @@ replace_fp_with_double_t<T> calculate_remquo(const T &input_a, const T &input_b,
       input_c = 0;
       return std::numeric_limits<T>::quiet_NaN();
     } else {
-      return remquo(static_cast<double>(input_a), static_cast<double>(input_b),
-                    &input_c);
+      return ocl_compatible_remquo(static_cast<double>(input_a),
+                                   static_cast<double>(input_b), &input_c);
     }
   }
 }
