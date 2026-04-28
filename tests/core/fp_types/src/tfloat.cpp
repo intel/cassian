@@ -576,6 +576,34 @@ TEST_CASE("tfloat - nextafter") {
     const cassian::Tfloat b(0.0F);
     REQUIRE(nextafter(a, b) == b);
   }
+
+  SECTION("1.5 -> towards -2.0 (crossing zero)") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x3fc00000);
+    const cassian::Tfloat b(-2.0F);
+    const cassian::Tfloat expected = cassian::Tfloat::encode(0x3fbfe000);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("2.0 -> towards -1.5 (crossing zero)") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0x40000000);
+    const cassian::Tfloat b(-1.5F);
+    const cassian::Tfloat expected = cassian::Tfloat::encode(0x3fffe000);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("-1.5 -> towards 2.0 (crossing zero)") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0xbfc00000);
+    const cassian::Tfloat b(2.0F);
+    const cassian::Tfloat expected = cassian::Tfloat::encode(0xbfbfe000);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("-2.0 -> towards 1.5 (crossing zero)") {
+    const cassian::Tfloat a = cassian::Tfloat::encode(0xc0000000);
+    const cassian::Tfloat b(1.5F);
+    const cassian::Tfloat expected = cassian::Tfloat::encode(0xbfffe000);
+    REQUIRE(nextafter(a, b) == expected);
+  }
 }
 
 TEST_CASE("tfloat - isinf") {

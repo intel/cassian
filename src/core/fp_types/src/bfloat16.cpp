@@ -179,12 +179,13 @@ Bfloat16 nextafter(const Bfloat16 from, const Bfloat16 to) {
   }
 
   uint16_t from_data = from.decode();
-  uint16_t to_data = to.decode();
+  const uint16_t to_data = to.decode();
+  const uint16_t sign_mask = 0x8000;
 
-  if (from_data >= 0) {
-    from_data += (to_data >= from_data) ? 1 : -1;
+  if (from_data < sign_mask) { // from is positive
+    from_data += (to_data > from_data && to_data < sign_mask) ? 1 : -1;
   } else {
-    from_data += (to_data >= from_data && to_data < 0) ? 1 : -1;
+    from_data += (to_data > from_data && to_data >= sign_mask) ? 1 : -1;
   }
 
   return Bfloat16::encode(from_data);

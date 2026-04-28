@@ -172,13 +172,15 @@ Tfloat nextafter(const Tfloat from, const Tfloat to) {
   }
 
   uint32_t from_data = from.decode();
-  uint32_t to_data = to.decode();
+  const uint32_t to_data = to.decode();
+  const uint32_t sign_mask = 0x80000000;
 
-  if (from_data >= 0) {
-    from_data += (to_data >= from_data) ? 0x00002000 : -0x00002000;
-  } else {
+  if (from_data < sign_mask) { // from is positive
     from_data +=
-        (to_data >= from_data && to_data < 0) ? 0x00002000 : -0x00002000;
+        (to_data > from_data && to_data < sign_mask) ? 0x00002000 : -0x00002000;
+  } else {
+    from_data += (to_data > from_data && to_data >= sign_mask) ? 0x00002000
+                                                               : -0x00002000;
   }
 
   return Tfloat::encode(from_data);

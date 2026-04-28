@@ -577,6 +577,34 @@ TEST_CASE("bfloat16 - nextafter") {
     const cassian::Bfloat16 b(0.0F);
     REQUIRE(nextafter(a, b) == b);
   }
+
+  SECTION("1.5 -> towards -2.0 (crossing zero)") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x3fc0);
+    const cassian::Bfloat16 b(-2.0F);
+    const cassian::Bfloat16 expected = cassian::Bfloat16::encode(0x3fbf);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("2.0 -> towards -1.5 (crossing zero)") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0x4000);
+    const cassian::Bfloat16 b(-1.5F);
+    const cassian::Bfloat16 expected = cassian::Bfloat16::encode(0x3fff);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("-1.5 -> towards 2.0 (crossing zero)") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0xbfc0);
+    const cassian::Bfloat16 b(2.0F);
+    const cassian::Bfloat16 expected = cassian::Bfloat16::encode(0xbfbf);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("-2.0 -> towards 1.5 (crossing zero)") {
+    const cassian::Bfloat16 a = cassian::Bfloat16::encode(0xc000);
+    const cassian::Bfloat16 b(1.5F);
+    const cassian::Bfloat16 expected = cassian::Bfloat16::encode(0xbfff);
+    REQUIRE(nextafter(a, b) == expected);
+  }
 }
 
 TEST_CASE("bfloat16 isinf") {

@@ -723,6 +723,34 @@ TEST_CASE("half - nextafter") {
     const cassian::Half b(0.0F);
     REQUIRE(nextafter(a, b) == b);
   }
+
+  SECTION("1.5 -> towards -2.0 (crossing zero)") {
+    const cassian::Half a = cassian::Half::encode(0x3c00);
+    const cassian::Half b(-2.0F);
+    const cassian::Half expected = cassian::Half::encode(0x3bff);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("2.0 -> towards -1.5 (crossing zero)") {
+    const cassian::Half a = cassian::Half::encode(0x4000);
+    const cassian::Half b(-1.5F);
+    const cassian::Half expected = cassian::Half::encode(0x3fff);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("-1.5 -> towards 2.0 (crossing zero)") {
+    const cassian::Half a = cassian::Half::encode(0xbc00);
+    const cassian::Half b(2.0F);
+    const cassian::Half expected = cassian::Half::encode(0xbbff);
+    REQUIRE(nextafter(a, b) == expected);
+  }
+
+  SECTION("-2.0 -> towards 1.5 (crossing zero)") {
+    const cassian::Half a = cassian::Half::encode(0xc000);
+    const cassian::Half b(1.5F);
+    const cassian::Half expected = cassian::Half::encode(0xbfff);
+    REQUIRE(nextafter(a, b) == expected);
+  }
 }
 
 TEST_CASE("half isinf") {
