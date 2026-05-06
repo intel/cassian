@@ -1087,12 +1087,12 @@ replace_fp_with_double_t<T> calculate_tanh(const T &input) {
 template <typename T>
 replace_fp_with_double_t<T> calculate_tanpi_impl(const T &input) {
   using std::copysign;
-  using std::cos;
   using std::fabs;
   using std::fmod;
   using std::isinf;
-  using std::sin;
-  const double pi_value = std::numbers::pi;
+  using std::tan;
+
+  const long double pi_value = std::numbers::pi_v<long double>;
   auto abs_mod = [](const double &x) { return fabs(fmod(x, 2.0)); };
   double integer_part{};
   const double fractional_part =
@@ -1112,8 +1112,8 @@ replace_fp_with_double_t<T> calculate_tanpi_impl(const T &input) {
              fabs(fractional_part) == 0.5) {
     return -std::numeric_limits<double>::infinity();
   } else {
-    return sin(pi_value * static_cast<double>(input)) /
-           cos(pi_value * static_cast<double>(input));
+    return static_cast<double>(
+        std::tan(pi_value * static_cast<long double>(input)));
   }
 }
 
