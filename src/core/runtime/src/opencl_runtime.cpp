@@ -65,6 +65,7 @@ void OpenCLRuntime::initialize() {
   }
 
   const cl_platform_id platform = platforms[0];
+  platform_ = platform;
 
   cl_uint number_of_devices = 0;
   result = wrapper_.clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, nullptr,

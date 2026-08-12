@@ -868,6 +868,56 @@ public:
   }
 
   /**
+   * Run kernel as a concurrent (co-operative) dispatch with 1D global and local
+   * work size.
+   *
+   * All work groups of a concurrent dispatch are resident simultaneously, which
+   * is what makes a device-wide barrier able to complete: a kernel that uses
+   * one needs the implementation to provide a synchronisation buffer, and that
+   * is only allocated for this dispatch type. Launching such a kernel with the
+   * ordinary run_kernel is undefined behaviour.
+   *
+   * The number of work groups must not exceed
+   * get_max_concurrent_group_count(), otherwise the dispatch is rejected.
+   *
+   * @param[in] kernel kernel to run.
+   * @param[in] global_work_size global work size.
+   * @param[in] local_work_size local work size, must divide global_work_size.
+   * @throws cassian::RuntimeException Thrown if the runtime does not support
+   * concurrent dispatch or encountered a fatal error.
+   */
+  virtual void run_concurrent_kernel(const Kernel &kernel,
+                                     std::array<size_t, 1> global_work_size,
+                                     std::array<size_t, 1> local_work_size);
+
+  /**
+   * Run kernel as a concurrent (co-operative) dispatch with 1D global work
+   * size. A local work size that divides the global size is chosen
+   * automatically.
+   *
+   * @overload
+   */
+  void run_concurrent_kernel(const Kernel &kernel,
+                             const size_t global_work_size) {
+    run_concurrent_kernel(kernel, {global_work_size},
+                          {suggest_dividing_group_size(global_work_size)});
+  }
+
+  /**
+   * Get the largest number of work groups that can be co-resident, and thus
+   * dispatched concurrently, for a given kernel and local work size.
+   *
+   * @param[in] kernel kernel to query.
+   * @param[in] local_work_size local work size the dispatch would use.
+   * @returns maximum number of work groups, never zero.
+   * @throws cassian::RuntimeException Thrown if the runtime does not support
+   * concurrent dispatch or encountered a fatal error.
+   */
+  virtual size_t
+  get_max_concurrent_group_count(const Kernel &kernel,
+                                 std::array<size_t, 1> local_work_size);
+
+  /**
    * Release kernel.
    *
    * @param[in] kernel kernel to release.
@@ -1001,6 +1051,15 @@ protected:
   run_kernel_common(int device, const Kernel &kernel,
                     std::array<size_t, 3> global_work_size,
                     const std::array<size_t, 3> *local_work_size = nullptr) = 0;
+
+  /**
+   * Pick the largest group size that both fits the device limit and divides
+   * global_work_size evenly.
+   *
+   * @param[in] global_work_size global work size to divide.
+   * @returns group size in [1, global_work_size].
+   */
+  size_t suggest_dividing_group_size(size_t global_work_size);
 };
 
 template <typename T>
@@ -1064,6 +1123,31 @@ void Runtime::write_buffer_from_vector<Tfloat>(const Buffer &buffer,
 class RuntimeException : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
+
+inline void
+Runtime::run_concurrent_kernel(const Kernel & /*kernel*/,
+                               std::array<size_t, 1> /*global_work_size*/,
+                               std::array<size_t, 1> /*local_work_size*/) {
+  throw RuntimeException(
+      "Concurrent dispatch is not supported by this runtime");
+}
+
+inline size_t Runtime::get_max_concurrent_group_count(const Kernel & /*kernel*/,
+                                                      std::array<size_t, 1>
+                                                      /*local_work_size*/) {
+  throw RuntimeException(
+      "Concurrent dispatch is not supported by this runtime");
+}
+
+inline size_t Runtime::suggest_dividing_group_size(size_t global_work_size) {
+  const auto max_group_size = static_cast<size_t>(
+      get_device_property(DeviceProperty::max_total_group_size));
+  size_t group_size = std::min(global_work_size, max_group_size);
+  while (group_size > 1 && global_work_size % group_size != 0) {
+    --group_size;
+  }
+  return group_size;
+}
 
 /**
  * Get C for Metal type name.

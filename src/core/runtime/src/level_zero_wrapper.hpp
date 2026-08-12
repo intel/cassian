@@ -50,6 +50,10 @@ public:
   ze_pfnKernelSetArgumentValue_t zeKernelSetArgumentValue = nullptr;
   ze_pfnCommandListAppendLaunchKernel_t zeCommandListAppendLaunchKernel =
       nullptr;
+  ze_pfnCommandListAppendLaunchCooperativeKernel_t
+      zeCommandListAppendLaunchCooperativeKernel = nullptr;
+  ze_pfnKernelSuggestMaxCooperativeGroupCount_t
+      zeKernelSuggestMaxCooperativeGroupCount = nullptr;
   ze_pfnMemAllocShared_t zeMemAllocShared = nullptr;
   ze_pfnMemAllocDevice_t zeMemAllocDevice = nullptr;
   ze_pfnMemFree_t zeMemFree = nullptr;

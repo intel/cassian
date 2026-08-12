@@ -900,6 +900,114 @@ void LevelZeroRuntime::run_kernel_common(
   }
 }
 
+void LevelZeroRuntime::run_concurrent_kernel(
+    const Kernel &kernel, const std::array<size_t, 1> global_work_size,
+    const std::array<size_t, 1> local_work_size) {
+  if (wrapper_.zeCommandListAppendLaunchCooperativeKernel == nullptr) {
+    throw RuntimeException(
+        "Level Zero cooperative kernel launch is not available");
+  }
+
+  ze_kernel_handle_t k = kernels_.at(kernel.id);
+
+  const size_t global_size = global_work_size[0];
+  const size_t local_size = local_work_size[0];
+  if (local_size == 0 || global_size % local_size != 0) {
+    throw RuntimeException(
+        "Concurrent dispatch requires a local work size that divides the "
+        "global work size");
+  }
+
+  ze_command_list_desc_t command_list_description = {};
+  command_list_description.stype = ZE_STRUCTURE_TYPE_COMMAND_LIST_DESC;
+  command_list_description.pNext = nullptr;
+  command_list_description.commandQueueGroupOrdinal = 0;
+  command_list_description.flags = 0;
+
+  ze_command_list_handle_t command_list = nullptr;
+  ze_result_t result = wrapper_.zeCommandListCreate(
+      contexts_[0], devices_[0], &command_list_description, &command_list);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to create Level Zero command list");
+  }
+
+  const auto throw_after_destroy = [&](const char *message) {
+    wrapper_.zeCommandListDestroy(command_list);
+    throw RuntimeException(message);
+  };
+
+  result =
+      wrapper_.zeKernelSetGroupSize(k, static_cast<uint32_t>(local_size), 1, 1);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw_after_destroy("Failed to set Level Zero group size");
+  }
+
+  ze_group_count_t thread_group_dimensions = {};
+  thread_group_dimensions.groupCountX =
+      static_cast<uint32_t>(global_size / local_size);
+  thread_group_dimensions.groupCountY = 1;
+  thread_group_dimensions.groupCountZ = 1;
+
+  logging::debug() << "Running cooperative kernel with group_count = "
+                   << thread_group_dimensions.groupCountX
+                   << " and local_work_size = " << local_size << '\n';
+
+  result = wrapper_.zeCommandListAppendLaunchCooperativeKernel(
+      command_list, k, &thread_group_dimensions, nullptr, 0, nullptr);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw_after_destroy(
+        "Failed to append cooperative kernel to Level Zero command list");
+  }
+
+  result = wrapper_.zeCommandListClose(command_list);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw_after_destroy("Failed to close Level Zero command list");
+  }
+
+  result = wrapper_.zeCommandQueueExecuteCommandLists(queues_[0], 1,
+                                                      &command_list, nullptr);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw_after_destroy("Failed to execute Level Zero command list");
+  }
+
+  result = wrapper_.zeCommandQueueSynchronize(queues_[0], UINT64_MAX);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw_after_destroy("Failed to synchronize Level Zero command queue");
+  }
+
+  result = wrapper_.zeCommandListDestroy(command_list);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to destroy Level Zero command list");
+  }
+}
+
+size_t LevelZeroRuntime::get_max_concurrent_group_count(
+    const Kernel &kernel, const std::array<size_t, 1> local_work_size) {
+  if (wrapper_.zeKernelSuggestMaxCooperativeGroupCount == nullptr) {
+    throw RuntimeException(
+        "Level Zero cooperative group count query is not available");
+  }
+
+  ze_kernel_handle_t k = kernels_.at(kernel.id);
+
+  // The query reports the count for the group size currently set on the
+  // kernel, so the group size has to be applied first.
+  ze_result_t result = wrapper_.zeKernelSetGroupSize(
+      k, static_cast<uint32_t>(local_work_size[0]), 1, 1);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw RuntimeException("Failed to set Level Zero group size");
+  }
+
+  uint32_t total_group_count = 0;
+  result =
+      wrapper_.zeKernelSuggestMaxCooperativeGroupCount(k, &total_group_count);
+  if (result != ZE_RESULT_SUCCESS) {
+    throw RuntimeException(
+        "Failed to get Level Zero max cooperative group count");
+  }
+  return total_group_count;
+}
+
 void LevelZeroRuntime::release_kernel(const Kernel &kernel) {
   ze_kernel_handle_t k = kernels_.at(kernel.id);
   kernels_.erase(kernel.id);

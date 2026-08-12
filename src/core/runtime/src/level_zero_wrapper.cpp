@@ -123,6 +123,23 @@ LevelZeroWrapper::LevelZeroWrapper() {
       library_->get_function("zeDeviceGetSubDevices"));
 
   try {
+    zeCommandListAppendLaunchCooperativeKernel =
+        reinterpret_cast<ze_pfnCommandListAppendLaunchCooperativeKernel_t>(
+            library_->get_function(
+                "zeCommandListAppendLaunchCooperativeKernel"));
+  } catch (LibraryFunctionNotFoundException &e) {
+    zeCommandListAppendLaunchCooperativeKernel = nullptr;
+  }
+
+  try {
+    zeKernelSuggestMaxCooperativeGroupCount =
+        reinterpret_cast<ze_pfnKernelSuggestMaxCooperativeGroupCount_t>(
+            library_->get_function("zeKernelSuggestMaxCooperativeGroupCount"));
+  } catch (LibraryFunctionNotFoundException &e) {
+    zeKernelSuggestMaxCooperativeGroupCount = nullptr;
+  }
+
+  try {
     zeCommandListAppendLaunchKernelWithParameters =
         reinterpret_cast<ze_pfnCommandListAppendLaunchKernelWithParameters_t>(
             library_->get_function(

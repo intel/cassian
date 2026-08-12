@@ -67,6 +67,9 @@ public:
   clLinkProgram_t *clLinkProgram = nullptr;
   clGetProgramInfo_t *clGetProgramInfo = nullptr;
   clCreateSubDevices_t *clCreateSubDevices = nullptr;
+  clSetKernelExecInfo_t *clSetKernelExecInfo = nullptr;
+  clGetExtensionFunctionAddressForPlatform_t
+      *clGetExtensionFunctionAddressForPlatform = nullptr;
 
 private:
   std::unique_ptr<Library> library_;

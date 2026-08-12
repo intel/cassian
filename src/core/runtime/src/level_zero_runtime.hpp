@@ -76,6 +76,15 @@ public:
 
   std::string name() const override;
 
+  // Keep the base class' convenience overload visible; declaring the override
+  // below would otherwise hide it.
+  using Runtime::run_concurrent_kernel;
+  void run_concurrent_kernel(const Kernel &kernel,
+                             std::array<size_t, 1> global_work_size,
+                             std::array<size_t, 1> local_work_size) override;
+  size_t get_max_concurrent_group_count(
+      const Kernel &kernel, std::array<size_t, 1> local_work_size) override;
+
 protected:
   void set_kernel_argument(const Kernel &kernel, int argument_index,
                            size_t argument_size, const void *argument) override;

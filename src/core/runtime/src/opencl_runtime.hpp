@@ -90,6 +90,11 @@ protected:
 
   OpenCLWrapper wrapper_;
 
+  // Platform selected in initialize(). Kept so that derived runtimes can
+  // resolve per-platform extension entry points with
+  // clGetExtensionFunctionAddressForPlatform().
+  cl_platform_id platform_ = nullptr;
+
   std::vector<cl_device_id> devices_;
   std::vector<cl_context> contexts_;
   std::vector<cl_command_queue> queues_;

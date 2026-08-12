@@ -80,5 +80,20 @@ OpenCLWrapper::OpenCLWrapper() {
       library_->get_function("clGetProgramInfo"));
   clCreateSubDevices = reinterpret_cast<clCreateSubDevices_t *>(
       library_->get_function("clCreateSubDevices"));
+
+  try {
+    clSetKernelExecInfo = reinterpret_cast<clSetKernelExecInfo_t *>(
+        library_->get_function("clSetKernelExecInfo"));
+  } catch (LibraryFunctionNotFoundException &e) {
+    clSetKernelExecInfo = nullptr;
+  }
+
+  try {
+    clGetExtensionFunctionAddressForPlatform =
+        reinterpret_cast<clGetExtensionFunctionAddressForPlatform_t *>(
+            library_->get_function("clGetExtensionFunctionAddressForPlatform"));
+  } catch (LibraryFunctionNotFoundException &e) {
+    clGetExtensionFunctionAddressForPlatform = nullptr;
+  }
 }
 } // namespace cassian
