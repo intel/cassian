@@ -8,6 +8,7 @@
 #ifndef CASSIAN_OCLC_ATOMICS_COMMON_HPP
 #define CASSIAN_OCLC_ATOMICS_COMMON_HPP
 
+#include <cassian/runtime/openclc_utils.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
 #include <cstddef>
@@ -26,26 +27,18 @@ std::string to_string(FunctionType function_type);
 const std::vector<FunctionType> function_types_all = {
     FunctionType::implicit, FunctionType::explicit_memory_order,
     FunctionType::explicit_memory_scope};
-void function_type_requirements(cassian::Requirements &requirements,
-                                const std::string &program_type,
-                                FunctionType function_types);
+void atomic_signature_requirements(
+    cassian::Requirements &requirements, const std::string &program_type,
+    FunctionType function_type,
+    const std::vector<cassian::AtomicMemoryOrder> &memory_orders,
+    cassian::AtomicMemoryScope memory_scope);
 
-enum class MemoryOrder { relaxed, acquire, release, acq_rel, seq_cst };
-std::string to_string(MemoryOrder memory_order);
-const std::vector<MemoryOrder> memory_orders_all = {
-    MemoryOrder::relaxed, MemoryOrder::acquire, MemoryOrder::release,
-    MemoryOrder::acq_rel, MemoryOrder::seq_cst};
-void memory_order_requirements(cassian::Requirements &requirements,
-                               const std::string &program_type,
-                               MemoryOrder memory_order);
-
-enum class MemoryScope { work_item, work_group, device, all_svm_devices };
-std::string to_string(MemoryScope memory_scope);
-const std::vector<MemoryScope> memory_scopes_all = {
-    MemoryScope::work_group, MemoryScope::device, MemoryScope::all_svm_devices};
-void memory_scope_requirements(cassian::Requirements &requirements,
-                               const std::string &program_type,
-                               MemoryScope memory_scope);
+/**
+ * Memory scopes exercised by this suite - work_item scope is not covered.
+ */
+const std::vector<cassian::AtomicMemoryScope> memory_scopes_tested = {
+    cassian::AtomicMemoryScope::work_group, cassian::AtomicMemoryScope::device,
+    cassian::AtomicMemoryScope::all_svm_devices};
 
 enum class MemoryFlag { global, local, image };
 std::string to_string(MemoryFlag memory_flag);
@@ -89,11 +82,13 @@ int get_local_work_size(const int global_work_size,
 
 int suggest_work_size(const std::string &type);
 
-std::string memory_scope_build_option(const MemoryScope memory_scope);
+std::string
+memory_scope_build_option(const cassian::AtomicMemoryScope memory_scope);
 
 std::string work_group_size_build_option(const int size);
 
-std::string memory_order_build_option(const MemoryOrder memory_order);
+std::string
+memory_order_build_option(const cassian::AtomicMemoryOrder memory_order);
 
 cassian::Kernel create_kernel(const std::string &path,
                               const std::string &build_options,

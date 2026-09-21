@@ -47,8 +47,8 @@ template <typename T, typename U> struct TestCase {
   MemoryType memory_type = MemoryType::global;
 
   FunctionType function_type = FunctionType::implicit;
-  MemoryOrder memory_order = MemoryOrder::relaxed;
-  MemoryScope memory_scope = MemoryScope::device;
+  ca::AtomicMemoryOrder memory_order = ca::AtomicMemoryOrder::relaxed;
+  ca::AtomicMemoryScope memory_scope = ca::AtomicMemoryScope::device;
   AddressSpaceCastMode cast_mode = AddressSpaceCastMode::original;
 
   int global_work_size = 0;
@@ -110,11 +110,13 @@ template <typename T> std::string operand_type_build_option() {
 template <typename T> std::string extra_extension_build_option() { return ""; }
 
 template <typename TEST_TYPE, typename OPERAND_TYPE>
-std::string
-get_build_options(const int local_work_size, const FunctionType function_type,
-                  const Operation operation, const MemoryOrder memory_order,
-                  const MemoryScope memory_scope, const MemoryType memory_type,
-                  const AddressSpaceCastMode cast_mode) {
+std::string get_build_options(const int local_work_size,
+                              const FunctionType function_type,
+                              const Operation operation,
+                              const ca::AtomicMemoryOrder memory_order,
+                              const ca::AtomicMemoryScope memory_scope,
+                              const MemoryType memory_type,
+                              const AddressSpaceCastMode cast_mode) {
   std::string build_options =
       " -cl-std=CL3.0" + atomic_type_build_option<TEST_TYPE>() +
       operand_type_build_option<OPERAND_TYPE>() +
@@ -234,12 +236,9 @@ template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
   using operand_host_type = typename TEST_CASE_TYPE::operand_host_type;
 
   ca::Requirements requirements;
-  function_type_requirements(requirements, test_case.program_type,
-                             test_case.function_type);
-  memory_scope_requirements(requirements, test_case.program_type,
-                            test_case.memory_scope);
-  memory_order_requirements(requirements, test_case.program_type,
-                            test_case.memory_order);
+  atomic_signature_requirements(
+      requirements, test_case.program_type, test_case.function_type,
+      {test_case.memory_order}, test_case.memory_scope);
   cast_mode_requirements(requirements, test_case.program_type,
                          test_case.cast_mode);
   if (ca::should_skip_test(requirements, *test_case.runtime)) {
@@ -270,8 +269,8 @@ template <typename TEST_CASE_TYPE>
 void test_signatures(TEST_CASE_TYPE test_case,
                      const std::vector<MemoryType> &memory_types,
                      const std::vector<FunctionType> &function_types,
-                     const std::vector<MemoryOrder> &memory_orders,
-                     const std::vector<MemoryScope> &memory_scopes,
+                     const std::vector<ca::AtomicMemoryOrder> &memory_orders,
+                     const std::vector<ca::AtomicMemoryScope> &memory_scopes,
                      const std::vector<AddressSpaceCastMode> &cast_modes) {
   for (const auto cast_mode : cast_modes) {
     test_case.cast_mode = cast_mode;
@@ -330,7 +329,7 @@ TEMPLATE_TEST_CASE("atomic_fetch_add_signatures", "", ca::clc_int_t,
       test_case.global_work_size);
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
-                  memory_orders_all, memory_scopes_all,
+                  ca::atomic_memory_orders_all, memory_scopes_tested,
                   address_space_casts_modes_all);
 }
 
@@ -356,7 +355,7 @@ TEMPLATE_TEST_CASE("atomic_fetch_sub_signatures", "", ca::clc_int_t,
       test_case.global_work_size);
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
-                  memory_orders_all, memory_scopes_all,
+                  ca::atomic_memory_orders_all, memory_scopes_tested,
                   address_space_casts_modes_all);
 }
 
@@ -381,7 +380,7 @@ TEMPLATE_TEST_CASE("atomic_fetch_or_signatures", "", ca::clc_int_t,
       test_case.global_work_size);
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
-                  memory_orders_all, memory_scopes_all,
+                  ca::atomic_memory_orders_all, memory_scopes_tested,
                   address_space_casts_modes_all);
 }
 
@@ -406,7 +405,7 @@ TEMPLATE_TEST_CASE("atomic_fetch_xor_signatures", "", ca::clc_int_t,
       test_case.global_work_size);
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
-                  memory_orders_all, memory_scopes_all,
+                  ca::atomic_memory_orders_all, memory_scopes_tested,
                   address_space_casts_modes_all);
 }
 
@@ -431,7 +430,7 @@ TEMPLATE_TEST_CASE("atomic_fetch_and_signatures", "", ca::clc_int_t,
       test_case.global_work_size);
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
-                  memory_orders_all, memory_scopes_all,
+                  ca::atomic_memory_orders_all, memory_scopes_tested,
                   address_space_casts_modes_all);
 }
 
@@ -457,7 +456,7 @@ TEMPLATE_TEST_CASE("atomic_fetch_min_signatures", "", ca::clc_int_t,
       test_case.global_work_size);
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
-                  memory_orders_all, memory_scopes_all,
+                  ca::atomic_memory_orders_all, memory_scopes_tested,
                   address_space_casts_modes_all);
 }
 
@@ -483,7 +482,7 @@ TEMPLATE_TEST_CASE("atomic_fetch_max_signatures", "", ca::clc_int_t,
       test_case.global_work_size);
   test_case.compare_function = [](auto a, auto b) { compare(a, b); };
   test_signatures(test_case, memory_types_all, function_types_all,
-                  memory_orders_all, memory_scopes_all,
+                  ca::atomic_memory_orders_all, memory_scopes_tested,
                   address_space_casts_modes_all);
 }
 

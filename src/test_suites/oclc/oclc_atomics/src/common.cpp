@@ -29,38 +29,6 @@ std::string to_string(FunctionType function_type) {
   }
 }
 
-std::string to_string(MemoryOrder memory_order) {
-  switch (memory_order) {
-  case MemoryOrder::relaxed:
-    return "memory_order_relaxed";
-  case MemoryOrder::acquire:
-    return "memory_order_acquire";
-  case MemoryOrder::release:
-    return "memory_order_release";
-  case MemoryOrder::acq_rel:
-    return "memory_order_acq_rel";
-  case MemoryOrder::seq_cst:
-    return "memory_order_seq_cst";
-  default:
-    return "unknown";
-  }
-}
-
-std::string to_string(MemoryScope memory_scope) {
-  switch (memory_scope) {
-  case MemoryScope::work_item:
-    return "memory_scope_work_item";
-  case MemoryScope::work_group:
-    return "memory_scope_work_group";
-  case MemoryScope::device:
-    return "memory_scope_device";
-  case MemoryScope::all_svm_devices:
-    return "memory_scope_all_svm_devices";
-  default:
-    return "unknown";
-  }
-}
-
 std::string to_string(MemoryFlag memory_flag) {
   switch (memory_flag) {
   case MemoryFlag::global:
@@ -160,60 +128,35 @@ int suggest_work_size(const std::string &type) {
   return default_size;
 }
 
-void function_type_requirements(ca::Requirements &requirements,
-                                const std::string &program_type,
-                                FunctionType function_type) {
-  switch (function_type) {
-  case FunctionType::implicit:
-    requirements.openclc_feature("__opencl_c_atomic_order_seq_cst",
-                                 program_type);
-    [[fallthrough]];
-  case FunctionType::explicit_memory_order:
-    requirements.openclc_feature("__opencl_c_atomic_scope_device",
-                                 program_type);
-    return;
-  default:
-    return;
-  }
-}
-
-void memory_order_requirements(ca::Requirements &requirements,
-                               const std::string &program_type,
-                               MemoryOrder memory_order) {
-  switch (memory_order) {
-  case MemoryOrder::acquire:
-  case MemoryOrder::release:
-  case MemoryOrder::acq_rel:
-    requirements.openclc_feature("__opencl_c_atomic_order_acq_rel",
-                                 program_type);
-    return;
-  case MemoryOrder::seq_cst:
-    requirements.openclc_feature("__opencl_c_atomic_order_seq_cst",
-                                 program_type);
-    return;
-  default:
+void atomic_signature_requirements(
+    ca::Requirements &requirements, const std::string &program_type,
+    const FunctionType function_type,
+    const std::vector<ca::AtomicMemoryOrder> &memory_orders,
+    const ca::AtomicMemoryScope memory_scope) {
+  // Implicit functions take neither argument and behave as seq_cst on device
+  // scope, so the tested order and scope are not used at all.
+  if (function_type == FunctionType::implicit) {
+    requirements.atomic_memory_order(ca::AtomicMemoryOrder::seq_cst,
+                                     program_type);
+    requirements.atomic_memory_scope(ca::AtomicMemoryScope::device,
+                                     program_type);
     return;
   }
-}
 
-void memory_scope_requirements(ca::Requirements &requirements,
-                               const std::string &program_type,
-                               MemoryScope memory_scope) {
-  switch (memory_scope) {
-  case MemoryScope::device:
-    requirements.openclc_feature("__opencl_c_atomic_scope_device",
-                                 program_type);
-    return;
-  case MemoryScope::all_svm_devices:
-    requirements.openclc_feature("__opencl_c_atomic_scope_all_devices",
-                                 program_type);
-    return;
-  default:
-    return;
+  for (const auto memory_order : memory_orders) {
+    requirements.atomic_memory_order(memory_order, program_type);
   }
+  // Only the explicit_memory_scope variant passes a scope, the others default
+  // to device scope.
+  requirements.atomic_memory_scope(function_type ==
+                                           FunctionType::explicit_memory_scope
+                                       ? memory_scope
+                                       : ca::AtomicMemoryScope::device,
+                                   program_type);
 }
 
-std::string memory_scope_build_option(const MemoryScope memory_scope) {
+std::string
+memory_scope_build_option(const ca::AtomicMemoryScope memory_scope) {
   return std::string(" -D MEMORY_SCOPE=") + to_string(memory_scope);
 }
 
@@ -221,7 +164,8 @@ std::string work_group_size_build_option(const int size) {
   return std::string(" -D WORK_GROUP_SIZE=") + std::to_string(size);
 }
 
-std::string memory_order_build_option(const MemoryOrder memory_order) {
+std::string
+memory_order_build_option(const ca::AtomicMemoryOrder memory_order) {
   return std::string(" -D MEMORY_ORDER=") + to_string(memory_order);
 }
 

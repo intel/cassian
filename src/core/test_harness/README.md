@@ -37,6 +37,8 @@ cases can declare them unconditionally.
 * `min_work_group_size(x, y = 1, z = 1)`
 * `sub_group_size<N>()` — specialized for 16 and 32.
 * `openclc_feature(feature, program_type)`
+* `atomic_memory_scope(scope, program_type)`,
+  `atomic_memory_order(order, program_type)` — check openclc feature support for specific atomic order/scope
 * `should_skip_test(requirements, runtime)` — evaluates every collected check and
   returns true if any is unmet, logging which one.
 

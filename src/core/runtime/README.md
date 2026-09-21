@@ -67,7 +67,10 @@ Errors are reported as `RuntimeException`.
 
 * `openclc_utils.hpp` — `check_optional_openclc_macro()`,
   `check_optional_openclc_feature_support()`: trial-compile a probe to find out
-  whether a language feature exists.
+  whether a language feature exists. Also `AtomicMemoryScope` and
+  `AtomicMemoryOrder` — the OpenCL C memory scopes and orders used by atomic and
+  barrier functions, with `to_string()` giving the OpenCL C enumeration constant
+  (e.g. `memory_scope_device`) and `atomic_memory_orders_all` listing every order.
 * `cm_utils.hpp` — the same for C for Metal.
 * `property_checks.hpp` — `PropertyCheck` base plus `MinWorkGroupSize` and
   `OpenclcFeature`. These are what a test's `Requirements` collects; see

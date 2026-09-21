@@ -9,6 +9,7 @@
 #include <cassian/logging/logging.hpp>
 #include <cassian/runtime/feature.hpp>
 #include <cassian/runtime/openclc_types.hpp>
+#include <cassian/runtime/openclc_utils.hpp>
 #include <cassian/runtime/property_checks.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <cassian/test_harness/test_harness.hpp>
@@ -232,6 +233,36 @@ void Requirements::openclc_feature(const std::string &feature,
                                    const std::string &program_type) {
   properties_.push_back(
       std::make_unique<OpenclcFeature>(program_type, feature));
+}
+
+void Requirements::atomic_memory_scope(const AtomicMemoryScope memory_scope,
+                                       const std::string &program_type) {
+  switch (memory_scope) {
+  case AtomicMemoryScope::device:
+    openclc_feature("__opencl_c_atomic_scope_device", program_type);
+    return;
+  case AtomicMemoryScope::all_svm_devices:
+    openclc_feature("__opencl_c_atomic_scope_all_devices", program_type);
+    return;
+  default:
+    return;
+  }
+}
+
+void Requirements::atomic_memory_order(const AtomicMemoryOrder memory_order,
+                                       const std::string &program_type) {
+  switch (memory_order) {
+  case AtomicMemoryOrder::acquire:
+  case AtomicMemoryOrder::release:
+  case AtomicMemoryOrder::acq_rel:
+    openclc_feature("__opencl_c_atomic_order_acq_rel", program_type);
+    return;
+  case AtomicMemoryOrder::seq_cst:
+    openclc_feature("__opencl_c_atomic_order_seq_cst", program_type);
+    return;
+  default:
+    return;
+  }
 }
 
 bool should_skip_test(const Requirements &requirements, Runtime &runtime) {

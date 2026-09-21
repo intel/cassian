@@ -25,8 +25,8 @@ namespace {
 
 struct TestCase {
   MemoryFlag memory_flag = MemoryFlag::global;
-  MemoryOrder memory_order = MemoryOrder::relaxed;
-  MemoryScope memory_scope = MemoryScope::device;
+  ca::AtomicMemoryOrder memory_order = ca::AtomicMemoryOrder::relaxed;
+  ca::AtomicMemoryScope memory_scope = ca::AtomicMemoryScope::device;
 
   int global_work_size = 0;
   int local_work_size = 0;
@@ -45,8 +45,8 @@ std::string memory_flag_build_option(const MemoryFlag memory_flag) {
 
 template <typename TEST_TYPE>
 std::string get_build_options(const MemoryFlag memory_flag,
-                              const MemoryOrder memory_order,
-                              const MemoryScope memory_scope) {
+                              const ca::AtomicMemoryOrder memory_order,
+                              const ca::AtomicMemoryScope memory_scope) {
   std::string build_options = " -cl-std=CL3.0" +
                               memory_flag_build_option(memory_flag) +
                               memory_order_build_option(memory_order) +
@@ -56,10 +56,10 @@ std::string get_build_options(const MemoryFlag memory_flag,
 
 template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
   ca::Requirements requirements;
-  memory_scope_requirements(requirements, test_case.program_type,
-                            test_case.memory_scope);
-  memory_order_requirements(requirements, test_case.program_type,
-                            test_case.memory_order);
+  requirements.atomic_memory_scope(test_case.memory_scope,
+                                   test_case.program_type);
+  requirements.atomic_memory_order(test_case.memory_order,
+                                   test_case.program_type);
   if (ca::should_skip_test(requirements, *test_case.runtime)) {
     return;
   }
@@ -78,8 +78,8 @@ template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
 template <typename TEST_CASE_TYPE>
 void test_signatures(TEST_CASE_TYPE test_case,
                      const std::vector<MemoryFlag> &memory_flags,
-                     const std::vector<MemoryOrder> &memory_orders,
-                     const std::vector<MemoryScope> &memory_scopes) {
+                     const std::vector<ca::AtomicMemoryOrder> &memory_orders,
+                     const std::vector<ca::AtomicMemoryScope> &memory_scopes) {
   for (const auto memory_flag : memory_flags) {
     test_case.memory_flag = memory_flag;
     SECTION(to_string(memory_flag)) {
@@ -87,14 +87,14 @@ void test_signatures(TEST_CASE_TYPE test_case,
         test_case.memory_scope = memory_scope;
         SECTION(to_string(memory_scope)) {
           if (memory_flag == MemoryFlag::image &&
-              memory_scope != MemoryScope::work_item) {
+              memory_scope != ca::AtomicMemoryScope::work_item) {
             continue;
           }
           for (const auto memory_order : memory_orders) {
             test_case.memory_order = memory_order;
             SECTION(to_string(memory_order)) {
               if (memory_flag == MemoryFlag::image &&
-                  memory_order != MemoryOrder::acq_rel) {
+                  memory_order != ca::AtomicMemoryOrder::acq_rel) {
                 continue;
               }
               run_test(test_case);
@@ -111,9 +111,8 @@ TEST_CASE("atomic_work_item_fence_signatures") {
 
   auto test_case = create_test_case<TestCase>(config);
 
-  test_signatures(test_case, memory_flags_all, memory_orders_all,
-                  {MemoryScope::work_group, MemoryScope::device,
-                   MemoryScope::all_svm_devices});
+  test_signatures(test_case, memory_flags_all, ca::atomic_memory_orders_all,
+                  memory_scopes_tested);
 }
 
 } // namespace

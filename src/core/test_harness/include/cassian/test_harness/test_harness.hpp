@@ -9,6 +9,7 @@
 #define CASSIAN_TEST_HARNESS_TEST_HARNESS_HPP
 
 #include <cassian/runtime/openclc_types.hpp>
+#include <cassian/runtime/openclc_utils.hpp>
 #include <cassian/runtime/property_checks.hpp>
 #include <cassian/runtime/runtime.hpp>
 #include <memory>
@@ -114,6 +115,32 @@ public:
    */
   void openclc_feature(const std::string &feature,
                        const std::string &program_type);
+
+  /**
+   * Require support for an atomic memory scope.
+   *
+   * Scopes wider than a work group are optional in OpenCL C 3.0, so they are
+   * translated into the corresponding optional feature. Narrower scopes are
+   * always supported and add no requirement.
+   *
+   * @param[in] memory_scope Memory scope to be required.
+   * @param[in] program_type Program type the scope is used from.
+   */
+  void atomic_memory_scope(AtomicMemoryScope memory_scope,
+                           const std::string &program_type);
+
+  /**
+   * Require support for an atomic memory order.
+   *
+   * Orders other than relaxed are optional in OpenCL C 3.0, so they are
+   * translated into the corresponding optional feature. Relaxed is always
+   * supported and adds no requirement.
+   *
+   * @param[in] memory_order Memory order to be required.
+   * @param[in] program_type Program type the order is used from.
+   */
+  void atomic_memory_order(AtomicMemoryOrder memory_order,
+                           const std::string &program_type);
 
 protected:
   std::vector<Feature> features_;

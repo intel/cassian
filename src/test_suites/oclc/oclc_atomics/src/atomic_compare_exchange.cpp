@@ -35,9 +35,9 @@ template <typename T> struct TestCase {
   MemoryType memory_type = MemoryType::global;
 
   FunctionType function_type = FunctionType::implicit;
-  MemoryOrder success_memory_order = MemoryOrder::relaxed;
-  MemoryOrder failure_memory_order = MemoryOrder::relaxed;
-  MemoryScope memory_scope = MemoryScope::device;
+  ca::AtomicMemoryOrder success_memory_order = ca::AtomicMemoryOrder::relaxed;
+  ca::AtomicMemoryOrder failure_memory_order = ca::AtomicMemoryOrder::relaxed;
+  ca::AtomicMemoryScope memory_scope = ca::AtomicMemoryScope::device;
   AddressSpaceCastMode cast_mode = AddressSpaceCastMode::original;
 
   ComparisonType comparison_type = ComparisonType::strong;
@@ -77,14 +77,14 @@ std::string get_kernel_path(const MemoryType memory_type) {
   }
 }
 
-std::string
-success_memory_order_build_option(const MemoryOrder success_memory_order) {
+std::string success_memory_order_build_option(
+    const ca::AtomicMemoryOrder success_memory_order) {
   return std::string(" -D SUCCESS_MEMORY_ORDER=") +
          to_string(success_memory_order);
 }
 
-std::string
-failure_memory_order_build_option(const MemoryOrder failure_memory_order) {
+std::string failure_memory_order_build_option(
+    const ca::AtomicMemoryOrder failure_memory_order) {
   return std::string(" -D FAILURE_MEMORY_ORDER=") +
          to_string(failure_memory_order);
 }
@@ -96,9 +96,9 @@ std::string comparison_type_build_option(const ComparisonType comparison_type) {
 template <typename TEST_TYPE>
 std::string get_build_options(const int local_work_size,
                               const FunctionType function_type,
-                              const MemoryOrder success_memory_order,
-                              const MemoryOrder failure_memory_order,
-                              const MemoryScope memory_scope,
+                              const ca::AtomicMemoryOrder success_memory_order,
+                              const ca::AtomicMemoryOrder failure_memory_order,
+                              const ca::AtomicMemoryScope memory_scope,
                               const ComparisonType comparison_type,
                               const MemoryType memory_type,
                               const AddressSpaceCastMode cast_mode) {
@@ -175,12 +175,10 @@ template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
   using test_host_type = typename TEST_CASE_TYPE::test_host_type;
 
   ca::Requirements requirements;
-  function_type_requirements(requirements, test_case.program_type,
-                             test_case.function_type);
-  memory_scope_requirements(requirements, test_case.program_type,
-                            test_case.memory_scope);
-  memory_order_requirements(requirements, test_case.program_type,
-                            test_case.success_memory_order);
+  atomic_signature_requirements(
+      requirements, test_case.program_type, test_case.function_type,
+      {test_case.success_memory_order, test_case.failure_memory_order},
+      test_case.memory_scope);
   cast_mode_requirements(requirements, test_case.program_type,
                          test_case.cast_mode);
   if (ca::should_skip_test(requirements, *test_case.runtime)) {
@@ -214,9 +212,10 @@ template <typename TEST_CASE_TYPE> void run_test(TEST_CASE_TYPE test_case) {
 }
 
 template <typename TEST_CASE_TYPE>
-void set_memory_orders(TEST_CASE_TYPE test_case,
-                       const std::vector<MemoryOrder> &failure_memory_orders,
-                       const std::vector<MemoryOrder> &success_memory_orders) {
+void set_memory_orders(
+    TEST_CASE_TYPE test_case,
+    const std::vector<ca::AtomicMemoryOrder> &failure_memory_orders,
+    const std::vector<ca::AtomicMemoryOrder> &success_memory_orders) {
   for (const auto success_memory_order : success_memory_orders) {
     test_case.success_memory_order = success_memory_order;
     SECTION("success_" + to_string(success_memory_order)) {
@@ -234,15 +233,15 @@ void set_memory_orders(TEST_CASE_TYPE test_case,
 }
 
 template <typename TEST_CASE_TYPE>
-void test_signatures(TEST_CASE_TYPE test_case,
-                     const std::vector<MemoryType> &memory_types,
-                     const std::vector<FunctionType> &functions_types,
-                     const std::vector<MemoryOrder> &failure_memory_orders,
-                     const std::vector<MemoryOrder> &success_memory_orders,
-                     const std::vector<MemoryScope> &memory_scopes,
-                     const std::vector<ComparisonType> &comparison_types,
-                     const std::vector<ComparisonResult> &comparison_results,
-                     const std::vector<AddressSpaceCastMode> &cast_modes) {
+void test_signatures(
+    TEST_CASE_TYPE test_case, const std::vector<MemoryType> &memory_types,
+    const std::vector<FunctionType> &functions_types,
+    const std::vector<ca::AtomicMemoryOrder> &failure_memory_orders,
+    const std::vector<ca::AtomicMemoryOrder> &success_memory_orders,
+    const std::vector<ca::AtomicMemoryScope> &memory_scopes,
+    const std::vector<ComparisonType> &comparison_types,
+    const std::vector<ComparisonResult> &comparison_results,
+    const std::vector<AddressSpaceCastMode> &cast_modes) {
   for (const auto cast_mode : cast_modes) {
     test_case.cast_mode = cast_mode;
     SECTION(to_string(cast_mode)) {
@@ -303,12 +302,10 @@ TEMPLATE_TEST_CASE("atomic_compare_exchange_signatures", "", ca::clc_int_t,
 
   test_signatures<test_case_type>(
       test_case, memory_types_all, function_types_all,
-      {MemoryOrder::relaxed, MemoryOrder::acquire, MemoryOrder::seq_cst},
-      memory_orders_all,
-      {MemoryScope::work_group, MemoryScope::device,
-       MemoryScope::all_svm_devices},
-      comparison_types_all, comparison_results_all,
-      address_space_casts_modes_all);
+      {ca::AtomicMemoryOrder::relaxed, ca::AtomicMemoryOrder::acquire,
+       ca::AtomicMemoryOrder::seq_cst},
+      ca::atomic_memory_orders_all, memory_scopes_tested, comparison_types_all,
+      comparison_results_all, address_space_casts_modes_all);
 }
 
 } // namespace

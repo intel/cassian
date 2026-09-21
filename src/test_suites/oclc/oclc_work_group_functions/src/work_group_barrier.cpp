@@ -7,7 +7,9 @@
 
 #include <algorithm>
 #include <cassian/random/random.hpp>
+#include <cassian/runtime/openclc_utils.hpp>
 #include <cassian/runtime/runtime.hpp>
+#include <cassian/test_harness/test_harness.hpp>
 #include <cassian/utility/utility.hpp>
 #include <catch2/catch.hpp>
 #include <common.hpp>
@@ -23,13 +25,13 @@ namespace {
 
 ca::Kernel create_kernel(const std::string &path,
                          const std::string &kernel_name,
-                         const std::string &memory_scope,
+                         const ca::AtomicMemoryScope memory_scope,
                          const int local_work_size, ca::Runtime *runtime,
                          const std::string &program_type) {
   const std::string source = ca::load_text_file(ca::get_asset(path));
   const std::string build_options =
       "-cl-std=CL3.0 -DLOCAL_WORK_SIZE=" + std::to_string(local_work_size) +
-      " -DMEMORY_SCOPE=" + memory_scope;
+      " -DMEMORY_SCOPE=" + ca::to_string(memory_scope);
   return runtime->create_kernel(kernel_name, source, build_options,
                                 program_type);
 }
@@ -144,13 +146,19 @@ void test_work_group_barrier(const TestConfig &config) {
       "kernels/oclc_work_group_functions/work_group_barrier.cl";
 
   SECTION("global") {
-    std::array<std::string, 2> memory_scopes = {"memory_scope_work_group",
-                                                "memory_scope_device"};
-    for (auto &memory_scope : memory_scopes) {
+    std::array<ca::AtomicMemoryScope, 2> memory_scopes = {
+        ca::AtomicMemoryScope::work_group, ca::AtomicMemoryScope::device};
+    for (const auto memory_scope : memory_scopes) {
+      ca::Requirements requirements;
+      requirements.atomic_memory_scope(memory_scope, program_type);
+      if (ca::should_skip_test(requirements, *runtime)) {
+        continue;
+      }
+
       const ca::Kernel kernel =
           create_kernel(kernel_path, "test_kernel_global", memory_scope,
                         local_work_size, runtime, program_type);
-      DYNAMIC_SECTION("specific value - " + memory_scope) {
+      DYNAMIC_SECTION("specific value - " + ca::to_string(memory_scope)) {
         const std::vector<int> input(global_work_size, 1);
         run_test(input, kernel, global_work_size, local_work_size, runtime);
       }
@@ -159,7 +167,7 @@ void test_work_group_barrier(const TestConfig &config) {
   }
   SECTION("local") {
     const ca::Kernel kernel = create_kernel(
-        kernel_path, "test_kernel_local", "memory_scope_work_group",
+        kernel_path, "test_kernel_local", ca::AtomicMemoryScope::work_group,
         local_work_size, runtime, program_type);
     SECTION("specific value") {
       const std::vector<int> input(global_work_size, 1);
