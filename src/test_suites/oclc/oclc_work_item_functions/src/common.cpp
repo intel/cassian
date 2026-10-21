@@ -51,6 +51,14 @@ std::string get_build_options(const std::string &simd) {
   return build_options;
 }
 
+std::string get_library_build_options(const std::string &simd) {
+  std::string build_options = " -library-compilation";
+  if (simd == "8" || simd == "16" || simd == "32") {
+    build_options += " -library-compile-simd=" + simd;
+  }
+  return build_options;
+}
+
 bool should_skip(const TestConfig &config) {
   ca::Requirements requirements;
   requirements.feature(parse_simd(config.simd()));

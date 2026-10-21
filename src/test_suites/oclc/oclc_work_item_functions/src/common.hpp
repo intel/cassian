@@ -22,6 +22,7 @@ namespace ca = cassian;
 
 int suggest_work_size(const std::string &type);
 std::string get_build_options(const std::string &simd);
+std::string get_library_build_options(const std::string &simd);
 ca::Feature parse_simd(const std::string &simd);
 bool should_skip(const TestConfig &config);
 
@@ -189,7 +190,8 @@ void run_test_of_type(const TestConfig &config, const std::string &kernel_name,
     programs.reserve(2);
     programs.emplace_back(source_import, build_options, program_type);
     programs.emplace_back(source_export, build_options, program_type,
-                          build_options + " -library-compilation");
+                          build_options +
+                              get_library_build_options(config.simd()));
 
     const std::string linker_options = "";
     kernel = runtime->create_kernel_from_multiple_programs(
